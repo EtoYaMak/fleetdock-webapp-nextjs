@@ -1,69 +1,175 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+import { FiMail, FiLock } from "react-icons/fi";
+import { useAuth } from "@/hooks/useAuth";
+
+interface FormData {
+  email: string;
+  password: string;
+}
 
 export default function SignInForm() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [formData, setFormData] = useState<FormData>({
+    email: "",
+    password: "",
+  });
   const [error, setError] = useState<string | null>(null);
-
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const { refreshProfile } = useAuth();
+
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+    setError(null);
+  }, []);
 
   const handleSignin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setIsLoading(true);
 
-    const response = await fetch("/api/auth", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password, type: "signin" }),
-    });
+    try {
+      console.log("Attempting signin with email:", formData.email);
 
-    const data = await response.json();
+      const response = await fetch("/api/auth/signin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
 
-    if (!response.ok) {
-      setError(data.message || "Invalid credentials. Please try again.");
-      return;
+      const data = await response.json();
+
+      if (!response.ok) {
+        console.error("Signin error response:", data);
+        throw new Error(data.error || "Invalid credentials");
+      }
+
+      await refreshProfile();
+      
+      const redirectPath = data.role === 'trucker' 
+        ? '/dashboard/trucker'
+        : '/dashboard/broker';
+      
+      console.log("Redirecting to:", redirectPath);
+      
+      router.replace(redirectPath);
+    } catch (err) {
+      console.error("Signin error:", err);
+      setError(err instanceof Error ? err.message : "An unexpected error occurred");
+    } finally {
+      setIsLoading(false);
     }
-
-    router.push(data.redirectTo || "/dashboard");
   };
 
   return (
-    <form
-      onSubmit={handleSignin}
-      className="bg-white dark:bg-gray-800 shadow-md rounded px-8 pt-6 pb-8 w-full max-w-md"
-    >
-      <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">
-        Sign In
-      </h2>
-
-      {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
-
-      <input
-        type="email"
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        className="w-full px-4 py-2 mb-4 border rounded-md text-gray-700 dark:text-gray-300"
-        required
-      />
-      <input
-        type="password"
-        placeholder="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        className="w-full px-4 py-2 mb-6 border rounded-md text-gray-700 dark:text-gray-300"
-        required
-      />
-
-      <button
-        type="submit"
-        className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-md"
+    <div className="min-h-screen w-full min-w-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center p-4">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="bg-white rounded-2xl shadow-xl w-full max-w-md p-8"
       >
-        Sign In
-      </button>
-    </form>
+        <div className="text-center mb-8">
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-3xl font-bold text-gray-900"
+          >
+            Welcome Back
+          </motion.h1>
+          <p className="text-gray-600 mt-2">Sign in to your account</p>
+        </div>
+
+        <form onSubmit={handleSignin} className="space-y-6">
+          <AnimatePresence mode="wait">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="space-y-6"
+            >
+              <div className="space-y-1">
+                <div className="flex items-center space-x-2">
+                  <FiMail className="text-gray-400" />
+                  <label htmlFor="email" className="text-sm font-medium text-gray-700">
+                    Email
+                  </label>
+                </div>
+                <input
+                  id="email"
+                  type="email"
+                  name="email"
+                  placeholder="Enter your email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  required
+                  disabled={isLoading}
+                />
+              </div>
+
+              <div className="space-y-1">
+                <div className="flex items-center space-x-2">
+                  <FiLock className="text-gray-400" />
+                  <label htmlFor="password" className="text-sm font-medium text-gray-700">
+                    Password
+                  </label>
+                </div>
+                <input
+                  id="password"
+                  type="password"
+                  name="password"
+                  placeholder="Enter your password"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  required
+                  disabled={isLoading}
+                />
+              </div>
+            </motion.div>
+          </AnimatePresence>
+
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-red-50 text-red-500 px-4 py-3 rounded-lg text-sm"
+            >
+              {error}
+            </motion.div>
+          )}
+
+          <div className="flex items-center justify-between">
+            <a
+              href="/forgot-password"
+              className="text-sm text-blue-600 hover:text-blue-500"
+            >
+              Forgot password?
+            </a>
+          </div>
+
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            type="submit"
+            className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={isLoading}
+          >
+            {isLoading ? "Signing in..." : "Sign In"}
+          </motion.button>
+
+          <div className="text-center text-sm text-gray-600">
+            Don't have an account?{" "}
+            <a href="/signup" className="text-blue-600 hover:text-blue-500">
+              Sign up
+            </a>
+          </div>
+        </form>
+      </motion.div>
+    </div>
   );
 }

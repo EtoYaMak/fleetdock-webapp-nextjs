@@ -14,10 +14,11 @@ export default function Home() {
             you're a trucker or a broker, we've got you covered.
           </p>
           <div className="mt-6">
-            <Link href="/signup">
-              <a className="px-6 py-3 bg-blue-600 text-white text-lg font-medium rounded-md hover:bg-blue-700">
-                Get Started
-              </a>
+            <Link
+              href="/signup"
+              className="inline-block px-6 py-3 bg-blue-600 text-white text-lg font-medium rounded-md hover:bg-blue-700"
+            >
+              Get Started
             </Link>
           </div>
         </div>
