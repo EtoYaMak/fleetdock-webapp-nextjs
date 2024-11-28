@@ -1,6 +1,37 @@
+"use client";
+
+import { useAuth } from "@/hooks/useAuth";
+import { useRole } from "@/hooks/useRole";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function Home() {
+  const { user, isLoading } = useAuth();
+  const { isTrucker, isBroker } = useRole();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isLoading && user) {
+      // Redirect based on role
+      if (isTrucker) {
+        router.replace("/dashboard/trucker");
+      } else if (isBroker) {
+        router.replace("/dashboard/broker");
+      }
+    }
+  }, [isLoading, user, isTrucker, isBroker, router]);
+
+  // Show loading state while checking auth
+  if (isLoading || user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-pulse">Loading...</div>
+      </div>
+    );
+  }
+
+  // Only show landing page content for non-authenticated users
   return (
     <main className="bg-gray-50 dark:bg-gray-900 min-h-screen flex items-center justify-center">
       <div className="container mx-auto px-6 text-center">

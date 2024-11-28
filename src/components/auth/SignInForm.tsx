@@ -19,7 +19,7 @@ export default function SignInForm() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  const { refreshProfile } = useAuth();
+  const auth = useAuth();
 
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -48,7 +48,15 @@ export default function SignInForm() {
         throw new Error(data.error || "Invalid credentials");
       }
 
-      await refreshProfile();
+      if (auth.setUser) {
+        auth.setUser(data.user);
+      }
+      
+      if (auth.setProfile) {
+        auth.setProfile(data.profile);
+      }
+      
+      await auth.refreshProfile();
       
       const redirectPath = data.role === 'trucker' 
         ? '/dashboard/trucker'
@@ -56,7 +64,7 @@ export default function SignInForm() {
       
       console.log("Redirecting to:", redirectPath);
       
-      router.replace(redirectPath);
+      window.location.href = redirectPath;
     } catch (err) {
       console.error("Signin error:", err);
       setError(err instanceof Error ? err.message : "An unexpected error occurred");

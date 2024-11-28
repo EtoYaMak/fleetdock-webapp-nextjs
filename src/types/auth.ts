@@ -27,4 +27,4 @@ export interface RoleContextType {
   isTrucker: boolean;
   isBroker: boolean;
   checkRole: (allowedRoles: UserRole[]) => boolean;
-} 
+}

@@ -15,47 +15,64 @@ export async function middleware(request: NextRequest) {
   if (request.nextUrl.pathname.startsWith("/dashboard")) {
     if (!session) {
       // Redirect to signin if no session
-      const redirectUrl = new URL("/signin", request.url);
-      redirectUrl.searchParams.set("redirectTo", request.nextUrl.pathname);
-      return NextResponse.redirect(redirectUrl);
+      return NextResponse.redirect(new URL("/signin", request.url));
     }
 
-    // Get user's role from profile
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", session.user.id)
-      .single();
+    try {
+      // Get user's role from profile
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", session.user.id)
+        .single();
 
-    const role = profile?.role;
-    const path = request.nextUrl.pathname;
+      const role = profile?.role;
+      const path = request.nextUrl.pathname;
 
-    // Check if user is accessing the correct dashboard
-    if (
-      (path.includes("/dashboard/trucker") && role !== "trucker") ||
-      (path.includes("/dashboard/broker") && role !== "broker")
-    ) {
-      // Redirect to appropriate dashboard based on role
-      const correctPath =
-        role === "trucker" ? "/dashboard/trucker" : "/dashboard/broker";
-      return NextResponse.redirect(new URL(correctPath, request.url));
+      // Check if user is accessing the correct dashboard
+      if (
+        (path.includes("/dashboard/trucker") && role !== "trucker") ||
+        (path.includes("/dashboard/broker") && role !== "broker")
+      ) {
+        // Redirect to appropriate dashboard based on role
+        const correctPath =
+          role === "trucker" ? "/dashboard/trucker" : "/dashboard/broker";
+        return NextResponse.redirect(new URL(correctPath, request.url));
+      }
+    } catch (error) {
+      console.error("Middleware error:", error);
+      return NextResponse.redirect(new URL("/signin", request.url));
     }
   }
 
-  // Update response cookies
+  // If accessing profile routes
+  if (request.nextUrl.pathname.startsWith("/profile")) {
+    if (!session) {
+      return NextResponse.redirect(new URL("/signin", request.url));
+    }
+
+    try {
+      // Get user's role from profile
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", session.user.id)
+        .single();
+
+      const role = profile?.role;
+
+      // Redirect to the correct profile if needed
+      if (role !== "trucker" && role !== "broker") {
+        return NextResponse.redirect(new URL("/signin", request.url));
+      }
+    } catch (error) {
+      console.error("Middleware error:", error);
+      return NextResponse.redirect(new URL("/signin", request.url));
+    }
+  }
   return res;
 }
 
-// Update the matcher to include all protected routes
 export const config = {
-  matcher: [
-    /*
-     * Match all request paths except:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public files (public directory)
-     */
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
-  ],
+  matcher: ["/dashboard/:path*", "/profile/:path*"],
 };

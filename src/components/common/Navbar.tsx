@@ -13,13 +13,17 @@ export default function Navbar() {
 
   const handleSignOut = async () => {
     await signOut();
-    router.push('/');
+    router.push("/");
   };
 
   const getDashboardLink = () => {
-    if (isTrucker) return '/dashboard/trucker';
-    if (isBroker) return '/dashboard/broker';
-    return '/';
+    if (isTrucker) return "/dashboard/trucker";
+    if (isBroker) return "/dashboard/broker";
+    return "/";
+  };
+
+  const getProfileLink = () => {
+    return "/profile";
   };
 
   const getRoleIcon = () => {
@@ -33,7 +37,7 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex">
-            <Link 
+            <Link
               href="/"
               className="flex items-center px-2 text-gray-900 font-bold text-xl"
             >
@@ -63,7 +67,7 @@ export default function Navbar() {
                 {/* Profile Menu */}
                 <div className="relative ml-3 flex items-center space-x-4">
                   <Link
-                    href="/profile"
+                    href={getProfileLink()}
                     className="flex items-center text-gray-600 hover:text-gray-900"
                   >
                     <FiUser className="h-5 w-5" />
