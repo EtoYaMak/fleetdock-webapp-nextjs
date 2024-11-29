@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
 import { FiTruck, FiCalendar, FiClipboard } from "react-icons/fi";
@@ -11,9 +11,28 @@ interface VehicleType {
   capacity: string;
 }
 
-const RegisterVehicle = () => {
+interface Vehicle {
+  id: string;
+  profile_id: string;
+  vehicle_type_id: string;
+  manufacturer: string;
+  model: string;
+  year: number;
+  license_plate: string;
+  insurance_expiry: string;
+  last_maintenance_date: string;
+  next_maintenance_date: string;
+  created_at: string;
+  status: "pending" | "approved" | "rejected";
+}
+
+interface RegisterVehicleProps {
+  vehicleTypes: VehicleType[];
+  onVehicleAdded: (vehicle: Vehicle) => void;
+}
+
+const RegisterVehicle = ({ vehicleTypes, onVehicleAdded }: RegisterVehicleProps) => {
   const { profile } = useAuth();
-  const [vehicleTypes, setVehicleTypes] = useState<VehicleType[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<{
     type: "success" | "error";
@@ -30,20 +49,6 @@ const RegisterVehicle = () => {
     last_maintenance_date: "",
     next_maintenance_date: "",
   });
-
-  useEffect(() => {
-    const fetchVehicleTypes = async () => {
-      try {
-        const response = await fetch("/api/vehicle-types");
-        const data = await response.json();
-        setVehicleTypes(data);
-      } catch (error) {
-        console.error("Error fetching vehicle types:", error);
-      }
-    };
-
-    fetchVehicleTypes();
-  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,6 +70,7 @@ const RegisterVehicle = () => {
         throw new Error(data.error || "Failed to register vehicle");
       }
 
+      onVehicleAdded(data.vehicle);
       setMessage({ type: "success", text: "Vehicle registered successfully!" });
       setFormData({
         vehicle_type_id: "",

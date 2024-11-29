@@ -2,77 +2,70 @@ import { createMiddlewareClient } from "@supabase/auth-helpers-nextjs";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-export async function middleware(request: NextRequest) {
+export async function middleware(req: NextRequest) {
   const res = NextResponse.next();
-  const supabase = createMiddlewareClient({ req: request, res });
+  const supabase = createMiddlewareClient({ req, res });
 
-  // Refresh session if exists
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  try {
+    // Refresh session if it exists
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError) throw sessionError;
 
-  // If accessing dashboard routes
-  if (request.nextUrl.pathname.startsWith("/dashboard")) {
-    if (!session) {
-      // Redirect to signin if no session
-      return NextResponse.redirect(new URL("/signin", request.url));
+    // Protected routes that require authentication
+    const protectedPaths = ["/dashboard", "/profile"];
+    const isProtectedPath = protectedPaths.some((path) =>
+      req.nextUrl.pathname.startsWith(path)
+    );
+
+    // Auth routes (signin/signup)
+    const authPaths = ["/signin", "/signup"];
+    const isAuthPath = authPaths.some((path) =>
+      req.nextUrl.pathname.startsWith(path)
+    );
+
+    // If accessing protected routes without session
+    if (isProtectedPath && !session) {
+      const redirectUrl = new URL("/signin", req.url);
+      redirectUrl.searchParams.set("redirect", req.nextUrl.pathname);
+      return NextResponse.redirect(redirectUrl);
     }
 
-    try {
-      // Get user's role from profile
+    // If accessing auth routes with session
+    if (isAuthPath && session) {
+      // Get user's role
       const { data: profile } = await supabase
         .from("profiles")
         .select("role")
         .eq("id", session.user.id)
         .single();
 
-      const role = profile?.role;
-      const path = request.nextUrl.pathname;
-
-      // Check if user is accessing the correct dashboard
-      if (
-        (path.includes("/dashboard/trucker") && role !== "trucker") ||
-        (path.includes("/dashboard/broker") && role !== "broker")
-      ) {
-        // Redirect to appropriate dashboard based on role
-        const correctPath =
-          role === "trucker" ? "/dashboard/trucker" : "/dashboard/broker";
-        return NextResponse.redirect(new URL(correctPath, request.url));
+      if (!profile?.role) {
+        // Handle missing role
+        return NextResponse.redirect(new URL("/signin", req.url));
       }
-    } catch (error) {
-      console.error("Middleware error:", error);
-      return NextResponse.redirect(new URL("/signin", request.url));
+
+      // Redirect to role-specific dashboard
+      const dashboardPath = profile.role === "trucker" 
+        ? "/dashboard/trucker" 
+        : "/dashboard/broker";
+        
+      return NextResponse.redirect(new URL(dashboardPath, req.url));
     }
+
+    return res;
+
+  } catch (error) {
+    console.error("Middleware error:", error);
+    // On error, redirect to signin
+    return NextResponse.redirect(new URL("/signin", req.url));
   }
-
-  // If accessing profile routes
-  if (request.nextUrl.pathname.startsWith("/profile")) {
-    if (!session) {
-      return NextResponse.redirect(new URL("/signin", request.url));
-    }
-
-    try {
-      // Get user's role from profile
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("id", session.user.id)
-        .single();
-
-      const role = profile?.role;
-
-      // Redirect to the correct profile if needed
-      if (role !== "trucker" && role !== "broker") {
-        return NextResponse.redirect(new URL("/signin", request.url));
-      }
-    } catch (error) {
-      console.error("Middleware error:", error);
-      return NextResponse.redirect(new URL("/signin", request.url));
-    }
-  }
-  return res;
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/profile/:path*"],
+  matcher: [
+    "/dashboard/:path*",
+    "/profile/:path*",
+    "/signin",
+    "/signup"
+  ],
 };

@@ -4,53 +4,44 @@ import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { FiEdit2, FiTrash2, FiTruck, FiPlus } from "react-icons/fi";
 import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 
 interface Vehicle {
   id: string;
-  vehicle_type: string;
-  make: string;
+  profile_id: string;
+  vehicle_type_id: string;
+  manufacturer: string;
   model: string;
   year: number;
   license_plate: string;
-  vin: string;
+  insurance_expiry: string;
+  last_maintenance_date: string;
+  next_maintenance_date: string;
   created_at: string;
   status: "pending" | "approved" | "rejected";
 }
 
-export default function ViewVehicles() {
-  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+interface ViewVehiclesProps {
+  vehicles: Vehicle[];
+  isLoading: boolean;
+  onVehiclesUpdate: (vehicles: Vehicle[]) => void;
+}
+
+export default function ViewVehicles({ vehicles, isLoading, onVehiclesUpdate }: ViewVehiclesProps) {
   const { profile } = useAuth();
 
-  useEffect(() => {
-    const fetchVehicles = async () => {
-      if (profile?.id) {
-        const { data } = await supabase
-          .from("vehicles")
-          .select("*")
-          .eq("profile_id", profile.id)
-          .order("created_at", { ascending: false });
-
-        setVehicles(data || []);
-        setIsLoading(false);
-      }
-    };
-
-    fetchVehicles();
-  }, [profile?.id]);
-
   const handleDelete = async (vehicleId: string) => {
-    if (window.confirm("Are you sure you want to delete this vehicle?")) {
-      const { error } = await supabase
-        .from("vehicles")
-        .delete()
-        .eq("id", vehicleId);
-
-      if (!error) {
-        setVehicles(vehicles.filter((v) => v.id !== vehicleId));
+    try {
+      const response = await fetch(`/api/vehicles?id=${vehicleId}`, {
+        method: "DELETE",
+      });
+      const data = await response.json();
+      if (!data.error) {
+        const updatedVehicles = vehicles.filter((v) => v.id !== vehicleId);
+        onVehiclesUpdate(updatedVehicles);
       }
+    } catch (error) {
+      console.error("Error deleting vehicle:", error);
     }
   };
 
@@ -67,7 +58,7 @@ export default function ViewVehicles() {
       <div className="flex flex-col items-center justify-center min-h-[400px] bg-gray-50 rounded-lg border-2 border-dashed border-gray-300 p-8">
         <FiTruck className="w-16 h-16 text-gray-400 mb-4" />
         <h3 className="text-xl font-semibold text-gray-700 mb-2">
-          No Vehicles Registered
+          No Vehicles Registered {}
         </h3>
         <p className="text-gray-500 text-center mb-6 max-w-md">
           Get started by registering your first vehicle.
@@ -112,7 +103,7 @@ export default function ViewVehicles() {
             <div className="flex justify-between items-start mb-4">
               <div>
                 <h3 className="text-lg font-semibold text-gray-800">
-                  {vehicle.make} {vehicle.model}
+                  {vehicle.manufacturer} {vehicle.model}
                 </h3>
                 <p className="text-sm text-gray-600">{vehicle.year}</p>
               </div>
@@ -133,14 +124,23 @@ export default function ViewVehicles() {
             <div className="space-y-2 text-sm text-gray-600">
               <p>
                 <span className="font-medium">Type:</span>{" "}
-                {vehicle.vehicle_type}
+                {vehicle.vehicle_type_id}
               </p>
               <p>
                 <span className="font-medium">License Plate:</span>{" "}
                 {vehicle.license_plate}
               </p>
               <p>
-                <span className="font-medium">VIN:</span> {vehicle.vin}
+                <span className="font-medium">Insurance Expiry:</span>{" "}
+                {vehicle.insurance_expiry}
+              </p>
+              <p>
+                <span className="font-medium">Last Maintenance Date:</span>{" "}
+                {vehicle.last_maintenance_date}
+              </p>
+              <p>
+                <span className="font-medium">Next Maintenance Date:</span>{" "}
+                {vehicle.next_maintenance_date}
               </p>
             </div>
 

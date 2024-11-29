@@ -19,7 +19,7 @@ export default function SignInForm() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  const auth = useAuth();
+  const { signIn } = useAuth();
 
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -33,38 +33,17 @@ export default function SignInForm() {
     setIsLoading(true);
 
     try {
-      console.log("Attempting signin with email:", formData.email);
-
-      const response = await fetch("/api/auth/signin", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        console.error("Signin error response:", data);
-        throw new Error(data.error || "Invalid credentials");
-      }
-
-      if (auth.setUser) {
-        auth.setUser(data.user);
-      }
+      // Use the signIn method from AuthContext
+      const { role } = await signIn(formData.email, formData.password);
       
-      if (auth.setProfile) {
-        auth.setProfile(data.profile);
-      }
-      
-      await auth.refreshProfile();
-      
-      const redirectPath = data.role === 'trucker' 
+      // Determine redirect path based on role
+      const redirectPath = role === 'trucker' 
         ? '/dashboard/trucker'
         : '/dashboard/broker';
-      
-      console.log("Redirecting to:", redirectPath);
-      
+
+      // Force a hard navigation to the dashboard
       window.location.href = redirectPath;
+      
     } catch (err) {
       console.error("Signin error:", err);
       setError(err instanceof Error ? err.message : "An unexpected error occurred");

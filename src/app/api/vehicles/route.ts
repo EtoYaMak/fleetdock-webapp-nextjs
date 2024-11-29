@@ -17,20 +17,20 @@ export async function POST(request: Request) {
       next_maintenance_date,
     } = data;
 
-    // Get the current user's profile
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session?.user) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+    // Get the authenticated user
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+    if (userError || !user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Insert the vehicle
     const { data: vehicle, error } = await supabase
       .from("vehicles")
       .insert({
-        profile_id: session.user.id,
+        profile_id: user.id,
         vehicle_type_id,
         license_plate,
         manufacturer,
@@ -59,4 +59,91 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   }
-} 
+}
+
+export async function GET(request: Request) {
+  try {
+    const supabase = await createClient();
+
+    // Get the authenticated user
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+    if (userError || !user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Get vehicles for the current user's profile
+    const { data: vehicles, error } = await supabase
+      .from("vehicles")
+      .select(
+        `
+        *,
+        vehicle_types (
+          name,
+          capacity
+        )
+      `
+      )
+      .eq("profile_id", user.id)
+      .eq("is_active", true)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Error fetching vehicles:", error);
+      return NextResponse.json(
+        { error: "Failed to fetch vehicles" },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ vehicles });
+  } catch (error) {
+    console.error("Error fetching vehicles:", error);
+    return NextResponse.json(
+      { error: "An unexpected error occurred" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const supabase = await createClient();
+    const { searchParams } = new URL(request.url);
+    const vehicleId = searchParams.get("id");
+
+    if (!vehicleId) {
+      return NextResponse.json(
+        { error: "Vehicle ID is required" },
+        { status: 400 }
+      );
+    }
+
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+    if (userError || !user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const { data: vehicle, error } = await supabase
+      .from("vehicles")
+      .delete()
+      .eq("id", vehicleId);
+    if (error) {
+      console.error("Error deleting vehicle:", error);
+      return NextResponse.json(
+        { error: "Failed to delete vehicle" },
+        { status: 500 }
+      );
+    }
+  } catch (error) {
+    console.error("Error deleting vehicle:", error);
+    return NextResponse.json(
+      { error: "An unexpected error occurred" },
+      { status: 500 }
+    );
+  }
+}
