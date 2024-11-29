@@ -2,12 +2,19 @@ import type { User } from "@supabase/supabase-js";
 
 export interface UserProfile {
   id: string;
-  full_name: string;
-  username: string;
+  updated_at: string | null;
+  created_at: string | null;
+  username: string | null;
+  full_name: string | null;
   email: string;
-  role: "trucker" | "broker";
+  role: string;
   phone: string;
-  is_active: boolean;
+  address: string | null;
+  company_name: string | null;
+  vehicle_details: Record<string, any> | null;
+  broker_details: Record<string, any> | null;
+  profile_picture: string | null;
+  is_active: boolean | null;
 }
 
 export interface SignUpData {
@@ -23,7 +30,6 @@ export interface AuthContextType {
   user: User | null;
   profile: UserProfile | null;
   isLoading: boolean;
-
   signIn: (email: string, password: string) => Promise<{ role: string }>;
   signUp: (data: SignUpData) => Promise<void>;
   signOut: () => Promise<void>;

@@ -52,10 +52,7 @@ const SideNav: React.FC<SideNavProps> = ({ activeTab, setActiveTab }) => {
       id: "company",
       label: "Company",
       icon: <FiPackage className="w-5 h-5" />,
-      subItems: [
-        { id: "company-details", label: "Company Details" },
-        { id: "licenses", label: "Licenses & Certificates" },
-      ],
+      subItems: [{ id: "licenses", label: "Licenses & Certificates" }],
     },
   ];
 
