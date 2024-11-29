@@ -10,8 +10,10 @@ export async function GET(
     const resolvedParams = await params;
     const supabase = await createClient();
 
-    // Check authentication
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
     if (authError || !user) {
       return NextResponse.json(
         { error: "Unauthorized", status: 401 },
@@ -19,12 +21,21 @@ export async function GET(
       );
     }
 
-    const { data: load, error } = await supabase
+    // Get user's role from user metadata
+    const userRole = user.user_metadata?.role;
+
+    let query = supabase
       .from("loads")
       .select("*")
-      .eq("id", resolvedParams.id)
-      .eq("broker_id", user.id)
-      .single();
+      .eq("id", resolvedParams.id);
+
+    // If broker, only allow viewing their own loads
+    if (userRole === "broker") {
+      query = query.eq("broker_id", user.id);
+    }
+    // If trucker, allow viewing any load
+    
+    const { data: load, error } = await query.single();
 
     if (error) {
       return NextResponse.json(
@@ -33,10 +44,7 @@ export async function GET(
       );
     }
 
-    return NextResponse.json(
-      { data: { load }, status: 200 },
-      { status: 200 }
-    );
+    return NextResponse.json({ data: { load }, status: 200 }, { status: 200 });
   } catch (error) {
     console.error("Error fetching load:", error);
     return NextResponse.json(
@@ -61,10 +69,7 @@ export async function PUT(
     } = await supabase.auth.getUser();
 
     if (!user) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { data: load, error } = await supabase

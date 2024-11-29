@@ -25,9 +25,17 @@ export default function EditLoad({
         const response = await fetch(`/api/loads/${resolvedParams.id}`);
         const data = await response.json();
 
+        console.log('Edit Load Response:', data);
+
         if (!response.ok) throw new Error(data.error);
-        setLoad(data.load);
+        
+        if (!data.data?.load) {
+          throw new Error("Load data is missing");
+        }
+
+        setLoad(data.data.load);
       } catch (err) {
+        console.error("Error fetching load:", err);
         setError(err instanceof Error ? err.message : "Failed to fetch load");
       } finally {
         setIsLoading(false);

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Load } from "@/types/load";
-import { FiArrowLeft, FiEdit2 } from "react-icons/fi";
+import { FiArrowLeft } from "react-icons/fi";
 import Link from "next/link";
 import { use } from "react";
 import { LoadType } from "@/types/load-type";
@@ -29,14 +29,17 @@ export default function ViewLoad({
         const loadData = await loadResponse.json();
         const typeData = await typeResponse.json();
 
+        console.log('Load Response:', loadData);
+
         if (!loadResponse.ok) throw new Error(loadData.error);
         if (!typeResponse.ok) throw new Error(typeData.error);
 
-        if (!loadData.data?.load) {
+        const loadDetails = loadData.data?.load;
+        if (!loadDetails) {
           throw new Error("Load data is missing");
         }
 
-        setLoad(loadData.data.load);
+        setLoad(loadDetails);
 
         const typeMap = typeData.loadTypes.reduce(
           (acc: Record<string, string>, type: LoadType) => {
@@ -76,22 +79,13 @@ export default function ViewLoad({
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
-        <div className="mb-8 flex justify-between items-center">
+        <div className="mb-8">
           <Link
-            href="/dashboard/broker"
+            href="/dashboard/trucker"
             className="inline-flex items-center text-blue-600 hover:text-blue-800"
           >
-            <FiArrowLeft className="mr-2" /> Back to Dashboard
+            <FiArrowLeft className="mr-2" /> Back to Available Loads
           </Link>
-          <div className="flex space-x-4">
-            <Link
-              href={`/dashboard/broker/loads/${load.id}/edit`}
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-yellow-600 hover:bg-yellow-700"
-            >
-              <FiEdit2 className="-ml-1 mr-2 h-5 w-5" />
-              Edit Load
-            </Link>
-          </div>
         </div>
 
         <div className="bg-white shadow rounded-lg">
@@ -106,6 +100,7 @@ export default function ViewLoad({
 
           <div className="px-4 py-5 sm:p-6">
             <dl className="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
+              {/* Using the same structure as broker view page */}
               <div>
                 <dt className="text-sm font-medium text-gray-500">
                   Pickup Location
@@ -172,4 +167,4 @@ export default function ViewLoad({
       </div>
     </div>
   );
-}
+} 
