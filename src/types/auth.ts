@@ -51,3 +51,14 @@ export interface AuthContextType {
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
+
+export type UserRole = 'trucker' | 'broker' | 'admin';
+
+export type RoleContextType = {
+  role: UserRole | null;
+  isRoleLoading: boolean;
+  setUserRole: (role: UserRole) => void;
+  isTrucker: boolean;
+  isBroker: boolean;
+  checkRole: (allowedRoles: UserRole[]) => boolean;
+};
