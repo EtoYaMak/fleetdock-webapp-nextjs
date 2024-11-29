@@ -42,7 +42,7 @@ export default function Home() {
           </h1>
           <p className="mt-4 text-lg text-gray-700 dark:text-gray-300">
             Simplify freight management with cutting-edge technology. Whether
-            you're a trucker or a broker, we've got you covered.
+            you&apos;re a trucker or a broker, we&apos;ve got you covered.
           </p>
           <div className="mt-6">
             <Link

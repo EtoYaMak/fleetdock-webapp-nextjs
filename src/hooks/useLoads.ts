@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Load } from "@/types/load";
 
 export function useLoads() {
@@ -12,7 +12,7 @@ export function useLoads() {
     completedLoads: 0,
   });
 
-  const fetchLoads = async () => {
+  const fetchLoads = useCallback(async () => {
     try {
       setIsLoading(true);
       const response = await fetch("/api/loads");
@@ -27,7 +27,7 @@ export function useLoads() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   const updateStats = (loadData: Load[]) => {
     setStats({
@@ -63,7 +63,7 @@ export function useLoads() {
 
   useEffect(() => {
     fetchLoads();
-  }, []);
+  }, [fetchLoads]);
 
   return {
     loads,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiUser, FiMail, FiTruck, FiPackage } from "react-icons/fi";
@@ -39,7 +39,7 @@ export default function SignUpForm() {
 
   const router = useRouter();
 
-  const stages: FormStage[] = [
+  const stages: FormStage[] = useMemo(() => [
     {
       title: "Basic Information",
       subtitle: "Let's get you started with the essentials",
@@ -77,7 +77,7 @@ export default function SignUpForm() {
         return true;
       },
     },
-  ];
+  ], []);
 
   const validateCurrentStage = useCallback(() => {
     const result = stages[currentStageIndex].validate(formData);
@@ -97,6 +97,30 @@ export default function SignUpForm() {
     return true;
   }, [currentStageIndex, formData, stages]);
 
+  const handleSignup = async () => {
+    if (!validateCurrentStage()) return;
+    setError(null);
+
+    try {
+      const response = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || "Something went wrong.");
+        return;
+      }
+
+      router.push("/signin");
+    } catch (error) {
+      setError("An unexpected error occurred. Please try again.");
+    }
+  };
+
   const handleNext = useCallback(() => {
     if (!validateCurrentStage()) return;
 
@@ -105,7 +129,7 @@ export default function SignUpForm() {
     } else {
       handleSignup();
     }
-  }, [currentStageIndex, stages.length, validateCurrentStage]);
+  }, [currentStageIndex, stages.length, validateCurrentStage, handleSignup]);
 
   const handleBack = useCallback(() => {
     if (currentStageIndex > 0) {
@@ -132,30 +156,6 @@ export default function SignUpForm() {
     },
     [currentStageIndex]
   );
-
-  const handleSignup = async () => {
-    if (!validateCurrentStage()) return;
-    setError(null);
-
-    try {
-      const response = await fetch("/api/auth/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        setError(data.error || "Something went wrong.");
-        return;
-      }
-
-      router.push("/signin");
-    } catch (err) {
-      setError("An unexpected error occurred. Please try again.");
-    }
-  };
 
   if (currentStep === "role-selection") {
     return (

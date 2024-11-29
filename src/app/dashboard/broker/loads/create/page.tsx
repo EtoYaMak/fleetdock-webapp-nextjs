@@ -60,7 +60,7 @@ export default function CreateLoad() {
           </div>
 
           <div className="px-4 py-5 sm:p-6">
-            <LoadForm onSubmit={handleSubmit} />
+            <LoadForm onSubmit={handleSubmit} isSubmitting={isSubmitting} />
           </div>
         </div>
       </div>

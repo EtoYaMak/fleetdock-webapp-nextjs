@@ -1,9 +1,7 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { FiEdit2, FiTrash2, FiTruck, FiPlus } from "react-icons/fi";
-import { useAuth } from "@/hooks/useAuth";
 import Link from "next/link";
 
 interface Vehicle {
@@ -27,9 +25,11 @@ interface ViewVehiclesProps {
   onVehiclesUpdate: (vehicles: Vehicle[]) => void;
 }
 
-export default function ViewVehicles({ vehicles, isLoading, onVehiclesUpdate }: ViewVehiclesProps) {
-  const { profile } = useAuth();
-
+export default function ViewVehicles({
+  vehicles,
+  isLoading,
+  onVehiclesUpdate,
+}: ViewVehiclesProps) {
   const handleDelete = async (vehicleId: string) => {
     try {
       const response = await fetch(`/api/vehicles?id=${vehicleId}`, {

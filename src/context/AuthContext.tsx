@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useEffect, useState } from "react";
+import { createContext, useEffect, useState, useCallback } from "react";
 import { User } from "@supabase/supabase-js";
 import { createClient } from "@/utils/supabase/client";
 import { redirect, useRouter } from "next/navigation";
@@ -23,21 +23,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const supabase = createClient();
 
-  const refreshProfile = async (userId: string) => {
-    try {
-      const { data: profileData, error: profileError } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", userId)
-        .single();
+  const refreshProfile = useCallback(
+    async (userId: string) => {
+      try {
+        const { data: profileData, error: profileError } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", userId)
+          .single();
 
-      if (profileError) throw profileError;
-      setProfile(profileData);
-    } catch (error) {
-      console.error("Error refreshing profile:", error);
-      setProfile(null);
-    }
-  };
+        if (profileError) throw profileError;
+        setProfile(profileData);
+      } catch (error) {
+        console.error("Error refreshing profile:", error);
+        setProfile(null);
+      }
+    },
+    [supabase]
+  );
 
   useEffect(() => {
     const initializeAuth = async () => {
@@ -83,7 +86,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     initializeAuth();
-  }, [supabase, router]);
+  }, [supabase, router, refreshProfile]);
 
   const signIn = async (email: string, password: string) => {
     try {
@@ -143,11 +146,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     try {
-      const supabase = await createClient();
       await supabase.auth.signOut();
       redirect("/");
     } catch (error) {
-      console.error("Sign out error:", error);
       throw error;
     }
   };

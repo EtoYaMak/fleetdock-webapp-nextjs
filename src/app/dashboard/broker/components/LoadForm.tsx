@@ -13,12 +13,14 @@ interface LoadFormProps {
   ) => Promise<{ success: boolean; error?: string }>;
   initialData?: Partial<LoadFormData>;
   isEdit?: boolean;
+  isSubmitting?: boolean;
 }
 
 export default function LoadForm({
   onSubmit,
   initialData,
   isEdit,
+  isSubmitting,
 }: LoadFormProps) {
   const [loadTypes, setLoadTypes] = useState<LoadType[]>([]);
 
@@ -55,7 +57,6 @@ export default function LoadForm({
   const [validationErrors, setValidationErrors] = useState<ValidationErrors>(
     {}
   );
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
@@ -117,8 +118,6 @@ export default function LoadForm({
       return;
     }
 
-    setIsSubmitting(true);
-
     try {
       const result = await onSubmit(formData);
       if (!result.success) {
@@ -127,8 +126,6 @@ export default function LoadForm({
       setSuccess(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
-    } finally {
-      setIsSubmitting(false);
     }
   };
 

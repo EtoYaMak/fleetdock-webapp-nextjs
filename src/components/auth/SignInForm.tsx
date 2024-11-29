@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiMail, FiLock } from "react-icons/fi";
 import { useAuth } from "@/hooks/useAuth";
@@ -18,14 +17,16 @@ export default function SignInForm() {
   });
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
   const { signIn } = useAuth();
 
-  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    setError(null);
-  }, []);
+  const handleInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const { name, value } = e.target;
+      setFormData((prev) => ({ ...prev, [name]: value }));
+      setError(null);
+    },
+    []
+  );
 
   const handleSignin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,18 +36,18 @@ export default function SignInForm() {
     try {
       // Use the signIn method from AuthContext
       const { role } = await signIn(formData.email, formData.password);
-      
+
       // Determine redirect path based on role
-      const redirectPath = role === 'trucker' 
-        ? '/dashboard/trucker'
-        : '/dashboard/broker';
+      const redirectPath =
+        role === "trucker" ? "/dashboard/trucker" : "/dashboard/broker";
 
       // Force a hard navigation to the dashboard
       window.location.href = redirectPath;
-      
     } catch (err) {
       console.error("Signin error:", err);
-      setError(err instanceof Error ? err.message : "An unexpected error occurred");
+      setError(
+        err instanceof Error ? err.message : "An unexpected error occurred"
+      );
     } finally {
       setIsLoading(false);
     }
@@ -81,7 +82,10 @@ export default function SignInForm() {
               <div className="space-y-1">
                 <div className="flex items-center space-x-2">
                   <FiMail className="text-gray-400" />
-                  <label htmlFor="email" className="text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="email"
+                    className="text-sm font-medium text-gray-700"
+                  >
                     Email
                   </label>
                 </div>
@@ -101,7 +105,10 @@ export default function SignInForm() {
               <div className="space-y-1">
                 <div className="flex items-center space-x-2">
                   <FiLock className="text-gray-400" />
-                  <label htmlFor="password" className="text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="password"
+                    className="text-sm font-medium text-gray-700"
+                  >
                     Password
                   </label>
                 </div>
@@ -150,7 +157,7 @@ export default function SignInForm() {
           </motion.button>
 
           <div className="text-center text-sm text-gray-600">
-            Don't have an account?{" "}
+            Don&apos;t have an account?{" "}
             <a href="/signup" className="text-blue-600 hover:text-blue-500">
               Sign up
             </a>

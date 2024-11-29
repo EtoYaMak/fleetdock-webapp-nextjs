@@ -31,7 +31,7 @@ export async function signup(data: SignUpData) {
     }
 
     // Proceed with signup
-    const { data: authData, error: signUpError } = await supabase.auth.signUp({
+    const { error: signUpError } = await supabase.auth.signUp({
       email: data.email,
       password: data.password,
       options: {
@@ -49,13 +49,15 @@ export async function signup(data: SignUpData) {
 
     return {
       success: true,
-      message: "Sign up successful. Please check your email to verify your account.",
+      message:
+        "Sign up successful. Please check your email to verify your account.",
     };
   } catch (error) {
     console.error("Signup error:", error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "An unknown error occurred",
+      error:
+        error instanceof Error ? error.message : "An unknown error occurred",
     };
   }
 }

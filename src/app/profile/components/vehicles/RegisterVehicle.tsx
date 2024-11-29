@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
-import { FiTruck, FiCalendar, FiClipboard } from "react-icons/fi";
+import { FiTruck } from "react-icons/fi";
 
 interface VehicleType {
   id: string;
@@ -31,8 +31,10 @@ interface RegisterVehicleProps {
   onVehicleAdded: (vehicle: Vehicle) => void;
 }
 
-const RegisterVehicle = ({ vehicleTypes, onVehicleAdded }: RegisterVehicleProps) => {
-  const { profile } = useAuth();
+const RegisterVehicle = ({
+  vehicleTypes,
+  onVehicleAdded,
+}: RegisterVehicleProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<{
     type: "success" | "error";

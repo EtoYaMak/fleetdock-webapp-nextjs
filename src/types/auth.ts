@@ -1,5 +1,21 @@
 import type { User } from "@supabase/supabase-js";
 
+interface VehicleDetails {
+  make?: string;
+  model?: string;
+  year?: number;
+  plateNumber?: string;
+  capacity?: number;
+  // Add other vehicle-specific fields as needed
+}
+
+interface BrokerDetails {
+  license?: string;
+  insuranceNumber?: string;
+  companyRegistration?: string;
+  // Add other broker-specific fields as needed
+}
+
 export interface UserProfile {
   id: string;
   updated_at: string | null;
@@ -11,8 +27,8 @@ export interface UserProfile {
   phone: string;
   address: string | null;
   company_name: string | null;
-  vehicle_details: Record<string, any> | null;
-  broker_details: Record<string, any> | null;
+  vehicle_details: VehicleDetails | null;
+  broker_details: BrokerDetails | null;
   profile_picture: string | null;
   is_active: boolean | null;
 }

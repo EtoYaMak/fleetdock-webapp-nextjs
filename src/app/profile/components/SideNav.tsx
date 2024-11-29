@@ -3,13 +3,7 @@
 import React, { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { motion } from "framer-motion";
-import {
-  FiUser,
-  FiTruck,
-  FiPackage,
-  FiSettings,
-  FiAward,
-} from "react-icons/fi";
+import { FiUser, FiTruck, FiPackage } from "react-icons/fi";
 import { RiTruckFill, RiMedalFill } from "react-icons/ri";
 
 interface NavItem {

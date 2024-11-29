@@ -1,9 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { Load } from "@/types/load";
-import { FiArrowLeft, FiEdit2, FiTrash2 } from "react-icons/fi";
+import { FiArrowLeft, FiEdit2 } from "react-icons/fi";
 import Link from "next/link";
 import { use } from "react";
 import { LoadType } from "@/types/load-type";
@@ -14,7 +13,6 @@ export default function ViewLoad({
   params: Promise<{ id: string }>;
 }) {
   const resolvedParams = use(params);
-  const router = useRouter();
   const [load, setLoad] = useState<Load | null>(null);
   const [loadType, setLoadType] = useState<LoadType | null>(null);
   const [isLoading, setIsLoading] = useState(true);

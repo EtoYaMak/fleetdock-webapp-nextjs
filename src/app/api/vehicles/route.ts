@@ -44,7 +44,6 @@ export async function POST(request: Request) {
       .single();
 
     if (error) {
-      console.error("Error registering vehicle:", error);
       return NextResponse.json(
         { error: "Failed to register vehicle" },
         { status: 500 }
@@ -53,7 +52,6 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true, vehicle });
   } catch (error) {
-    console.error("Vehicle registration error:", error);
     return NextResponse.json(
       { error: "An unexpected error occurred" },
       { status: 500 }
@@ -61,7 +59,7 @@ export async function POST(request: Request) {
   }
 }
 
-export async function GET(request: Request) {
+export async function GET() {
   try {
     const supabase = await createClient();
 
@@ -91,7 +89,6 @@ export async function GET(request: Request) {
       .order("created_at", { ascending: false });
 
     if (error) {
-      console.error("Error fetching vehicles:", error);
       return NextResponse.json(
         { error: "Failed to fetch vehicles" },
         { status: 500 }
@@ -100,7 +97,6 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ vehicles });
   } catch (error) {
-    console.error("Error fetching vehicles:", error);
     return NextResponse.json(
       { error: "An unexpected error occurred" },
       { status: 500 }
@@ -128,19 +124,17 @@ export async function DELETE(request: Request) {
     if (userError || !user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    const { data: vehicle, error } = await supabase
+    const { error } = await supabase
       .from("vehicles")
       .delete()
       .eq("id", vehicleId);
     if (error) {
-      console.error("Error deleting vehicle:", error);
       return NextResponse.json(
         { error: "Failed to delete vehicle" },
         { status: 500 }
       );
     }
   } catch (error) {
-    console.error("Error deleting vehicle:", error);
     return NextResponse.json(
       { error: "An unexpected error occurred" },
       { status: 500 }
