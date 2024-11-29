@@ -97,7 +97,7 @@ export default function SignUpForm() {
     return true;
   }, [currentStageIndex, formData, stages]);
 
-  const handleSignup = async () => {
+  const handleSignup = useCallback(async () => {
     if (!validateCurrentStage()) return;
     setError(null);
 
@@ -119,7 +119,7 @@ export default function SignUpForm() {
     } catch (error) {
       setError("An unexpected error occurred. Please try again.");
     }
-  };
+  }, [validateCurrentStage, formData, router]);
 
   const handleNext = useCallback(() => {
     if (!validateCurrentStage()) return;
