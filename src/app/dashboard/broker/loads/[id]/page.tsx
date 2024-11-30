@@ -47,7 +47,6 @@ export default function ViewLoad({
         );
         setLoadTypes(typeMap);
       } catch (err) {
-        console.error("Error details:", err);
         setError(err instanceof Error ? err.message : "Failed to fetch data");
       } finally {
         setIsLoading(false);

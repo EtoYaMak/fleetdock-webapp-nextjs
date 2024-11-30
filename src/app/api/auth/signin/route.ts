@@ -4,7 +4,6 @@ import { signin } from "../actions";
 export async function POST(request: Request) {
   try {
     const data = await request.json();
-    console.log("Received signin request for:", data.email);
 
     const result = await signin(data);
 

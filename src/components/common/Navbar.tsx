@@ -11,11 +11,6 @@ export default function Navbar() {
   const { isTrucker, isBroker } = useRole();
   const router = useRouter();
 
-  const handleSignOut = async () => {
-    await signOut();
-    router.push("/");
-  };
-
   const getDashboardLink = () => {
     if (isTrucker) return "/dashboard/trucker";
     if (isBroker) return "/dashboard/broker";
@@ -59,7 +54,8 @@ export default function Navbar() {
                 {/* Dashboard Link */}
                 <Link
                   href={getDashboardLink()}
-                  className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+                  className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium
+                   hover:bg-gray-100  hover:scale-105 transition-all duration-300"
                 >
                   Dashboard
                 </Link>
@@ -68,16 +64,16 @@ export default function Navbar() {
                 <div className="relative ml-3 flex items-center space-x-4">
                   <Link
                     href={getProfileLink()}
-                    className="flex items-center text-gray-600 hover:text-gray-900"
+                    className="flex items-center text-gray-600 hover:text-gray-900 p-2 hover:bg-gray-100 rounded-md group"
                   >
-                    <FiUser className="h-5 w-5" />
+                    <FiUser className="h-5 w-5 group-hover:scale-110 transition-all duration-300" />
                   </Link>
 
                   <button
-                    onClick={handleSignOut}
-                    className="flex items-center text-gray-600 hover:text-gray-900"
+                    onClick={async () => await signOut()}
+                    className="flex items-center text-gray-600 hover:text-gray-900 p-2 hover:bg-gray-100 rounded-md group"
                   >
-                    <FiLogOut className="h-5 w-5" />
+                    <FiLogOut className="h-5 w-5 group-hover:scale-110 transition-all duration-300" />
                   </button>
                 </div>
               </>

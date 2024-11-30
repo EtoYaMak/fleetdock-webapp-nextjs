@@ -29,8 +29,6 @@ export default function ViewLoad({
         const loadData = await loadResponse.json();
         const typeData = await typeResponse.json();
 
-        console.log('Load Response:', loadData);
-
         if (!loadResponse.ok) throw new Error(loadData.error);
         if (!typeResponse.ok) throw new Error(typeData.error);
 
@@ -167,4 +165,4 @@ export default function ViewLoad({
       </div>
     </div>
   );
-} 
+}

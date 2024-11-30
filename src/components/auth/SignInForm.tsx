@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiMail, FiLock } from "react-icons/fi";
 import { useAuth } from "@/hooks/useAuth";
+import { useRouter } from "next/navigation";
 
 interface FormData {
   email: string;
@@ -11,13 +12,14 @@ interface FormData {
 }
 
 export default function SignInForm() {
+  const router = useRouter();
+  const { signIn } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState<FormData>({
     email: "",
     password: "",
   });
-  const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const { signIn } = useAuth();
 
   const handleInputChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -28,26 +30,20 @@ export default function SignInForm() {
     []
   );
 
-  const handleSignin = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
     setIsLoading(true);
+    setError(null);
 
     try {
-      // Use the signIn method from AuthContext
-      const { role } = await signIn(formData.email, formData.password);
+      const success = await signIn(formData.email, formData.password);
 
-      // Determine redirect path based on role
-      const redirectPath =
-        role === "trucker" ? "/dashboard/trucker" : "/dashboard/broker";
-
-      // Force a hard navigation to the dashboard
-      window.location.href = redirectPath;
-    } catch (err) {
-      console.error("Signin error:", err);
-      setError(
-        err instanceof Error ? err.message : "An unexpected error occurred"
-      );
+      if (success) {
+        router.push("/profile");
+        router.refresh();
+      }
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Failed to sign in");
     } finally {
       setIsLoading(false);
     }
@@ -71,7 +67,7 @@ export default function SignInForm() {
           <p className="text-gray-600 mt-2">Sign in to your account</p>
         </div>
 
-        <form onSubmit={handleSignin} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <AnimatePresence mode="wait">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
