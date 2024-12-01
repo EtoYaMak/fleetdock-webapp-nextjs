@@ -24,7 +24,10 @@ export async function middleware(req: NextRequest) {
 
   // Redirect if accessing protected routes without session
   if (isProtectedPath && !session) {
-    return NextResponse.redirect(new URL("/signin", req.url));
+    // Store the original URL they were trying to access
+    const redirectUrl = new URL('/signin', req.url);
+    redirectUrl.searchParams.set('redirectTo', req.nextUrl.pathname);
+    return NextResponse.redirect(redirectUrl);
   }
 
   // Redirect if accessing auth routes with session
@@ -32,9 +35,24 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL("/dashboard", req.url));
   }
 
+  // Add session user to request header for client use
+  if (session) {
+    res.headers.set('x-user-id', session.user.id);
+  }
+
   return res;
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/profile/:path*", "/signin", "/signup"],
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - public (public files)
+     * - api (API routes)
+     */
+    '/((?!_next/static|_next/image|favicon.ico|public|api).*)',
+  ],
 };

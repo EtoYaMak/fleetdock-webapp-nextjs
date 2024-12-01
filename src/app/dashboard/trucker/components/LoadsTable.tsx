@@ -1,41 +1,21 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { Load } from "@/types/load";
-import { LoadType } from "@/types/load-type";
 import { FiEye } from "react-icons/fi";
 
 interface LoadsTableProps {
   loads: Load[];
+  loadTypes: Record<string, string>;
   onView: (loadId: string) => void;
+  isLoading: boolean;
 }
 
-export default function LoadsTable({ loads, onView }: LoadsTableProps) {
-  const [loadTypes, setLoadTypes] = useState<Record<string, string>>({});
-
-  useEffect(() => {
-    const fetchLoadTypes = async () => {
-      try {
-        const response = await fetch("/api/load-types");
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.error);
-
-        const typeMap = data.loadTypes.reduce(
-          (acc: Record<string, string>, type: LoadType) => {
-            acc[type.id] = type.name;
-            return acc;
-          },
-          {}
-        );
-        setLoadTypes(typeMap);
-      } catch (error) {
-        console.error("Error fetching load types:", error);
-      }
-    };
-
-    fetchLoadTypes();
-  }, []);
-
+export default function LoadsTable({
+  loads,
+  loadTypes,
+  onView,
+  isLoading,
+}: LoadsTableProps) {
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full divide-y divide-gray-200">
@@ -61,52 +41,64 @@ export default function LoadsTable({ loads, onView }: LoadsTableProps) {
             </th>
           </tr>
         </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
-          {loads.map((load) => (
-            <tr key={load.id}>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <div className="text-sm font-medium text-gray-900">
-                  {load.pickup_location.address}
+        {isLoading ? (
+          <tbody className="bg-white divide-y divide-gray-200">
+            <tr className="w-full">
+              <td colSpan={6} className="text-center py-4">
+                <div className="flex justify-center">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
                 </div>
-                <div className="text-sm text-gray-500">
-                  {new Date(load.pickup_deadline).toLocaleDateString()}
-                </div>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <div className="text-sm font-medium text-gray-900">
-                  {load.delivery_location.address}
-                </div>
-                <div className="text-sm text-gray-500">
-                  {new Date(load.delivery_deadline).toLocaleDateString()}
-                </div>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <div className="text-sm text-gray-900">
-                  {load.budget_amount} {load.budget_currency}
-                </div>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <div className="text-sm text-gray-900">
-                  {loadTypes[load.load_type_id] || "Unknown Type"}
-                </div>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                  {load.status}
-                </span>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                <button
-                  onClick={() => onView(load.id)}
-                  className="text-blue-600 hover:text-blue-900"
-                >
-                  <FiEye className="h-5 w-5" />
-                </button>
               </td>
             </tr>
-          ))}
-        </tbody>
+          </tbody>
+        ) : (
+          <tbody className="bg-white divide-y divide-gray-200">
+            {loads.map((load) => (
+              <tr key={load.id}>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm font-medium text-gray-900">
+                    {load.pickup_location.address}
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    {new Date(load.pickup_deadline).toLocaleDateString()}
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm font-medium text-gray-900">
+                    {load.delivery_location.address}
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    {new Date(load.delivery_deadline).toLocaleDateString()}
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm text-gray-900">
+                    {load.budget_amount} {load.budget_currency}
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm text-gray-900">
+                    {loadTypes[load.load_type_id] || "Unknown Type"}
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                    {load.status}
+                  </span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <button
+                    onClick={() => onView(load.id)}
+                    className="text-blue-600 hover:text-blue-900"
+                  >
+                    <FiEye className="h-5 w-5" />
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        )}
       </table>
     </div>
   );
-} 
+}

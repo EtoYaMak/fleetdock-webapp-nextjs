@@ -27,6 +27,18 @@ export default function Navbar() {
     return null;
   };
 
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      setTimeout(() => {
+        router.push('/signin');
+        router.refresh();
+      }, 100);
+    } catch (error) {
+      console.error('Sign out error:', error);
+    }
+  };
+
   return (
     <nav className="bg-white shadow-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -70,7 +82,7 @@ export default function Navbar() {
                   </Link>
 
                   <button
-                    onClick={async () => await signOut()}
+                    onClick={handleSignOut}
                     className="flex items-center text-gray-600 hover:text-gray-900 p-2 hover:bg-gray-100 rounded-md group"
                   >
                     <FiLogOut className="h-5 w-5 group-hover:scale-110 transition-all duration-300" />

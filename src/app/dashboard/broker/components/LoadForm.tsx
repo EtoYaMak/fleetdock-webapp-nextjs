@@ -47,6 +47,7 @@ export default function LoadForm({
     height_cm: initialData?.height_cm || 0,
     pickup_location: initialData?.pickup_location || { address: "" },
     delivery_location: initialData?.delivery_location || { address: "" },
+    distance_manual: initialData?.distance_manual || 0,
     pickup_deadline: initialData?.pickup_deadline || "",
     delivery_deadline: initialData?.delivery_deadline || "",
     budget_amount: initialData?.budget_amount || 0,
@@ -94,7 +95,10 @@ export default function LoadForm({
         "Delivery deadline must be after pickup deadline";
       isValid = false;
     }
-
+    if (!formData.distance_manual || formData.distance_manual <= 0) {
+      errors.distance_manual = "Distance must be greater than 0";
+      isValid = false;
+    }
     if (!formData.budget_amount || formData.budget_amount <= 0) {
       errors.budget_amount = "Budget amount must be greater than 0";
       isValid = false;
@@ -400,6 +404,22 @@ export default function LoadForm({
               {validationErrors.load_type_id}
             </p>
           )}
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Distance (KM)
+          </label>
+          <input
+            type="number"
+            value={formData.distance_manual}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                distance_manual: Number(e.target.value),
+              })
+            }
+            className="w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 border-gray-300"
+          />
         </div>
       </div>
 

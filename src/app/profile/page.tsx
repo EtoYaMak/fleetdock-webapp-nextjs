@@ -9,7 +9,9 @@ import { useAuth } from "@/hooks/useAuth";
 
 function ProfileContent() {
   const searchParams = useSearchParams();
-  const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "profile");
+  const [activeTab, setActiveTab] = useState(
+    searchParams.get("tab") || "profile"
+  );
   const { profile } = useAuth();
 
   // Update URL when tab changes
@@ -29,15 +31,15 @@ function ProfileContent() {
   }, [searchParams]);
 
   return (
-    <div className="flex flex-col md:flex-row gap-4 p-4">
+    <div className="flex flex-col md:flex-row gap-4 p-4 min-h-screen">
       <SideNav activeTab={activeTab} setActiveTab={handleTabChange} />
-      <div className="flex-1 bg-white rounded-xl shadow-lg p-6">
-        {profile?.role === "broker" ? (
-          <BrokerProfile activeTab={activeTab} />
-        ) : (
-          <TruckerProfile activeTab={activeTab} />
-        )}
-      </div>
+      {/* <div className="flex-1 bg-white rounded-xl shadow-lg p-6 w-fit"> */}
+      {profile?.role === "broker" ? (
+        <BrokerProfile activeTab={activeTab} />
+      ) : (
+        <TruckerProfile activeTab={activeTab} />
+      )}
+      {/* </div> */}
     </div>
   );
 }

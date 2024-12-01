@@ -3,7 +3,7 @@
 import { createContext, useEffect, useState, useCallback } from "react";
 import { User } from "@supabase/supabase-js";
 import { createClient } from "@/utils/supabase/client";
-import { redirect, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import type { AuthContextType, UserProfile, SignUpData } from "@/types/auth";
 
 export const AuthContext = createContext<AuthContextType>({
@@ -55,30 +55,54 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           await refreshProfile(initialUser.id);
         }
 
-        // Subscribe to auth changes
-        const {
-          data: { subscription },
-        } = supabase.auth.onAuthStateChange(async (event, session) => {
-          const currentUser = session?.user ?? null;
-          setUser(currentUser);
+        // Subscribe to auth changes using the newer channel approach
+        const { data: authListener } = supabase.auth.onAuthStateChange(
+          async (event, session) => {
+            const currentUser = session?.user ?? null;
+            setUser(currentUser);
 
-          if (currentUser) {
-            await refreshProfile(currentUser.id);
+            if (currentUser) {
+              await refreshProfile(currentUser.id);
 
-            if (event === "SIGNED_IN") {
-              router.refresh();
-            }
-          } else {
-            setProfile(null);
-            if (event === "SIGNED_OUT") {
-              router.push("/");
-              router.refresh();
+              if (event === "SIGNED_IN") {
+                router.refresh();
+              }
+            } else {
+              setProfile(null);
+              if (event === "SIGNED_OUT") {
+                router.push("/signin");
+                router.refresh();
+              }
             }
           }
-        });
+        );
+
+        // Subscribe to profile changes using realtime
+        const profileSubscription = supabase
+          .channel("profile-changes")
+          .on(
+            "postgres_changes",
+            {
+              event: "*",
+              schema: "public",
+              table: "profiles",
+              filter: initialUser ? `id=eq.${initialUser.id}` : undefined,
+            },
+            async (payload) => {
+              if (payload.new && initialUser) {
+                await refreshProfile(initialUser.id);
+              }
+            }
+          )
+          .subscribe();
 
         setIsLoading(false);
-        return () => subscription.unsubscribe();
+
+        // Cleanup subscriptions
+        return () => {
+          authListener.subscription.unsubscribe();
+          supabase.removeChannel(profileSubscription);
+        };
       } catch (error) {
         console.error("Auth initialization error:", error);
         setIsLoading(false);
@@ -115,6 +139,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(user);
       setProfile(profile);
 
+      // Force a router refresh to update the session
+      router.refresh();
+
       // Return the role for redirect
       return { role: profile.role };
     } catch (error) {
@@ -146,9 +173,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     try {
-      await supabase.auth.signOut();
-      redirect("/");
+      // First, clear the client-side state
+      setUser(null);
+      setProfile(null);
+
+      // Call the server-side signout endpoint
+      const response = await fetch("/api/auth/signout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to sign out");
+      }
+
+      // Then sign out from Supabase client
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+
+      // Wait for a brief moment to ensure all operations are complete
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // Force a router refresh to update the session
+      router.refresh();
+      router.push("/signin");
     } catch (error) {
+      console.error("Sign out error:", error);
       throw error;
     }
   };

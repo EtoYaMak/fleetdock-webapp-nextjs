@@ -7,7 +7,7 @@ export interface Load {
   delivery_location: {
     address: string;
   };
-  distance: string;
+  distance_manual: number;
   budget_amount: number;
   budget_currency: string;
   weight_kg: number;
@@ -33,6 +33,7 @@ export interface LoadFormData {
   height_cm?: number;
   pickup_location: { address: string };
   delivery_location: { address: string };
+  distance_manual: number;
   pickup_deadline: string;
   delivery_deadline: string;
   budget_amount: number;
@@ -46,6 +47,7 @@ export interface ValidationErrors {
   weight_kg?: string;
   pickup_deadline?: string;
   delivery_deadline?: string;
+  distance_manual?: string;
   budget_amount?: string;
   load_type_id?: string;
 }

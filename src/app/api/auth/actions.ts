@@ -88,7 +88,14 @@ export async function signin(data: { email: string; password: string }) {
 }
 
 export async function signout() {
-  const supabase = await createClient();
-  await supabase.auth.signOut();
-  revalidatePath("/", "layout");
+  try {
+    const supabase = await createClient();
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
+    
+    revalidatePath("/", "layout");
+  } catch (error) {
+    console.error("Server-side signout error:", error);
+    throw error;
+  }
 }

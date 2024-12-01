@@ -36,12 +36,18 @@ export default function SignInForm() {
     setError(null);
 
     try {
-      const success = await signIn(formData.email, formData.password);
-
-      if (success) {
-        router.push("/profile");
+      const { role } = await signIn(formData.email, formData.password);
+      
+      setTimeout(() => {
+        if (role === 'trucker') {
+          router.push('/dashboard/trucker');
+        } else if (role === 'broker') {
+          router.push('/dashboard/broker');
+        } else {
+          router.push('/dashboard');
+        }
         router.refresh();
-      }
+      }, 100);
     } catch (error) {
       setError(error instanceof Error ? error.message : "Failed to sign in");
     } finally {

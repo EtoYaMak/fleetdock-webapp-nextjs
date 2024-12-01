@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { FiEdit2, FiTrash2, FiEye, FiAlertCircle } from "react-icons/fi";
 import { Load } from "@/types/load";
-import { LoadType } from "@/types/load-type";
+
 interface LoadsTableProps {
   loads: Load[];
+  loadTypes: Record<string, string>;
   onEdit: (loadId: string) => void;
   onDelete: (loadId: string) => void;
   onView: (loadId: string) => void;
@@ -13,35 +14,12 @@ interface LoadsTableProps {
 
 export default function LoadsTable({
   loads,
+  loadTypes,
   onEdit,
   onDelete,
   onView,
 }: LoadsTableProps) {
   const [deleteLoadId, setDeleteLoadId] = useState<string | null>(null);
-  const [loadTypes, setLoadTypes] = useState<Record<string, string>>({});
-
-  useEffect(() => {
-    const fetchLoadTypes = async () => {
-      try {
-        const response = await fetch("/api/load-types");
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.error);
-
-        const typeMap = data.loadTypes.reduce(
-          (acc: Record<string, string>, type: LoadType) => {
-            acc[type.id] = type.name;
-            return acc;
-          },
-          {}
-        );
-        setLoadTypes(typeMap);
-      } catch (error) {
-        console.error("Error fetching load types:", error);
-      }
-    };
-
-    fetchLoadTypes();
-  }, []);
 
   const handleDeleteClick = (loadId: string) => {
     setDeleteLoadId(loadId);

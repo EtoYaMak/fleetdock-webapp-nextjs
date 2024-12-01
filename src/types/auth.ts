@@ -52,7 +52,7 @@ export interface AuthContextType {
   refreshProfile: () => Promise<void>;
 }
 
-export type UserRole = 'trucker' | 'broker' | 'admin';
+export type UserRole = "trucker" | "broker" | "admin";
 
 export type RoleContextType = {
   role: UserRole | null;

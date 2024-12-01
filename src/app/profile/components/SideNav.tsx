@@ -62,9 +62,9 @@ const SideNav: React.FC<SideNavProps> = ({ activeTab, setActiveTab }) => {
     <motion.nav
       initial={{ x: -100, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
-      className="w-64 bg-gradient-to-b from-slate-800 to-slate-900 text-white p-4 rounded-r-xl shadow-xl "
+      className="w-64 bg-gradient-to-b from-gray-100 to-gray-50 text-black  shadow-xl "
     >
-      <div className="mb-8">
+      <div className="mb-8 overflow-hidden">
         <motion.div
           className="flex items-center justify-center p-4 bg-transparent rounded-lg"
           whileHover={{ scale: 1.02 }}
@@ -80,7 +80,7 @@ const SideNav: React.FC<SideNavProps> = ({ activeTab, setActiveTab }) => {
         </motion.div>
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-2 p-4 rounded-r-xl">
         {navItems.map((item) => (
           <div key={item.id}>
             <motion.button
@@ -90,7 +90,7 @@ const SideNav: React.FC<SideNavProps> = ({ activeTab, setActiveTab }) => {
               className={`w-full flex items-center p-3 rounded-lg transition-colors ${
                 activeTab === item.id
                   ? "bg-blue-600 text-white"
-                  : "hover:bg-slate-700"
+                  : "hover:bg-slate-300"
               }`}
             >
               {item.icon}
@@ -112,8 +112,8 @@ const SideNav: React.FC<SideNavProps> = ({ activeTab, setActiveTab }) => {
                     onClick={() => setActiveTab(subItem.id)}
                     className={`w-full p-2 rounded-md text-sm transition-colors ${
                       activeTab === subItem.id
-                        ? "bg-blue-500/20 text-blue-400"
-                        : "hover:bg-slate-700"
+                        ? "bg-blue-500/80 text-white font-bold"
+                        : "hover:bg-slate-300 hover:text-black"
                     }`}
                   >
                     {subItem.label}
