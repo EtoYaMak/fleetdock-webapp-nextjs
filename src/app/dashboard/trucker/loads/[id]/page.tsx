@@ -116,8 +116,12 @@ export default function ViewLoad({
                 </dd>
               </div>
               <div>
-                <dt className="text-sm font-medium text-gray-500">Distance</dt>
-                <dd className="mt-1 text-sm text-gray-900">{load.distance}</dd>
+                <dt className="text-sm font-medium text-gray-500">
+                  Distance (KM)
+                </dt>
+                <dd className="mt-1 text-sm text-gray-900">
+                  {load.distance_manual}
+                </dd>
               </div>
               <div>
                 <dt className="text-sm font-medium text-gray-500">Price</dt>
