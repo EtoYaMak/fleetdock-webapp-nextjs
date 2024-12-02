@@ -53,6 +53,8 @@ export default function LoadForm({
     budget_amount: initialData?.budget_amount || 0,
     budget_currency: initialData?.budget_currency || "USD",
     special_instructions: initialData?.special_instructions || "",
+    bid_enabled: initialData?.bid_enabled ?? true,
+    fixed_rate: initialData?.fixed_rate || 0,
   });
 
   const [validationErrors, setValidationErrors] = useState<ValidationErrors>(
@@ -338,6 +340,44 @@ export default function LoadForm({
             </p>
           )}
         </div>
+
+        <div>
+          <label className="flex items-center space-x-3">
+            <input
+              type="checkbox"
+              checked={formData.bid_enabled}
+              onChange={(e) =>
+                setFormData({ ...formData, bid_enabled: e.target.checked })
+              }
+              className="h-4 w-4 text-blue-600 rounded border-gray-300"
+            />
+            <span className="text-sm font-medium text-gray-700">
+              Enable Bidding
+            </span>
+          </label>
+        </div>
+
+        {!formData.bid_enabled && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Fixed Rate*
+            </label>
+            <input
+              type="number"
+              required={!formData.bid_enabled}
+              min="0"
+              step="0.01"
+              value={formData.fixed_rate}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  fixed_rate: Number(e.target.value),
+                })
+              }
+              className="w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 border-gray-300"
+            />
+          </div>
+        )}
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">

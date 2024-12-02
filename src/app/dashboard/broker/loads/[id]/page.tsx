@@ -2,10 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { Load } from "@/types/load";
+import { Bid, BidStatus } from "@/types/bids";
 import { FiArrowLeft, FiEdit2 } from "react-icons/fi";
 import Link from "next/link";
 import { use } from "react";
 import { LoadType } from "@/types/load-type";
+import BidsList from "../../components/BidsList";
 
 export default function ViewLoad({
   params,
@@ -15,29 +17,31 @@ export default function ViewLoad({
   const resolvedParams = use(params);
   const [load, setLoad] = useState<Load | null>(null);
   const [loadTypes, setLoadTypes] = useState<Record<string, string>>({});
+  const [bids, setBids] = useState<Bid[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchLoadAndType = async () => {
+    const fetchData = async () => {
+      setIsLoading(true);
+      setError(null);
       try {
-        const [loadResponse, typeResponse] = await Promise.all([
+        // Fetch load, load types, and bids in parallel
+        const [loadResponse, typeResponse, bidsResponse] = await Promise.all([
           fetch(`/api/loads/${resolvedParams.id}`),
           fetch(`/api/load-types`),
+          fetch(`/api/bids?load_id=${resolvedParams.id}`),
         ]);
 
+        // Handle load data
         const loadData = await loadResponse.json();
-        const typeData = await typeResponse.json();
-
         if (!loadResponse.ok) throw new Error(loadData.error);
-        if (!typeResponse.ok) throw new Error(typeData.error);
-
-        if (!loadData.data?.load) {
-          throw new Error("Load data is missing");
-        }
-
+        if (!loadData.data?.load) throw new Error("Load data is missing");
         setLoad(loadData.data.load);
 
+        // Handle load types data
+        const typeData = await typeResponse.json();
+        if (!typeResponse.ok) throw new Error(typeData.error);
         const typeMap = typeData.loadTypes.reduce(
           (acc: Record<string, string>, type: LoadType) => {
             acc[type.id] = type.name;
@@ -46,6 +50,11 @@ export default function ViewLoad({
           {}
         );
         setLoadTypes(typeMap);
+
+        // Handle bids data
+        const bidsData = await bidsResponse.json();
+        if (!bidsResponse.ok) throw new Error(bidsData.error);
+        setBids(bidsData.bids || []);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to fetch data");
       } finally {
@@ -53,21 +62,53 @@ export default function ViewLoad({
       }
     };
 
-    fetchLoadAndType();
+    fetchData();
   }, [resolvedParams.id]);
+
+  const handleUpdateBidStatus = async (bidId: string, status: BidStatus) => {
+    try {
+      const response = await fetch(`/api/bids/${bidId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bid_status: status }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to update bid status");
+      }
+
+      // Refresh bids after update
+      const updatedBids = bids.map((bid) =>
+        bid.id === bidId ? { ...bid, bid_status: status } : bid
+      );
+      setBids(updatedBids);
+    } catch (error) {
+      console.error("Error updating bid status:", error);
+      // Optionally show error to user via toast or alert
+    }
+  };
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+      <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+          </div>
+        </div>
       </div>
     );
   }
 
   if (error || !load) {
     return (
-      <div className="text-center text-red-600 p-4">
-        {error || "Load not found"}
+      <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center text-red-600 p-4">
+            {error || "Load not found"}
+          </div>
+        </div>
       </div>
     );
   }
@@ -75,6 +116,7 @@ export default function ViewLoad({
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
+        {/* Navigation */}
         <div className="mb-8 flex justify-between items-center">
           <Link
             href="/dashboard/broker"
@@ -93,7 +135,8 @@ export default function ViewLoad({
           </div>
         </div>
 
-        <div className="bg-white shadow rounded-lg">
+        {/* Load Details */}
+        <div className="bg-white shadow rounded-lg mb-8">
           <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
             <h3 className="text-lg leading-6 font-medium text-gray-900">
               Load Details
@@ -170,6 +213,28 @@ export default function ViewLoad({
                 </dd>
               </div>
             </dl>
+          </div>
+        </div>
+
+        {/* Bids Section */}
+        <div className="bg-white shadow rounded-lg">
+          <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
+            <h3 className="text-lg leading-6 font-medium text-gray-900">
+              Bids
+            </h3>
+            <p className="mt-1 text-sm text-gray-500">
+              Manage bids placed on this load
+            </p>
+          </div>
+
+          <div className="px-4 py-5 sm:p-6">
+            {bids.length > 0 ? (
+              <BidsList bids={bids} onUpdateBidStatus={handleUpdateBidStatus} />
+            ) : (
+              <p className="text-gray-500 text-center py-4">
+                No bids have been placed on this load yet.
+              </p>
+            )}
           </div>
         </div>
       </div>

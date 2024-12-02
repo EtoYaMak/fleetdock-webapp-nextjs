@@ -16,6 +16,7 @@ export interface Load {
   load_type_id: string;
   status:
     | "available"
+    | "posted"
     | "assigned"
     | "pending"
     | "in_progress"
@@ -23,6 +24,8 @@ export interface Load {
     | "cancelled";
   created_at: string;
   updated_at: string;
+  bid_enabled?: boolean;
+  fixed_rate?: number;
 }
 
 export interface LoadFormData {
@@ -39,6 +42,8 @@ export interface LoadFormData {
   budget_amount: number;
   budget_currency: string;
   special_instructions?: string;
+  bid_enabled: boolean;
+  fixed_rate?: number;
 }
 
 export interface ValidationErrors {
@@ -50,4 +55,6 @@ export interface ValidationErrors {
   distance_manual?: string;
   budget_amount?: string;
   load_type_id?: string;
+  bid_enabled?: boolean;
+  fixed_rate?: number;
 }
