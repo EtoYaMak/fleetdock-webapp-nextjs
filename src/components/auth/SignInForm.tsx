@@ -37,14 +37,14 @@ export default function SignInForm() {
 
     try {
       const { role } = await signIn(formData.email, formData.password);
-      
+
       setTimeout(() => {
-        if (role === 'trucker') {
-          router.push('/dashboard/trucker');
-        } else if (role === 'broker') {
-          router.push('/dashboard/broker');
+        if (role === "trucker") {
+          router.push("/dashboard/trucker");
+        } else if (role === "broker") {
+          router.push("/dashboard/broker");
         } else {
-          router.push('/dashboard');
+          router.push("/dashboard");
         }
         router.refresh();
       }, 100);
@@ -56,21 +56,22 @@ export default function SignInForm() {
   };
 
   return (
-    <div className="min-h-screen w-full min-w-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center p-4">
+    <div className="min-h-screen w-full min-w-full bg-gradient-to-b to-[#283d67] from-[#203152] flex items-center justify-center p-4">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="bg-white rounded-2xl shadow-xl w-full max-w-md p-8"
+        className="bg-[#4895d0]/10 backdrop-blur-sm rounded-2xl p-8 
+        text-[#f1f0f3] border-2 border-[#f1f0f3]/20 hover:border-[#f1f0f3]/40 transition-all w-full max-w-md"
       >
         <div className="text-center mb-8">
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-3xl font-bold text-gray-900"
+            className="text-3xl font-bold text-[#f1f0f3]"
           >
             Welcome Back
           </motion.h1>
-          <p className="text-gray-600 mt-2">Sign in to your account</p>
+          <p className="text-[#f1f0f3] mt-2">Sign in to your account</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -86,7 +87,7 @@ export default function SignInForm() {
                   <FiMail className="text-gray-400" />
                   <label
                     htmlFor="email"
-                    className="text-sm font-medium text-gray-700"
+                    className="text-sm font-medium text-[#f1f0f3]"
                   >
                     Email
                   </label>
@@ -98,7 +99,7 @@ export default function SignInForm() {
                   placeholder="Enter your email"
                   value={formData.email}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="bg-[#203152] w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   required
                   disabled={isLoading}
                 />
@@ -109,7 +110,7 @@ export default function SignInForm() {
                   <FiLock className="text-gray-400" />
                   <label
                     htmlFor="password"
-                    className="text-sm font-medium text-gray-700"
+                    className="text-sm font-medium text-[#f1f0f3]"
                   >
                     Password
                   </label>
@@ -121,7 +122,7 @@ export default function SignInForm() {
                   placeholder="Enter your password"
                   value={formData.password}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="bg-[#203152] w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   required
                   disabled={isLoading}
                 />
@@ -142,7 +143,7 @@ export default function SignInForm() {
           <div className="flex items-center justify-between">
             <a
               href="/forgot-password"
-              className="text-sm text-blue-600 hover:text-blue-500"
+              className="text-sm text-[#f1f0f3]/90 hover:text-white"
             >
               Forgot password?
             </a>
@@ -152,15 +153,18 @@ export default function SignInForm() {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             type="submit"
-            className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full px-6 py-3 bg-[#203152]/80 text-[#f1f0f3]/90 hover:text-white rounded-lg hover:bg-[#203152] focus:outline-none focus:ring-2 focus:ring-[#4895d0]/100 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={isLoading}
           >
             {isLoading ? "Signing in..." : "Sign In"}
           </motion.button>
 
-          <div className="text-center text-sm text-gray-600">
+          <div className="text-center text-sm text-[#f1f0f3]">
             Don&apos;t have an account?{" "}
-            <a href="/signup" className="text-blue-600 hover:text-blue-500">
+            <a
+              href="/signup"
+              className="text-[#f1f0f3]/90 font-bold hover:text-white"
+            >
               Sign up
             </a>
           </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, memo } from "react";
 import { FiEdit2, FiTrash2, FiEye, FiAlertCircle } from "react-icons/fi";
 import { Load } from "@/types/load";
 
@@ -12,7 +12,7 @@ interface LoadsTableProps {
   onView: (loadId: string) => void;
 }
 
-export default function LoadsTable({
+const LoadsTable = memo(function LoadsTable({
   loads,
   loadTypes,
   onEdit,
@@ -163,4 +163,6 @@ export default function LoadsTable({
       </div>
     </>
   );
-}
+});
+
+export default LoadsTable;

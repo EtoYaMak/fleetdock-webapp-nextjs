@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { memo, useCallback, useState, useEffect } from "react";
 import { Bid, BidStatus } from "@/types/bids";
 import { FiCheck, FiX, FiUser } from "react-icons/fi";
 import { Profile } from "@/types/profile";
@@ -12,37 +12,37 @@ interface BidsListProps {
   onUpdateBidStatus: (bidId: string, status: BidStatus) => Promise<void>;
 }
 
-export default function BidsList({ bids, onUpdateBidStatus }: BidsListProps) {
+const BidsList = memo(function BidsList({ bids, onUpdateBidStatus }: BidsListProps) {
   const [bidsWithProfiles, setBidsWithProfiles] = useState<BidWithTrucker[]>(
     []
   );
   const [updating, setUpdating] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchTruckerProfiles = async () => {
-      const updatedBids = await Promise.all(
-        bids.map(async (bid) => {
-          try {
-            const response = await fetch(`/api/profiles/${bid.trucker_id}`);
-            const data = await response.json();
-            return {
-              ...bid,
-              trucker_profile: data.profile,
-            };
-          } catch (error) {
-            console.error(
-              `Error fetching profile for trucker ${bid.trucker_id}:`,
-              error
-            );
-            return bid;
-          }
-        })
-      );
-      setBidsWithProfiles(updatedBids);
-    };
-
-    fetchTruckerProfiles();
+  const fetchTruckerProfiles = useCallback(async () => {
+    const updatedBids = await Promise.all(
+      bids.map(async (bid) => {
+        try {
+          const response = await fetch(`/api/profiles/${bid.trucker_id}`);
+          const data = await response.json();
+          return {
+            ...bid,
+            trucker_profile: data.profile,
+          };
+        } catch (error) {
+          console.error(
+            `Error fetching profile for trucker ${bid.trucker_id}:`,
+            error
+          );
+          return bid;
+        }
+      })
+    );
+    setBidsWithProfiles(updatedBids);
   }, [bids]);
+
+  useEffect(() => {
+    fetchTruckerProfiles();
+  }, [fetchTruckerProfiles]);
 
   const handleStatusUpdate = async (bidId: string, status: BidStatus) => {
     setUpdating(bidId);
@@ -145,4 +145,6 @@ export default function BidsList({ bids, onUpdateBidStatus }: BidsListProps) {
       </table>
     </div>
   );
-}
+});
+
+export default BidsList;

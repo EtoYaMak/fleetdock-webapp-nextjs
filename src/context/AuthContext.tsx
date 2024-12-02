@@ -173,11 +173,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     try {
-      // First, clear the client-side state
-      setUser(null);
-      setProfile(null);
+      // 1. Set loading state
+      setIsLoading(true);
 
-      // Call the server-side signout endpoint
+      // 2. Call the server-side signout endpoint
       const response = await fetch("/api/auth/signout", {
         method: "POST",
         headers: {
@@ -189,19 +188,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw new Error("Failed to sign out");
       }
 
-      // Then sign out from Supabase client
+      // 3. Sign out from Supabase client
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
 
-      // Wait for a brief moment to ensure all operations are complete
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      // 4. Clear client-side state
+      setUser(null);
+      setProfile(null);
 
-      // Force a router refresh to update the session
+      // 5. Force a router refresh and redirect
       router.refresh();
       router.push("/signin");
     } catch (error) {
       console.error("Sign out error:", error);
       throw error;
+    } finally {
+      setIsLoading(false);
     }
   };
 

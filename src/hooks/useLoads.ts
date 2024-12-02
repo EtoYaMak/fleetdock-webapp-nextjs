@@ -8,7 +8,6 @@ export function useLoads() {
   const [stats, setStats] = useState({
     activeLoads: 0,
     pendingAssignments: 0,
-    inProgressLoads: 0,
     completedLoads: 0,
   });
 
@@ -21,56 +20,44 @@ export function useLoads() {
       if (!response.ok) throw new Error(data.error);
 
       setLoads(data.loads);
-      updateStats(data.loads);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch loads");
+      setStats({
+        activeLoads: data.loads.filter((l: Load) => l.status === 'available').length,
+        pendingAssignments: data.loads.filter((l: Load) => l.status === 'pending').length,
+        completedLoads: data.loads.filter((l: Load) => l.status === 'completed').length,
+      });
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Failed to fetch loads");
     } finally {
       setIsLoading(false);
     }
   }, []);
 
-  const updateStats = (loadData: Load[]) => {
-    setStats({
-      activeLoads: loadData.filter((load) => load.status === "available")
-        .length,
-      pendingAssignments: loadData.filter((load) => load.status === "pending")
-        .length,
-      inProgressLoads: loadData.filter((load) => load.status === "in_progress")
-        .length,
-      completedLoads: loadData.filter((load) => load.status === "completed")
-        .length,
-    });
-  };
-
-  const deleteLoad = async (loadId: string) => {
-    try {
-      const response = await fetch(`/api/loads/${loadId}`, {
-        method: "DELETE",
-      });
-      const data = await response.json();
-
-      if (!response.ok) throw new Error(data.error);
-
-      setLoads((prevLoads) => prevLoads.filter((load) => load.id !== loadId));
-      return { success: true };
-    } catch (err) {
-      return {
-        success: false,
-        error: err instanceof Error ? err.message : "Failed to delete load",
-      };
-    }
-  };
+  const refreshLoads = useCallback(() => {
+    fetchLoads();
+  }, [fetchLoads]);
 
   useEffect(() => {
     fetchLoads();
   }, [fetchLoads]);
 
-  return {
-    loads,
-    isLoading,
-    error,
-    stats,
-    refetch: fetchLoads,
-    deleteLoad,
-  };
+  const deleteLoad = useCallback(async (loadId: string) => {
+    try {
+      const response = await fetch(`/api/loads/${loadId}`, {
+        method: 'DELETE',
+      });
+      const data = await response.json();
+
+      if (!response.ok) throw new Error(data.error);
+
+      await fetchLoads(); // Refresh loads after deletion
+      return { success: true };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Failed to delete load",
+      };
+    }
+  }, [fetchLoads]);
+
+  return { loads, isLoading, error, stats, deleteLoad, refreshLoads };
 }

@@ -30,23 +30,19 @@ export default function Navbar() {
   const handleSignOut = async () => {
     try {
       await signOut();
-      setTimeout(() => {
-        router.push('/signin');
-        router.refresh();
-      }, 100);
     } catch (error) {
-      console.error('Sign out error:', error);
+      console.error("Sign out error:", error);
     }
   };
 
   return (
-    <nav className="bg-white shadow-md">
+    <nav className="bg-transparent">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex">
             <Link
               href="/"
-              className="flex items-center px-2 text-gray-900 font-bold text-xl"
+              className="flex items-center px-2 text-[#f1f0f3] font-bold text-xl"
             >
               FleetDock
             </Link>
@@ -54,11 +50,11 @@ export default function Navbar() {
 
           <div className="flex items-center space-x-4">
             {isLoading ? (
-              <div className="animate-pulse h-8 w-20 bg-gray-200 rounded"></div>
+              <div className="animate-pulse h-8 w-20 bg-[#203152] rounded"></div>
             ) : user ? (
               <>
                 {/* Role-specific icon */}
-                <div className="flex items-center text-gray-600">
+                <div className="flex items-center text-[#f1f0f3]">
                   {getRoleIcon()}
                   <span className="ml-2 capitalize">{profile?.role}</span>
                 </div>
@@ -66,8 +62,8 @@ export default function Navbar() {
                 {/* Dashboard Link */}
                 <Link
                   href={getDashboardLink()}
-                  className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium
-                   hover:bg-gray-100  hover:scale-105 transition-all duration-300"
+                  className="text-[#f1f0f3]/80 hover:text-[#f1f0f3] px-3 py-2 rounded-md text-sm font-medium
+                   hover:bg-[#203152]  hover:scale-105 transition-all duration-300"
                 >
                   Dashboard
                 </Link>
@@ -76,14 +72,14 @@ export default function Navbar() {
                 <div className="relative ml-3 flex items-center space-x-4">
                   <Link
                     href={getProfileLink()}
-                    className="flex items-center text-gray-600 hover:text-gray-900 p-2 hover:bg-gray-100 rounded-md group"
+                    className="flex items-center text-[#f1f0f3]/80 hover:text-[#f1f0f3] p-2 hover:bg-[#203152] rounded-md group"
                   >
                     <FiUser className="h-5 w-5 group-hover:scale-110 transition-all duration-300" />
                   </Link>
 
                   <button
                     onClick={handleSignOut}
-                    className="flex items-center text-gray-600 hover:text-gray-900 p-2 hover:bg-gray-100 rounded-md group"
+                    className="flex items-center text-[#f1f0f3]/80 hover:text-[#f1f0f3] p-2 hover:bg-[#203152] rounded-md group"
                   >
                     <FiLogOut className="h-5 w-5 group-hover:scale-110 transition-all duration-300" />
                   </button>
@@ -93,13 +89,13 @@ export default function Navbar() {
               <div className="flex items-center space-x-4">
                 <Link
                   href="/signin"
-                  className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+                  className=" text-[#4895d0]  hover:bg-[#f1f0f3] px-4 py-2 rounded-3xl text-sm font-medium uppercase transition-all duration-300"
                 >
                   Sign In
                 </Link>
                 <Link
                   href="/signup"
-                  className="bg-blue-600 text-white hover:bg-blue-700 px-4 py-2 rounded-md text-sm font-medium"
+                  className="text-[#4895d0]   hover:bg-[#f1f0f3] px-4 py-2 rounded-3xl text-sm font-medium uppercase transition-all duration-300"
                 >
                   Sign Up
                 </Link>

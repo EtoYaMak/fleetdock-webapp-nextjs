@@ -39,45 +39,48 @@ export default function SignUpForm() {
 
   const router = useRouter();
 
-  const stages: FormStage[] = useMemo(() => [
-    {
-      title: "Basic Information",
-      subtitle: "Let's get you started with the essentials",
-      icon: <FiUser className="w-6 h-6" />,
-      validate: (data: FormData) => {
-        if (
-          !data.email ||
-          !data.password ||
-          !data.username ||
-          !data.full_name
-        ) {
-          return "All fields are required";
-        }
-        if (data.username.length < 3) {
-          return "Username must be at least 3 characters";
-        }
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(data.email)) {
-          return "Please enter a valid email";
-        }
-        if (data.password.length < 8) {
-          return "Password must be at least 8 characters";
-        }
-        return true;
+  const stages: FormStage[] = useMemo(
+    () => [
+      {
+        title: "Basic Information",
+        subtitle: "Let's get you started with the essentials",
+        icon: <FiUser className="w-6 h-6" />,
+        validate: (data: FormData) => {
+          if (
+            !data.email ||
+            !data.password ||
+            !data.username ||
+            !data.full_name
+          ) {
+            return "All fields are required";
+          }
+          if (data.username.length < 3) {
+            return "Username must be at least 3 characters";
+          }
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (!emailRegex.test(data.email)) {
+            return "Please enter a valid email";
+          }
+          if (data.password.length < 8) {
+            return "Password must be at least 8 characters";
+          }
+          return true;
+        },
       },
-    },
-    {
-      title: "Contact Details",
-      subtitle: "How can we reach you?",
-      icon: <FiMail className="w-6 h-6" />,
-      validate: (data: FormData) => {
-        if (!data.phone) {
-          return "Phone number is required";
-        }
-        return true;
+      {
+        title: "Contact Details",
+        subtitle: "How can we reach you?",
+        icon: <FiMail className="w-6 h-6" />,
+        validate: (data: FormData) => {
+          if (!data.phone) {
+            return "Phone number is required";
+          }
+          return true;
+        },
       },
-    },
-  ], []);
+    ],
+    []
+  );
 
   const validateCurrentStage = useCallback(() => {
     const result = stages[currentStageIndex].validate(formData);
@@ -159,7 +162,7 @@ export default function SignUpForm() {
 
   if (currentStep === "role-selection") {
     return (
-      <div className="min-h-screen w-full min-w-full bg-gradient-to-br from-blue-500 to-blue-700">
+      <div className="min-h-screen w-full min-w-full bg-gradient-to-b to-[#283d67] from-[#203152]">
         <div className="container mx-auto px-4 py-16">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -175,7 +178,7 @@ export default function SignUpForm() {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => handleRoleSelection("trucker")}
-              className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 text-white border-2 border-white/20 hover:border-white/40 transition-all"
+              className="bg-[#4895d0]/10 backdrop-blur-sm rounded-2xl p-8 text-[#f1f0f3] border-2 border-[#f1f0f3]/20 hover:border-[#f1f0f3]/40 transition-all"
             >
               <FiTruck className="w-12 h-12 mb-4 mx-auto" />
               <h3 className="text-2xl font-bold mb-2">Trucker</h3>
@@ -188,7 +191,7 @@ export default function SignUpForm() {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => handleRoleSelection("broker")}
-              className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 text-white border-2 border-white/20 hover:border-white/40 transition-all"
+              className="bg-[#4895d0]/10 backdrop-blur-sm rounded-2xl p-8 text-[#f1f0f3] border-2 border-[#f1f0f3]/20 hover:border-[#f1f0f3]/40 transition-all"
             >
               <FiPackage className="w-12 h-12 mb-4 mx-auto" />
               <h3 className="text-2xl font-bold mb-2">Broker</h3>
@@ -206,26 +209,28 @@ export default function SignUpForm() {
   const progress = ((currentStageIndex + 1) / stages.length) * 100;
 
   return (
-    <div className="min-h-screen w-full min-w-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center p-4">
+    <div className="min-h-screen w-full min-w-full bg-gradient-to-b to-[#283d67] from-[#203152] flex items-center justify-center p-4">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="bg-white rounded-2xl shadow-xl w-full max-w-md p-8"
+        className="bg-[#4895d0]/10 rounded-2xl shadow-xl w-full max-w-md p-8"
       >
         <div className="mb-8">
-          <div className="h-1 w-full bg-gray-200 rounded-full mb-4">
+          <div className="h-1 w-full bg-[#f1f0f3]/20 rounded-full mb-4">
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${progress}%` }}
-              className="h-full bg-blue-600 rounded-full"
+              className="h-full bg-[#4895d0] rounded-full"
               transition={{ duration: 0.3 }}
             />
           </div>
-          <div className="flex items-center mb-1">
+          <div className="flex items-center mb-1 text-[#f1f0f3]">
             {currentStage.icon}
-            <h2 className="text-2xl font-bold ml-2">{currentStage.title}</h2>
+            <h2 className="text-2xl font-bold ml-2 text-[#f1f0f3]">
+              {currentStage.title}
+            </h2>
           </div>
-          <p className="text-gray-600">{currentStage.subtitle}</p>
+          <p className="text-[#f1f0f3]">{currentStage.subtitle}</p>
         </div>
 
         <AnimatePresence mode="wait">
@@ -307,7 +312,7 @@ export default function SignUpForm() {
           <button
             type="button"
             onClick={handleBack}
-            className="px-6 py-2 text-gray-600 hover:text-gray-800"
+            className="px-6 py-2 text-[#f1f0f3] hover:text-[#f1f0f3]/80"
           >
             Back
           </button>
@@ -315,7 +320,7 @@ export default function SignUpForm() {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={handleNext}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            className="px-6 py-2 bg-[#f1f0f3] text-[#4895d0] rounded-lg hover:bg-white focus:outline-none focus:ring-2 focus:ring-[#4895d0]/100 focus:ring-offset-2"
           >
             {currentStageIndex === stages.length - 1 ? "Complete" : "Next"}
           </motion.button>

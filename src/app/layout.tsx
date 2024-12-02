@@ -4,6 +4,8 @@ import { AuthProvider } from "../context/AuthContext";
 import { RoleProvider } from "../context/RoleContext";
 import Navbar from "@/components/common/Navbar";
 import Footer from "@/components/common/Footer";
+import AuthStateHandler from "@/components/auth/AuthStateHandler";
+import { LoadTypesProvider } from "@/context/LoadTypesContext";
 
 export const metadata = {
   title: "FleetDock",
@@ -17,13 +19,17 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="min-h-screen flex flex-col">
+      <body className="min-h-screen flex flex-col bg-[#203152] ">
         <ThemeProvider>
           <AuthProvider>
             <RoleProvider>
-              <Navbar />
-              <main className="flex-grow">{children}</main>
-              <Footer />
+              <LoadTypesProvider>
+                <AuthStateHandler>
+                  <Navbar />
+                  <main className="flex-grow ">{children}</main>
+                  <Footer />
+                </AuthStateHandler>
+              </LoadTypesProvider>
             </RoleProvider>
           </AuthProvider>
         </ThemeProvider>

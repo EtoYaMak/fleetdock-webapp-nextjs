@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { BrokerBusiness } from "@/types/broker";
 import { motion } from "framer-motion";
 import { FiSave, FiAlertCircle, FiCheckCircle } from "react-icons/fi";
@@ -25,12 +25,16 @@ export default function CompanyManagement({
   onUpdate,
   onRefresh,
 }: CompanyManagementProps) {
-  const [formData, setFormData] = useState<Partial<BrokerBusiness>>(
-    business || {}
-  );
+  const [formData, setFormData] = useState<Partial<BrokerBusiness>>(business || {});
   const [error, setError] = useState(initialError);
   const [isSaving, setIsSaving] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+
+  useEffect(() => {
+    if (business) {
+      setFormData(business); // Update form data when business data changes
+    }
+  }, [business]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

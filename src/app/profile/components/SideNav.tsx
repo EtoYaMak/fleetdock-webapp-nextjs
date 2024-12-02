@@ -62,7 +62,7 @@ const SideNav: React.FC<SideNavProps> = ({ activeTab, setActiveTab }) => {
     <motion.nav
       initial={{ x: -100, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
-      className="w-64 bg-gradient-to-b from-gray-100 to-gray-50 text-black  shadow-xl "
+      className="w-64 bg-gradient-to-b from-[#4895d0]/5 to-[#4895d0]/10 text-[#f1f0f3]  shadow-xl rounded-3xl "
     >
       <div className="mb-8 overflow-hidden">
         <motion.div
@@ -70,9 +70,9 @@ const SideNav: React.FC<SideNavProps> = ({ activeTab, setActiveTab }) => {
           whileHover={{ scale: 1.02 }}
         >
           {profile?.role === "trucker" ? (
-            <RiTruckFill className="w-8 h-8 text-blue-400" />
+            <RiTruckFill className="w-8 h-8 text-[#4895d0]" />
           ) : (
-            <RiMedalFill className="w-8 h-8 text-amber-400" />
+            <RiMedalFill className="w-8 h-8 text-[#4895d0]" />
           )}
           <span className="ml-2 font-semibold capitalize">
             {profile?.role} Profile
@@ -89,8 +89,8 @@ const SideNav: React.FC<SideNavProps> = ({ activeTab, setActiveTab }) => {
               onClick={() => handleItemClick(item.id)}
               className={`w-full flex items-center p-3 rounded-lg transition-colors ${
                 activeTab === item.id
-                  ? "bg-blue-600 text-white"
-                  : "hover:bg-slate-300"
+                  ? "bg-[#4895d0]/80 text-white"
+                  : "hover:bg-[#4895d0]/10"
               }`}
             >
               {item.icon}
@@ -112,8 +112,8 @@ const SideNav: React.FC<SideNavProps> = ({ activeTab, setActiveTab }) => {
                     onClick={() => setActiveTab(subItem.id)}
                     className={`w-full p-2 rounded-md text-sm transition-colors ${
                       activeTab === subItem.id
-                        ? "bg-blue-500/80 text-white font-bold"
-                        : "hover:bg-slate-300 hover:text-black"
+                        ? "bg-[#4895d0]/80 text-white font-bold"
+                        : "hover:bg-[#4895d0]/10 hover:text-[#f1f0f3]"
                     }`}
                   >
                     {subItem.label}

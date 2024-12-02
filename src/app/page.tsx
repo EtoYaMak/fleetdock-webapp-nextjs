@@ -33,21 +33,21 @@ export default function Home() {
 
   // Only show landing page content for non-authenticated users
   return (
-    <main className="bg-gray-50 dark:bg-gray-900 min-h-screen flex items-center justify-center">
+    <main className=" min-h-screen flex items-center justify-center">
       <div className="container mx-auto px-6 text-center">
         {/* Hero Section */}
         <div className="max-w-3xl mx-auto">
-          <h1 className="text-4xl md:text-6xl font-bold text-gray-900 dark:text-white leading-tight">
+          <h1 className="text-4xl md:text-6xl font-bold text-[#f1f0f3] leading-tight">
             Revolutionize Your Logistics
           </h1>
-          <p className="mt-4 text-lg text-gray-700 dark:text-gray-300">
+          <p className="mt-4 text-lg text-[#f1f0f3]">
             Simplify freight management with cutting-edge technology. Whether
             you&apos;re a trucker or a broker, we&apos;ve got you covered.
           </p>
           <div className="mt-6">
             <Link
               href="/signup"
-              className="inline-block px-6 py-3 bg-blue-600 text-white text-lg font-medium rounded-md hover:bg-blue-700"
+              className="inline-block px-6 py-3 bg-[#4895d0] text-[#f1f0f3] text-lg font-medium rounded-3xl hover:bg-[#4895d0]/80"
             >
               Get Started
             </Link>
