@@ -1,7 +1,7 @@
 "use client";
 
-import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 import { useEffect } from "react";
 
 export default function DashboardLayout({
@@ -9,22 +9,27 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { user, isLoading, profile } = useAuth();
+  const { user, loading } = useAuth();
   const router = useRouter();
 
+  // Redirect to signin if not authenticated
   useEffect(() => {
-    if (!isLoading && !user) {
-      router.replace("/signin");
+    if (!loading && !user) {
+      router.push("/signin");
     }
-  }, [isLoading, user, router]);
+  }, [loading, user, router]);
 
-  if (isLoading && user) {
-    return <div className="min-h-screen bg-gray-50">{children}</div>;
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+      </div>
+    );
   }
 
-  if (!user || !profile) {
-    return null;
+  if (!user) {
+    return null; // Prevent further rendering until the redirection is complete
   }
 
-  return <div className="min-h-screen bg-gray-50">{children}</div>;
+  return <>{children}</>;
 }

@@ -1,30 +1,26 @@
-import { useState, useEffect } from "react";
-import { LoadType } from "@/types/load-type";
+import { useState, useEffect } from 'react';
+import supabase from '@/lib/supabase';
+import { LoadType } from '@/types/loads';
 
 export function useLoadTypes() {
-  const [loadTypes, setLoadTypes] = useState<Record<string, string>>({});
+  const [loadTypes, setLoadTypes] = useState<LoadType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchLoadTypes = async () => {
       try {
-        const response = await fetch("/api/load-types");
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.error);
+        setIsLoading(true);
+        const { data, error } = await supabase
+          .from('load_types')
+          .select('*')
+          .order('name');
 
-        const typeMap = data.loadTypes.reduce(
-          (acc: Record<string, string>, type: LoadType) => {
-            acc[type.id] = type.name;
-            return acc;
-          },
-          {}
-        );
-        setLoadTypes(typeMap);
-      } catch (error) {
-        setError(
-          error instanceof Error ? error.message : "Failed to fetch load types"
-        );
+        if (error) throw error;
+
+        setLoadTypes(data || []);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to fetch load types');
       } finally {
         setIsLoading(false);
       }
@@ -34,4 +30,4 @@ export function useLoadTypes() {
   }, []);
 
   return { loadTypes, isLoading, error };
-}
+} 

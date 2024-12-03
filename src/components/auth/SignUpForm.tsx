@@ -4,6 +4,7 @@ import { useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiUser, FiMail, FiTruck, FiPackage } from "react-icons/fi";
+import { useAuth } from "@/context/AuthContext";
 
 type SignUpStep = "role-selection" | "details";
 
@@ -38,7 +39,7 @@ export default function SignUpForm() {
   const [error, setError] = useState<string | null>(null);
 
   const router = useRouter();
-
+  const { signUp } = useAuth();
   const stages: FormStage[] = useMemo(
     () => [
       {
@@ -105,18 +106,7 @@ export default function SignUpForm() {
     setError(null);
 
     try {
-      const response = await fetch("/api/auth/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        setError(data.error || "Something went wrong.");
-        return;
-      }
+      await signUp(formData);
 
       router.push("/signin");
     } catch (error) {

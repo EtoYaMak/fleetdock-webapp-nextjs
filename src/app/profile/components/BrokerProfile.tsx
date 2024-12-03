@@ -1,25 +1,18 @@
 "use client";
-
-import { useAuth } from "@/hooks/useAuth";
-import { useBrokerBusiness } from "@/hooks/useBrokerBusiness";
+//src/app/profile/components/BrokerProfile.tsx
+import { useAuth } from "@/context/AuthContext";
 import { FaUser, FaPhone, FaEnvelope, FaBuilding } from "react-icons/fa";
 import CompanyManagement from "./broker/CompanyManagement";
-import { useEffect } from "react";
+import { useProfile } from "@/hooks/useProfile";
+import { BrokerProfileData } from "@/types/profile";
 
-interface BrokerProfileProps {
+interface BrokerProfileProps extends BrokerProfileData {
   activeTab: string;
 }
 
-const BrokerProfile = ({ activeTab }: BrokerProfileProps) => {
-  const { profile } = useAuth();
-  const { business, isLoading, error, updateBusiness, refetch } =
-    useBrokerBusiness();
-
-  useEffect(() => {
-    if (!business && !isLoading) {
-      refetch(); // Fetch business data if not already loaded
-    }
-  }, [business, isLoading, refetch]);
+const BrokerProfile = ({ activeTab, isLoading, error }: BrokerProfileProps) => {
+  const { user } = useAuth();
+  const { brokerProfile, updateBrokerBusiness } = useProfile();
 
   const renderBrokerContent = () => {
     switch (activeTab) {
@@ -31,7 +24,7 @@ const BrokerProfile = ({ activeTab }: BrokerProfileProps) => {
                 <FaUser className="w-12 h-12 text-[#4895d0]" />
               </div>
               <h1 className="text-2xl font-bold text-[#f1f0f3]">
-                {profile?.full_name}
+                {user?.full_name}
               </h1>
               <p className="text-[#f1f0f3]">Broker</p>
             </div>
@@ -48,7 +41,7 @@ const BrokerProfile = ({ activeTab }: BrokerProfileProps) => {
                     <div>
                       <p className="text-sm text-[#f1f0f3]">Email</p>
                       <p className="font-medium text-[#f1f0f3]">
-                        {profile?.email}
+                        {user?.email}
                       </p>
                     </div>
                   </div>
@@ -57,7 +50,7 @@ const BrokerProfile = ({ activeTab }: BrokerProfileProps) => {
                     <div>
                       <p className="text-sm text-[#f1f0f3]">Phone</p>
                       <p className="font-medium text-[#f1f0f3]">
-                        {profile?.phone}
+                        {user?.phone}
                       </p>
                     </div>
                   </div>
@@ -73,19 +66,19 @@ const BrokerProfile = ({ activeTab }: BrokerProfileProps) => {
                   <div>
                     <p className="text-sm text-[#f1f0f3]">Account Status</p>
                     <p className="font-medium capitalize text-[#f1f0f3]">
-                      {profile?.is_active ? "Active" : "Inactive"}
+                      {user?.is_active ? "Active" : "Inactive"}
                     </p>
                   </div>
                   <div>
                     <p className="text-sm text-[#f1f0f3]">Role</p>
                     <p className="font-medium capitalize text-[#f1f0f3]">
-                      {profile?.role}
+                      {user?.role}
                     </p>
                   </div>
                 </div>
               </div>
 
-              {/* Company Information Card - Broker Specific */}
+              {/* Company Information Card - Updated for BrokerProfile */}
               <div className="bg-[#4895d0]/10 rounded-lg shadow p-6 md:col-span-2">
                 <h2 className="text-xl font-semibold mb-4 text-[#f1f0f3]">
                   Company Information
@@ -95,13 +88,12 @@ const BrokerProfile = ({ activeTab }: BrokerProfileProps) => {
                     <div className="flex items-center space-x-3">
                       <FaBuilding className="text-[#f1f0f3]" />
                       <div>
-                        <p className="text-sm text-[#f1f0f3]">Company Name</p>
+                        <p className="text-sm text-[#f1f0f3]">Business Type</p>
                         <p className="font-medium text-[#f1f0f3]">
-                          {profile?.company_name || "Not provided"}
+                          {brokerProfile?.business_type || "Not provided"}
                         </p>
                       </div>
                     </div>
-                    {/* Add more company-specific fields here */}
                   </div>
                 </div>
               </div>
@@ -111,12 +103,10 @@ const BrokerProfile = ({ activeTab }: BrokerProfileProps) => {
       case "company":
         return (
           <CompanyManagement
-            business={business}
-            profile={profile}
+            business={brokerProfile}
             isLoading={isLoading}
-            error={error || undefined}
-            onUpdate={updateBusiness}
-            onRefresh={refetch}
+            error={error}
+            onUpdate={updateBrokerBusiness}
           />
         );
       case "licenses":
@@ -140,3 +130,11 @@ const BrokerProfile = ({ activeTab }: BrokerProfileProps) => {
 };
 
 export default BrokerProfile;
+{
+  /* <CompanyManagement
+            business={brokerProfile}
+            isLoading={isLoading}
+            error={error}
+            onUpdate={updateBrokerBusiness}
+          /> */
+}

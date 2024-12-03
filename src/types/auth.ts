@@ -1,39 +1,30 @@
-import type { User } from "@supabase/supabase-js";
+import { supabase } from "@/lib/supabase";
 
-interface VehicleDetails {
-  make?: string;
-  model?: string;
-  year?: number;
-  plateNumber?: string;
-  capacity?: number;
-  // Add other vehicle-specific fields as needed
-}
-
-interface BrokerDetails {
-  license?: string;
-  insuranceNumber?: string;
-  companyRegistration?: string;
-  // Add other broker-specific fields as needed
-}
-
-export interface UserProfile {
+interface User {
   id: string;
-  updated_at: string | null;
-  created_at: string | null;
-  username: string | null;
-  full_name: string | null;
   email: string;
   role: string;
+  full_name: string;
   phone: string;
-  address: string | null;
-  company_name: string | null;
-  vehicle_details: VehicleDetails | null;
-  broker_details: BrokerDetails | null;
-  profile_picture: string | null;
-  is_active: boolean | null;
+  is_active: boolean;
+  company_name: string;
 }
 
-export interface SignUpData {
+export interface UseContextType {
+  user: User | null;
+  loading: boolean;
+  error: any;
+  signIn: (data: SignInType) => Promise<void>;
+  signOut: () => Promise<void>;
+  signUp: (data: SignUpType) => Promise<void>;
+}
+
+export interface SignInType {
+  email: string;
+  password: string;
+}
+
+export interface SignUpType {
   email: string;
   password: string;
   username: string;
@@ -41,24 +32,3 @@ export interface SignUpData {
   role: string;
   phone: string;
 }
-
-export interface AuthContextType {
-  user: User | null;
-  profile: UserProfile | null;
-  isLoading: boolean;
-  signIn: (email: string, password: string) => Promise<{ role: string }>;
-  signUp: (data: SignUpData) => Promise<void>;
-  signOut: () => Promise<void>;
-  refreshProfile: () => Promise<void>;
-}
-
-export type UserRole = "trucker" | "broker" | "admin";
-
-export type RoleContextType = {
-  role: UserRole | null;
-  isRoleLoading: boolean;
-  setUserRole: (role: UserRole) => void;
-  isTrucker: boolean;
-  isBroker: boolean;
-  checkRole: (allowedRoles: UserRole[]) => boolean;
-};

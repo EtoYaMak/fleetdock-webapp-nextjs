@@ -1,53 +1,49 @@
 "use client";
-
+//src/app/profile/components/broker/CompanyManagement.tsx
 import { useState, useEffect } from "react";
-import { BrokerBusiness } from "@/types/broker";
 import { motion } from "framer-motion";
 import { FiSave, FiAlertCircle, FiCheckCircle } from "react-icons/fi";
-import { UserProfile } from "@/types/auth";
-
-interface CompanyManagementProps {
-  business: BrokerBusiness | null;
-  profile: UserProfile | null;
-  isLoading: boolean;
-  error?: string;
-  onUpdate: (
-    data: Partial<BrokerBusiness>
-  ) => Promise<{ success: boolean; error?: string }>;
-  onRefresh: () => Promise<void>;
-}
-
+import { BrokerProfile } from "@/types/profile";
+import { useAuth } from "@/context/AuthContext";
 export default function CompanyManagement({
   business,
-  profile,
   isLoading,
   error: initialError,
   onUpdate,
-  onRefresh,
-}: CompanyManagementProps) {
-  const [formData, setFormData] = useState<Partial<BrokerBusiness>>(business || {});
+}: {
+  business: BrokerProfile | null;
+  isLoading: boolean;
+  error: string | null | undefined;
+  onUpdate: (data: Partial<BrokerProfile>) => Promise<{
+    success: boolean;
+    error?: string;
+  }>;
+}) {
+  const { user } = useAuth();
+
+  const [formData, setFormData] = useState<Partial<BrokerProfile>>(
+    business || {}
+  );
   const [error, setError] = useState(initialError);
   const [isSaving, setIsSaving] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-
   useEffect(() => {
-    if (business) {
-      setFormData(business); // Update form data when business data changes
+    if (business && JSON.stringify(formData) !== JSON.stringify(business)) {
+      setFormData(business);
     }
   }, [business]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
-    setError(undefined);
+    setError(null);
     setShowSuccess(false);
 
     const result = await onUpdate(formData);
     if (!result.success) {
-      setError(result.error);
+      setError(result.error || null);
     } else {
       setShowSuccess(true);
-      await onRefresh(); // Refresh data after successful update
       setTimeout(() => setShowSuccess(false), 3000);
     }
     setIsSaving(false);
@@ -64,9 +60,11 @@ export default function CompanyManagement({
   return (
     <div className="max-w-4xl mx-auto p-6">
       <div className="flex flex-col items-start justify-between  mb-6">
-        <h2 className="text-2xl font-bold ">Company Management</h2>
-        <h2 className="text-lg font-medium">
-          {profile?.company_name || "Company Name"}
+        <h2 className="text-2xl font-bold text-[#f1f0f3]">
+          Company Management
+        </h2>
+        <h2 className="text-lg font-medium text-[#f1f0f3]">
+          {user?.company_name || "Company Name"}
         </h2>
         {showSuccess && (
           <div className="flex items-center text-green-600">
@@ -86,7 +84,7 @@ export default function CompanyManagement({
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-[#f1f0f3] mb-1">
               Business License Number*
             </label>
             <input
@@ -99,12 +97,12 @@ export default function CompanyManagement({
                   business_license_number: e.target.value,
                 })
               }
-              className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+              className="bg-[#4895d0]/10 text-[#f1f0f3] w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-[#f1f0f3] mb-1">
               License Expiry Date*
             </label>
             <input
@@ -117,12 +115,12 @@ export default function CompanyManagement({
                   business_license_expiry: e.target.value,
                 })
               }
-              className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+              className="bg-[#4895d0]/10 text-[#f1f0f3] w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-[#f1f0f3] mb-1">
               Tax ID
             </label>
             <input
@@ -131,12 +129,12 @@ export default function CompanyManagement({
               onChange={(e) =>
                 setFormData({ ...formData, tax_id: e.target.value })
               }
-              className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+              className="bg-[#4895d0]/10 text-[#f1f0f3] w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-[#f1f0f3] mb-1">
               Business Type
             </label>
             <select
@@ -144,7 +142,7 @@ export default function CompanyManagement({
               onChange={(e) =>
                 setFormData({ ...formData, business_type: e.target.value })
               }
-              className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+              className="bg-[#4895d0]/10 text-[#f1f0f3] w-full p-2 border border-[#4895d0]/10 rounded-md focus:ring-blue-500 focus:border-blue-500 "
             >
               <option value="">Select Type</option>
               <option value="llc">LLC</option>
@@ -155,7 +153,7 @@ export default function CompanyManagement({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-[#f1f0f3] mb-1">
               Year Established
             </label>
             <input
@@ -169,12 +167,12 @@ export default function CompanyManagement({
                   year_established: parseInt(e.target.value),
                 })
               }
-              className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+              className="bg-[#4895d0]/10 text-[#f1f0f3] w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-[#f1f0f3] mb-1">
               Insurance Policy Number
             </label>
             <input
@@ -186,12 +184,12 @@ export default function CompanyManagement({
                   insurance_policy_number: e.target.value,
                 })
               }
-              className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+              className="bg-[#4895d0]/10 text-[#f1f0f3] w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-[#f1f0f3] mb-1">
               Insurance Expiry Date
             </label>
             <input
@@ -200,20 +198,20 @@ export default function CompanyManagement({
               onChange={(e) =>
                 setFormData({ ...formData, insurance_expiry: e.target.value })
               }
-              className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+              className="bg-[#4895d0]/10 text-[#f1f0f3] w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
         </div>
 
-        <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-          <p className="text-sm text-gray-600">
+        <div className="mt-6 p-4 bg-[#4895d0]/10 rounded-lg">
+          <p className="text-sm text-[#f1f0f3]">
             Verification Status:{" "}
             <span className="font-medium capitalize">
               {formData.verification_status || "pending"}
             </span>
           </p>
           {formData.verification_date && (
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-[#f1f0f3]">
               Last Verified:{" "}
               {new Date(formData.verification_date).toLocaleDateString()}
             </p>

@@ -1,7 +1,7 @@
 "use client";
-
+//src/app/profile/components/SideNav.tsx
 import React, { useState } from "react";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/context/AuthContext";
 import { motion } from "framer-motion";
 import { FiUser, FiTruck, FiPackage } from "react-icons/fi";
 import { RiTruckFill, RiMedalFill } from "react-icons/ri";
@@ -20,7 +20,7 @@ interface SideNavProps {
 
 const SideNav: React.FC<SideNavProps> = ({ activeTab, setActiveTab }) => {
   const [expandedItem, setExpandedItem] = useState<string | null>(null);
-  const { profile } = useAuth();
+  const { user } = useAuth();
 
   const truckerNavItems: NavItem[] = [
     {
@@ -50,8 +50,7 @@ const SideNav: React.FC<SideNavProps> = ({ activeTab, setActiveTab }) => {
     },
   ];
 
-  const navItems =
-    profile?.role === "trucker" ? truckerNavItems : brokerNavItems;
+  const navItems = user?.role === "trucker" ? truckerNavItems : brokerNavItems;
 
   const handleItemClick = (itemId: string) => {
     setActiveTab(itemId);
@@ -69,13 +68,13 @@ const SideNav: React.FC<SideNavProps> = ({ activeTab, setActiveTab }) => {
           className="flex items-center justify-center p-4 bg-transparent rounded-lg"
           whileHover={{ scale: 1.02 }}
         >
-          {profile?.role === "trucker" ? (
+          {user?.role === "trucker" ? (
             <RiTruckFill className="w-8 h-8 text-[#4895d0]" />
           ) : (
             <RiMedalFill className="w-8 h-8 text-[#4895d0]" />
           )}
           <span className="ml-2 font-semibold capitalize">
-            {profile?.role} Profile
+            {user?.role} Profile
           </span>
         </motion.div>
       </div>

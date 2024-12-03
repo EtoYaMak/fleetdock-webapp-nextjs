@@ -3,7 +3,7 @@
 import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiMail, FiLock } from "react-icons/fi";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 
 interface FormData {
@@ -12,8 +12,8 @@ interface FormData {
 }
 
 export default function SignInForm() {
+  const { signIn, loading, user } = useAuth();
   const router = useRouter();
-  const { signIn } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState<FormData>({
@@ -36,18 +36,8 @@ export default function SignInForm() {
     setError(null);
 
     try {
-      const { role } = await signIn(formData.email, formData.password);
-
-      setTimeout(() => {
-        if (role === "trucker") {
-          router.push("/dashboard/trucker");
-        } else if (role === "broker") {
-          router.push("/dashboard/broker");
-        } else {
-          router.push("/dashboard");
-        }
-        router.refresh();
-      }, 100);
+      await signIn(formData);
+      router.push(`/profile`);
     } catch (error) {
       setError(error instanceof Error ? error.message : "Failed to sign in");
     } finally {

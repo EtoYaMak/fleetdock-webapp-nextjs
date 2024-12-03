@@ -1,63 +1,90 @@
 import { useState, useEffect, useCallback } from "react";
-import { Load } from "@/types/load";
+import { Load, LoadType } from "@/types/loads";
+import supabase from "@/lib/supabase";
 
 export function useLoads() {
   const [loads, setLoads] = useState<Load[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [loadTypes, setLoadTypes] = useState<Record<string, LoadType>>({});
   const [stats, setStats] = useState({
     activeLoads: 0,
     pendingAssignments: 0,
+    inProgressLoads: 0,
     completedLoads: 0,
   });
 
   const fetchLoads = useCallback(async () => {
     try {
       setIsLoading(true);
-      const response = await fetch("/api/loads");
-      const data = await response.json();
 
-      if (!response.ok) throw new Error(data.error);
+      // Fetch loads with load type information using a join
+      const { data, error: loadError } = await supabase.from("loads").select(`
+          *,
+          load_types (
+            name,
+            id
+          )
+        `);
 
-      setLoads(data.loads);
-      setStats({
-        activeLoads: data.loads.filter((l: Load) => l.status === 'available').length,
-        pendingAssignments: data.loads.filter((l: Load) => l.status === 'pending').length,
-        completedLoads: data.loads.filter((l: Load) => l.status === 'completed').length,
-      });
-    } catch (error) {
-      setError(error instanceof Error ? error.message : "Failed to fetch loads");
+      if (loadError) throw loadError;
+
+      // Transform the data to merge load_type name into each load
+      const transformedLoads = (data || []).map((load) => ({
+        ...load,
+        load_type_name: load.load_types?.name,
+        // Remove the nested load_types object if you don't need it
+        load_types: undefined,
+      }));
+
+      setLoads(transformedLoads);
+      updateStats(transformedLoads);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to fetch loads");
     } finally {
       setIsLoading(false);
     }
   }, []);
 
-  const refreshLoads = useCallback(() => {
-    fetchLoads();
-  }, [fetchLoads]);
+  const updateStats = (loadData: Load[]) => {
+    setStats({
+      activeLoads: loadData.filter((load) => load.status === "available")
+        .length,
+      pendingAssignments: loadData.filter(
+        (load) => load.status === "pending" || load.status === "posted"
+      ).length,
+      inProgressLoads: loadData.filter((load) => load.status === "in_progress")
+        .length,
+      completedLoads: loadData.filter((load) => load.status === "completed")
+        .length,
+    });
+  };
+
+  const deleteLoad = async (loadId: string) => {
+    try {
+      await supabase.from("loads").delete().eq("id", loadId);
+
+      setLoads((prevLoads) => prevLoads.filter((load) => load.id !== loadId));
+      return { success: true };
+    } catch (err) {
+      return {
+        success: false,
+        error: err instanceof Error ? err.message : "Failed to delete load",
+      };
+    }
+  };
 
   useEffect(() => {
     fetchLoads();
   }, [fetchLoads]);
 
-  const deleteLoad = useCallback(async (loadId: string) => {
-    try {
-      const response = await fetch(`/api/loads/${loadId}`, {
-        method: 'DELETE',
-      });
-      const data = await response.json();
-
-      if (!response.ok) throw new Error(data.error);
-
-      await fetchLoads(); // Refresh loads after deletion
-      return { success: true };
-    } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : "Failed to delete load",
-      };
-    }
-  }, [fetchLoads]);
-
-  return { loads, isLoading, error, stats, deleteLoad, refreshLoads };
+  return {
+    loads,
+    isLoading,
+    error,
+    stats,
+    refetch: fetchLoads,
+    loadTypes,
+    deleteLoad,
+  };
 }

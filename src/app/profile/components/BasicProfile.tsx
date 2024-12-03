@@ -1,14 +1,14 @@
 "use client";
 
 import React from "react";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/context/AuthContext";
 import BrokerProfile from "./BrokerProfile";
 import TruckerProfile from "./TruckerProfile";
 
 const BasicProfile = () => {
-  const { profile } = useAuth();
+  const { user, loading: isLoading, error } = useAuth();
 
-  if (!profile) {
+  if (!user) {
     return (
       <div className="flex justify-center items-center h-64">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
@@ -18,9 +18,13 @@ const BasicProfile = () => {
 
   return (
     <div className="basic-profile">
-      {profile.role === "broker" ? (
-        <BrokerProfile activeTab="profile" />
-      ) : profile.role === "trucker" ? (
+      {user.role === "broker" ? (
+        <BrokerProfile
+          activeTab="profile"
+          isLoading={isLoading}
+          error={error}
+        />
+      ) : user.role === "trucker" ? (
         <TruckerProfile activeTab="profile" />
       ) : (
         <div className="text-center text-gray-600">Invalid user role</div>

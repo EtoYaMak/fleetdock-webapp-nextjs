@@ -3,21 +3,7 @@
 import { motion } from "framer-motion";
 import { FiEdit2, FiTrash2, FiTruck, FiPlus } from "react-icons/fi";
 import Link from "next/link";
-
-interface Vehicle {
-  id: string;
-  profile_id: string;
-  vehicle_type_id: string;
-  manufacturer: string;
-  model: string;
-  year: number;
-  license_plate: string;
-  insurance_expiry: string;
-  last_maintenance_date: string;
-  next_maintenance_date: string;
-  created_at: string;
-  status: "pending" | "approved" | "rejected";
-}
+import { Vehicle } from "@/types/profile";
 
 interface ViewVehiclesProps {
   vehicles: Vehicle[];

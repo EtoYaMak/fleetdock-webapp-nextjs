@@ -1,70 +1,37 @@
 "use client";
 
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/context/AuthContext";
 import { FaUser, FaPhone, FaEnvelope } from "react-icons/fa";
 import ViewVehicles from "./vehicles/ViewVehicles";
 import RegisterVehicle from "./vehicles/RegisterVehicle";
 import { useState, useEffect } from "react";
-
-interface VehicleType {
-  id: string;
-  name: string;
-  capacity: string;
-}
-
-interface Vehicle {
-  id: string;
-  profile_id: string;
-  vehicle_type_id: string;
-  manufacturer: string;
-  model: string;
-  year: number;
-  license_plate: string;
-  insurance_expiry: string;
-  last_maintenance_date: string;
-  next_maintenance_date: string;
-  created_at: string;
-  status: "pending" | "approved" | "rejected";
-}
-
+import { Vehicle, VehicleType } from "@/types/profile";
+import { useProfile } from "@/hooks/useProfile";
 interface TruckerProfileProps {
   activeTab: string;
 }
 
 const TruckerProfile = ({ activeTab }: TruckerProfileProps) => {
-  const { profile } = useAuth();
+  const { user } = useAuth();
+  const { fetchVehicles, fetchVehicleTypes } = useProfile();
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [vehicleTypes, setVehicleTypes] = useState<VehicleType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!profile) {
+      if (!user) {
         setIsLoading(false);
         return;
       }
 
       try {
         const [vehiclesResponse, typesResponse] = await Promise.all([
-          fetch("/api/vehicles"),
-          fetch("/api/vehicle-types"),
+          fetchVehicles(),
+          fetchVehicleTypes(),
         ]);
-
-        const [vehiclesData, typesData] = await Promise.all([
-          vehiclesResponse.json(),
-          typesResponse.json(),
-        ]);
-
-        if (vehiclesData.error) {
-          console.error("Error in vehicles response:", vehiclesData.error);
-          setVehicles([]);
-        } else {
-          setVehicles(vehiclesData.vehicles || []);
-        }
-
-        if (!typesData.error) {
-          setVehicleTypes(typesData || []);
-        }
+        setVehicles(vehiclesResponse?.vehicles || []);
+        setVehicleTypes(typesResponse?.vehicleTypes || []);
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -89,7 +56,7 @@ const TruckerProfile = ({ activeTab }: TruckerProfileProps) => {
                 <FaUser className="w-12 h-12 text-[#4895d0]" />
               </div>
               <h1 className="text-2xl font-bold text-[#f1f0f3]">
-                {profile?.full_name}
+                {user?.full_name}
               </h1>
               <p className="text-[#f1f0f3]">Trucker</p>
             </div>
@@ -105,7 +72,7 @@ const TruckerProfile = ({ activeTab }: TruckerProfileProps) => {
                     <div>
                       <p className="text-sm text-[#f1f0f3]">Email</p>
                       <p className="font-medium text-[#f1f0f3]">
-                        {profile?.email}
+                        {user?.email}
                       </p>
                     </div>
                   </div>
@@ -114,7 +81,7 @@ const TruckerProfile = ({ activeTab }: TruckerProfileProps) => {
                     <div>
                       <p className="text-sm text-[#f1f0f3]">Phone</p>
                       <p className="font-medium text-[#f1f0f3]">
-                        {profile?.phone}
+                        {user?.phone}
                       </p>
                     </div>
                   </div>
@@ -129,13 +96,13 @@ const TruckerProfile = ({ activeTab }: TruckerProfileProps) => {
                   <div>
                     <p className="text-sm text-[#f1f0f3]">Account Status</p>
                     <p className="font-medium capitalize text-[#f1f0f3]">
-                      {profile?.is_active ? "Active" : "Inactive"}
+                      {user?.is_active ? "Active" : "Inactive"}
                     </p>
                   </div>
                   <div>
                     <p className="text-sm text-[#f1f0f3]">Role</p>
                     <p className="font-medium capitalize text-[#f1f0f3]">
-                      {profile?.role}
+                      {user?.role}
                     </p>
                   </div>
                 </div>
