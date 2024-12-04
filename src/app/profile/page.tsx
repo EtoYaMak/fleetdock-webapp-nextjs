@@ -13,7 +13,7 @@ function ProfileContent() {
   const [activeTab, setActiveTab] = useState(
     searchParams.get("tab") || "profile"
   );
-  const { user, loading: authLoading, error: authError } = useAuth();
+  const { user } = useAuth();
   const { isLoading: profileLoading, error: profileError } = useProfile();
 
   // Update URL when tab changes

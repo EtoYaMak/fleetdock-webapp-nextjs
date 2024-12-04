@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, memo } from "react";
-import { FiEdit2, FiTrash2, FiEye, FiAlertCircle } from "react-icons/fi";
+import { FiTrash2, FiEye, FiAlertCircle } from "react-icons/fi";
 import { LoadsTableProps } from "@/types/loads";
 import { useRouter } from "next/navigation";
 const LoadsTable = memo(function LoadsTable({

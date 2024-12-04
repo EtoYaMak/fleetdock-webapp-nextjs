@@ -1,20 +1,31 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Load, LoadType } from "@/types/loads";
 import supabase from "@/lib/supabase";
 
 export function useLoads() {
   const [loads, setLoads] = useState<Load[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [loadTypes, setLoadTypes] = useState<Record<string, LoadType>>({});
   const [stats, setStats] = useState({
     activeLoads: 0,
     pendingAssignments: 0,
-    inProgressLoads: 0,
     completedLoads: 0,
   });
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [loadTypes] = useState<Record<string, LoadType>>({});
+
+  // Use ref to track if the component is mounted
+  const isMounted = useRef(true);
+
+  // Track last fetch time to prevent too frequent updates
+  const lastFetchTime = useRef(0);
+  const FETCH_COOLDOWN = 5000; // 5 seconds
 
   const fetchLoads = useCallback(async () => {
+    const now = Date.now();
+    if (now - lastFetchTime.current < FETCH_COOLDOWN) {
+      return;
+    }
+
     try {
       setIsLoading(true);
 
@@ -37,27 +48,33 @@ export function useLoads() {
         load_types: undefined,
       }));
 
-      setLoads(transformedLoads);
-      updateStats(transformedLoads);
+      if (isMounted.current) {
+        setLoads(transformedLoads);
+        // Update stats based on the loads
+        setStats(calculateStats(transformedLoads));
+        lastFetchTime.current = now;
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch loads");
+      if (isMounted.current) {
+        setError(err instanceof Error ? err.message : "Failed to fetch loads");
+      }
     } finally {
-      setIsLoading(false);
+      if (isMounted.current) {
+        setIsLoading(false);
+      }
     }
   }, []);
 
-  const updateStats = (loadData: Load[]) => {
-    setStats({
+  const calculateStats = (loadData: Load[]) => {
+    return {
       activeLoads: loadData.filter((load) => load.status === "available")
         .length,
       pendingAssignments: loadData.filter(
         (load) => load.status === "pending" || load.status === "posted"
       ).length,
-      inProgressLoads: loadData.filter((load) => load.status === "in_progress")
-        .length,
       completedLoads: loadData.filter((load) => load.status === "completed")
         .length,
-    });
+    };
   };
 
   const deleteLoad = async (loadId: string) => {
@@ -75,14 +92,32 @@ export function useLoads() {
   };
 
   useEffect(() => {
+    isMounted.current = true;
     fetchLoads();
+
+    // Cleanup function
+    return () => {
+      isMounted.current = false;
+    };
+  }, [fetchLoads]);
+
+  // Only re-fetch on window focus if enough time has passed
+  useEffect(() => {
+    const handleFocus = () => {
+      if (Date.now() - lastFetchTime.current >= FETCH_COOLDOWN) {
+        fetchLoads();
+      }
+    };
+
+    window.addEventListener("focus", handleFocus);
+    return () => window.removeEventListener("focus", handleFocus);
   }, [fetchLoads]);
 
   return {
     loads,
+    stats,
     isLoading,
     error,
-    stats,
     refetch: fetchLoads,
     loadTypes,
     deleteLoad,

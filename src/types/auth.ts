@@ -1,5 +1,3 @@
-import { supabase } from "@/lib/supabase";
-
 interface User {
   id: string;
   email: string;
@@ -16,7 +14,7 @@ export interface UseContextType {
   error: any;
   signIn: (data: SignInType) => Promise<void>;
   signOut: () => Promise<void>;
-  signUp: (data: SignUpType) => Promise<void>;
+  signUp: (data: SignUpType) => Promise<{ success: boolean; error?: string; }>;
 }
 
 export interface SignInType {

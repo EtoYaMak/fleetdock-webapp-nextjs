@@ -40,7 +40,7 @@ const TruckerProfile = ({ activeTab }: TruckerProfileProps) => {
     };
 
     fetchData();
-  }, []);
+  }, [user, fetchVehicles, fetchVehicleTypes]);
 
   const handleVehicleUpdate = (updatedVehicles: Vehicle[]) => {
     setVehicles(updatedVehicles);

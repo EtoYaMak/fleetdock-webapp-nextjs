@@ -5,14 +5,12 @@ import { FiEye } from "react-icons/fi";
 
 interface LoadsTableProps {
   loads: Load[];
-  loadTypes: Record<string, string>;
   onView: (loadId: string) => void;
   isLoading: boolean;
 }
 
 export default function LoadsTable({
   loads,
-  loadTypes,
   onView,
   isLoading,
 }: LoadsTableProps) {
@@ -82,7 +80,7 @@ export default function LoadsTable({
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                  <span className="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 uppercase">
                     {load.status}
                   </span>
                 </td>

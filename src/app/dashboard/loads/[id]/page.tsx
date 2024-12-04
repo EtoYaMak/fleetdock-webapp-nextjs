@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo, useCallback } from "react";
 import { Load } from "@/types/loads";
 import { FiArrowLeft, FiEdit2 } from "react-icons/fi";
 import Link from "next/link";
@@ -12,41 +12,46 @@ import { useRouter } from "next/navigation";
 import BidsList from "@/app/dashboard/components/broker/components/BidsList";
 import { useBids } from "@/hooks/useBids";
 
-export default function ViewLoad({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+function ViewLoad({ params }: { params: Promise<{ id: string }> }) {
   const { loads, isLoading, error } = useLoads();
   const [load, setLoad] = useState<Load | null>(null);
   const { user } = useAuth();
   const router = useRouter();
-  const { bids, fetchAllBids, isLoading: bidsLoading, placeBid } = useBids(); //fetch bids count++ if > 0 render BidsList component
-  const [bidsCount, setBidsCount] = useState(0);
+  const { bids, fetchAllBids, isLoading: bidsLoading, placeBid } = useBids();
+  const [, setBidsCount] = useState(0);
   const [amount, setAmount] = useState(0);
-  useEffect(() => {
-    const fetchLoadById = async () => {
-      const { id } = await params;
-      const foundLoad = loads.find((load) => load.id === id);
-      if (foundLoad !== load) {
-        setLoad(foundLoad || null);
-      }
-    };
-    const fetchBidsCount = async () => {
-      const { id } = await params;
-      await fetchAllBids(id);
-      setBidsCount(bids.length);
-    };
-    fetchBidsCount();
-    fetchLoadById();
+  //testing
+  const fetchLoadById = useCallback(async () => {
+    const { id } = await params;
+    const foundLoad = loads.find((load) => load.id === id);
+    if (foundLoad && foundLoad !== load) {
+      setLoad(foundLoad);
+    }
   }, [loads, params, load]);
 
-  const handlePlaceBid = (loadId: string) => {
-    placeBid(loadId, 100);
-  };
-  const handleEdit = (loadId: string) => {
-    router.push(`/dashboard/loads/${loadId}/edit`);
-  };
+  const fetchBidsCount = useCallback(async () => {
+    const { id } = await params;
+    await fetchAllBids(id);
+    setBidsCount(bids.length);
+  }, [params, fetchAllBids, bids.length]);
+
+  useEffect(() => {
+    fetchBidsCount();
+    fetchLoadById();
+  }, [fetchBidsCount, fetchLoadById]);
+
+  const handlePlaceBid = useCallback(
+    (loadId: string) => {
+      placeBid(loadId, 100);
+    },
+    [placeBid]
+  );
+  const handleEdit = useCallback(
+    (loadId: string) => {
+      router.push(`/dashboard/loads/${loadId}/edit`);
+    },
+    [router]
+  );
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -228,3 +233,5 @@ export default function ViewLoad({
     </div>
   );
 }
+
+export default memo(ViewLoad);

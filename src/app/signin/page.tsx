@@ -1,6 +1,32 @@
+"use client";
 import SignInForm from "@/components/auth/SignInForm";
+import { redirect } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function SigninPage() {
+  const { user, loading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (user && !loading) {
+      router.push("/dashboard");
+    }
+  }, [user, loading, router]);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+
+  if (user) {
+    return null;
+  }
+
   return (
     <main className="bg-gray-50 dark:bg-gray-900 min-h-screen flex items-center justify-center">
       <SignInForm />

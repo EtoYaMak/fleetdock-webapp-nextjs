@@ -15,7 +15,7 @@ interface LoadFormProps {
   isSubmitting?: boolean;
 }
 
-export default function LoadForm({
+function LoadForm({
   onSubmit,
   initialData,
   isEdit,
@@ -485,3 +485,5 @@ export default function LoadForm({
     </form>
   );
 }
+
+export default LoadForm;

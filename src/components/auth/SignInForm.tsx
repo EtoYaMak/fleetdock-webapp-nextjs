@@ -12,7 +12,7 @@ interface FormData {
 }
 
 export default function SignInForm() {
-  const { signIn, loading, user } = useAuth();
+  const { signIn } = useAuth();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

@@ -9,21 +9,12 @@ export const UserContext = createContext<UseContextType>({} as UseContextType);
 const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
   const [user, setUser] = useState<UseContextType["user"]>(null);
-  const [loading, setLoading] = useState<UseContextType["loading"]>(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<UseContextType["error"]>(null);
 
   useEffect(() => {
-    setLoading(true);
-    console.log("UserProvider mounted");
-
-    if (user) {
-      setLoading(false);
-      return;
-    }
-
     const getUserProfile = async () => {
-      console.log("Fetching user profile");
-
+      setLoading(true);
       const sessionUser = await supabase.auth.getUser();
       if (sessionUser.data.user) {
         const { data: profile } = await supabase
@@ -31,9 +22,8 @@ const UserProvider = ({ children }: { children: React.ReactNode }) => {
           .select("*")
           .eq("id", sessionUser.data.user.id)
           .single();
-
+        //test
         setUser({ ...sessionUser.data.user, ...profile });
-
         if (profile.role && window.location.pathname === "/") {
           router.push(`/dashboard`);
         }
@@ -48,13 +38,15 @@ const UserProvider = ({ children }: { children: React.ReactNode }) => {
     } = supabase.auth.onAuthStateChange((_, session) => {
       if (session) {
         getUserProfile();
+      } else {
+        setUser(null);
       }
     });
 
     return () => {
       subscription?.unsubscribe();
     };
-  }, [user]);
+  }, []);
 
   const signIn = async (data: SignInType) => {
     try {
@@ -97,15 +89,47 @@ const UserProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const signUp = async (data: SignUpType) => {
-    await supabase.auth.signUp({
-      email: data.email,
-      password: data.password,
-    });
+    try {
+      // Check if email exists
+      const { data: existingUser } = await supabase
+        .from("profiles")
+        .select("email")
+        .eq("email", data.email)
+        .single();
+
+      if (existingUser) {
+        return {
+          success: false,
+          error: "This email is already registered",
+        };
+      }
+
+      // Proceed with signup
+      await supabase.auth.signUp({
+        email: data.email,
+        password: data.password,
+        options: {
+          data: {
+            username: data.username,
+            full_name: data.full_name,
+            role: data.role,
+            phone: data.phone,
+            email: data.email,
+          },
+        },
+      });
+      return { success: true };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Faidled to sign up",
+      };
+    }
   };
 
   return (
     <UserContext.Provider
-      value={{ user, loading, error, signIn, signOut, signUp }}
+      value={{ user, loading, error, signIn, signOut, signUp}}
     >
       {children}
     </UserContext.Provider>

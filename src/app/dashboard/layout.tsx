@@ -12,12 +12,11 @@ export default function DashboardLayout({
   const { user, loading } = useAuth();
   const router = useRouter();
 
-  // Redirect to signin if not authenticated
   useEffect(() => {
     if (!loading && !user) {
       router.push("/signin");
     }
-  }, [loading, user, router]);
+  }, [user, loading, router]);
 
   if (loading) {
     return (
@@ -28,7 +27,7 @@ export default function DashboardLayout({
   }
 
   if (!user) {
-    return null; // Prevent further rendering until the redirection is complete
+    return null;
   }
 
   return <>{children}</>;

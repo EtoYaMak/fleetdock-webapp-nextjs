@@ -13,22 +13,25 @@ export function useBids() {
   const [hasFetched, setHasFetched] = useState(false); // Track if bids have been fetched
 
   //PUBLIC fetch trucker profile via bids.trucker_id
-  const fetchTruckerProfile = useCallback(async (truckerId: string) => {
-    try {
-      if (!truckerId) return;
-      if (hasFetched) return;
-      setIsLoading(true);
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", truckerId);
+  const fetchTruckerProfile = useCallback(
+    async (truckerId: string) => {
+      try {
+        if (!truckerId) return;
+        if (hasFetched) return;
+        setIsLoading(true);
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", truckerId);
 
-      if (error) throw error;
-      return data;
-    } catch (error) {
-      setError(error as string);
-    }
-  }, []);
+        if (error) throw error;
+        return data;
+      } catch (error) {
+        setError(error as string);
+      }
+    },
+    [hasFetched]
+  );
   //PUBLIC all FETCH BIDS
   const fetchAllBids = useCallback(
     async (loadId: string) => {

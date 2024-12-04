@@ -36,7 +36,7 @@ export default function CompanyManagement({
     if (business && JSON.stringify(formData) !== JSON.stringify(business)) {
       setFormData(business);
     }
-  }, [business]);
+  }, [business, formData]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

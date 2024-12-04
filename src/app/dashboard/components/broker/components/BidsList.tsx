@@ -23,7 +23,6 @@ const BidsList = memo(
               .select("*")
               .eq("id", bids[0].trucker_id);
             if (error) throw error;
-            console.log(data);
             setTruckerProfile(data[0]);
           };
           fetchTruckerProfile();
@@ -32,7 +31,7 @@ const BidsList = memo(
           console.error(error);
         }
       }
-    }, [bids]);
+    }, [bids, user?.id, hasFetched]);
 
     //transform the trucker name to intials
     const truckerName = truckerProfile?.full_name
@@ -156,5 +155,5 @@ const BidsList = memo(
     );
   }
 );
-
+BidsList.displayName = "BidsList"; // Add this line before export
 export default BidsList;

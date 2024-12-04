@@ -10,12 +10,6 @@ export default function Dashboard() {
   const { user, loading } = useAuth();
   const router = useRouter();
 
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push("/signin");
-    }
-  }, [user, loading, router]);
-
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -43,7 +37,7 @@ export default function Dashboard() {
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-[#4895d0] py-8 px-4 shadow sm:rounded-lg sm:px-10 text-center">
           <h2 className="text-xl font-medium text-[#f1f0f3] mb-4">
-            Invalid Role
+            Invalid Role!
           </h2>
           <p className="text-[#f1f0f3]">
             Your account doesn't have a valid role assigned.

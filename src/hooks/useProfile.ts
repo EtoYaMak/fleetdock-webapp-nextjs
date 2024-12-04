@@ -13,13 +13,9 @@ export function useProfile() {
   const [brokerProfile, setBrokerProfile] = useState<BrokerProfile | null>(
     null
   );
-  const [companyProfile, setCompanyProfile] = useState<CompanyProfile | null>(
-    null
-  );
-  const [truckerProfile, setTruckerProfile] = useState<TruckerProfile | null>(
-    null
-  );
-  const [vehicleProfile, setVehicleProfile] = useState<Vehicle | null>(null);
+  const [companyProfile] = useState<CompanyProfile | null>(null);
+  const [truckerProfile] = useState<TruckerProfile | null>(null);
+  const [vehicleProfile] = useState<Vehicle | null>(null);
 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -47,7 +43,7 @@ export function useProfile() {
     } finally {
       setIsLoading(false);
     }
-  }, [user?.id]);
+  }, [user?.id, user?.role]);
 
   //Update Broker Profile
   const updateBrokerBusiness = async (businessData: Partial<BrokerProfile>) => {

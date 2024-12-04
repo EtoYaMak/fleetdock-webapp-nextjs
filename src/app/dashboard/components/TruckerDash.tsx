@@ -1,20 +1,20 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { FiAlertCircle } from "react-icons/fi";
 import LoadsTable from "@/app/dashboard/components/trucker/components/LoadsTable";
 import LoadFilters from "@/app/dashboard/components/trucker/components/LoadFilters";
 import { useLoads } from "@/hooks/useLoads";
 import { useAuth } from "@/context/AuthContext";
-import { Load, LoadType } from "@/types/loads";
+import { Load } from "@/types/loads";
 
 export default function TruckerDashboard() {
   const router = useRouter();
   const { user } = useAuth();
   const { loads, isLoading, error } = useLoads();
   const [filteredLoads, setFilteredLoads] = useState<Load[]>([]);
-  const [loadTypes, setLoadTypes] = useState<Record<string, string>>({});
+  const [loadTypes] = useState<Record<string, string>>({});
 
   const handleFilters = (filters: {
     status?: string;
@@ -59,12 +59,7 @@ export default function TruckerDashboard() {
       <div className="min-h-screen bg-[#203152] py-12 px-4 sm:px-6 lg:px-8 text-[#f1f0f3]">
         <LoadFilters onFilterChange={handleFilters} />
         <div className="bg-[#203152] shadow rounded-lg text-[#f1f0f3]">
-          <LoadsTable
-            loads={[]}
-            loadTypes={{}}
-            onView={() => {}}
-            isLoading={isLoading}
-          />
+          <LoadsTable loads={[]} onView={() => {}} isLoading={isLoading} />
         </div>
       </div>
     );
@@ -94,7 +89,6 @@ export default function TruckerDashboard() {
         <div className="bg-[#203152] shadow rounded-lg text-[#f1f0f3]">
           <LoadsTable
             loads={filteredLoads.length > 0 ? filteredLoads : loads}
-            loadTypes={loadTypes}
             onView={handleView}
             isLoading={isLoading}
           />

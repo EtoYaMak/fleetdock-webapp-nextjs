@@ -5,6 +5,7 @@ import { FiPlus } from "react-icons/fi";
 import LoadsTable from "@/app/dashboard/components/broker/components/LoadsTable";
 import { useLoads } from "@/hooks/useLoads";
 import { useAuth } from "@/context/AuthContext";
+import { useCallback } from "react";
 
 export default function BrokerDashboard() {
   const router = useRouter();
@@ -17,19 +18,26 @@ export default function BrokerDashboard() {
     deleteLoad,
   } = useLoads();
 
-  const handleDelete = async (loadId: string) => {
-    await deleteLoad(loadId);
-    if (error) {
-      console.error(error);
-    }
-  };
-  const handleCreate = () => {
-    router.push("/dashboard/loads/create");
-  };
+  const handleDelete = useCallback(
+    async (loadId: string) => {
+      await deleteLoad(loadId);
+      if (error) {
+        console.error(error);
+      }
+    },
+    [deleteLoad, error]
+  );
 
-  const handleView = (loadId: string) => {
-    router.push(`/dashboard/loads/${loadId}`);
-  };
+  const handleCreate = useCallback(() => {
+    router.push("/dashboard/loads/create");
+  }, [router]);
+
+  const handleView = useCallback(
+    (loadId: string) => {
+      router.push(`/dashboard/loads/${loadId}`);
+    },
+    [router]
+  );
 
   if (loadsLoading || authLoading) {
     return (
