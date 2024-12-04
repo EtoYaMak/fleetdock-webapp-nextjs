@@ -39,13 +39,13 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#203152] flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10 text-center">
-          <h2 className="text-xl font-medium text-gray-900 mb-4">
+        <div className="bg-[#4895d0] py-8 px-4 shadow sm:rounded-lg sm:px-10 text-center">
+          <h2 className="text-xl font-medium text-[#f1f0f3] mb-4">
             Invalid Role
           </h2>
-          <p className="text-gray-500">
+          <p className="text-[#f1f0f3]">
             Your account doesn't have a valid role assigned.
           </p>
         </div>

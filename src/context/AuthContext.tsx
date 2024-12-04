@@ -1,7 +1,7 @@
 "use client";
 
 import { supabase } from "@/lib/supabase";
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, memo, useContext, useEffect, useState } from "react";
 import { SignInType, SignUpType, UseContextType } from "@/types/auth";
 import { useRouter } from "next/navigation";
 export const UserContext = createContext<UseContextType>({} as UseContextType);
@@ -14,7 +14,16 @@ const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     setLoading(true);
+    console.log("UserProvider mounted");
+
+    if (user) {
+      setLoading(false);
+      return;
+    }
+
     const getUserProfile = async () => {
+      console.log("Fetching user profile");
+
       const sessionUser = await supabase.auth.getUser();
       if (sessionUser.data.user) {
         const { data: profile } = await supabase
@@ -24,21 +33,28 @@ const UserProvider = ({ children }: { children: React.ReactNode }) => {
           .single();
 
         setUser({ ...sessionUser.data.user, ...profile });
-      }
-    };
-    getUserProfile();
-    supabase.auth.onAuthStateChange(() => {
-      getUserProfile();
-      setLoading(false);
-      setError(null);
-    });
-  }, []);
 
-  useEffect(() => {
-    if (user && user.role && window.location.pathname === "/") {
-      router.push(`/dashboard`);
-    }
-  }, [user, router]);
+        if (profile.role && window.location.pathname === "/") {
+          router.push(`/dashboard`);
+        }
+      }
+      setLoading(false);
+    };
+
+    getUserProfile();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_, session) => {
+      if (session) {
+        getUserProfile();
+      }
+    });
+
+    return () => {
+      subscription?.unsubscribe();
+    };
+  }, [user]);
 
   const signIn = async (data: SignInType) => {
     try {
@@ -98,4 +114,4 @@ const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
 export const useAuth = () => useContext(UserContext);
 
-export default UserProvider;
+export default memo(UserProvider);

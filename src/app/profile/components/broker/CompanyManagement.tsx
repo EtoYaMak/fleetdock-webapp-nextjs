@@ -2,7 +2,12 @@
 //src/app/profile/components/broker/CompanyManagement.tsx
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { FiSave, FiAlertCircle, FiCheckCircle } from "react-icons/fi";
+import {
+  FiSave,
+  FiAlertCircle,
+  FiCheckCircle,
+  FiCalendar,
+} from "react-icons/fi";
 import { BrokerProfile } from "@/types/profile";
 import { useAuth } from "@/context/AuthContext";
 export default function CompanyManagement({
@@ -97,7 +102,7 @@ export default function CompanyManagement({
                   business_license_number: e.target.value,
                 })
               }
-              className="bg-[#4895d0]/10 text-[#f1f0f3] w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+              className="bg-[#4895d0]/10 text-[#f1f0f3] w-full p-2 border border-[#4895d0]/10 rounded-md focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
 
@@ -105,18 +110,24 @@ export default function CompanyManagement({
             <label className="block text-sm font-medium text-[#f1f0f3] mb-1">
               License Expiry Date*
             </label>
-            <input
-              type="date"
-              required
-              value={formData.business_license_expiry?.split("T")[0] || ""}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  business_license_expiry: e.target.value,
-                })
-              }
-              className="bg-[#4895d0]/10 text-[#f1f0f3] w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-            />
+            <div className="relative">
+              <input
+                type="date"
+                required
+                value={formData.business_license_expiry?.split("T")[0] || ""}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    business_license_expiry: e.target.value,
+                  })
+                }
+                className="date-input bg-[#4895d0]/10 text-[#f1f0f3] w-full p-2 border border-[#4895d0]/10 rounded-md focus:ring-blue-500 focus:border-blue-500 appearance-none"
+                style={{ paddingRight: "2.5rem" }}
+              />
+              <span className="absolute right-3 top-3 text-blue-500 cursor-pointer">
+                <FiCalendar size={20} />
+              </span>
+            </div>
           </div>
 
           <div>
@@ -129,7 +140,7 @@ export default function CompanyManagement({
               onChange={(e) =>
                 setFormData({ ...formData, tax_id: e.target.value })
               }
-              className="bg-[#4895d0]/10 text-[#f1f0f3] w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+              className="bg-[#4895d0]/10 text-[#f1f0f3] w-full p-2 border border-[#4895d0]/10 rounded-md focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
 
@@ -142,13 +153,23 @@ export default function CompanyManagement({
               onChange={(e) =>
                 setFormData({ ...formData, business_type: e.target.value })
               }
-              className="bg-[#4895d0]/10 text-[#f1f0f3] w-full p-2 border border-[#4895d0]/10 rounded-md focus:ring-blue-500 focus:border-blue-500 "
+              className=" bg-[#4895d0]/10 border border-[#4895d0]/10 text-[#f1f0f3] text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
             >
-              <option value="">Select Type</option>
-              <option value="llc">LLC</option>
-              <option value="corporation">Corporation</option>
-              <option value="sole_proprietorship">Sole Proprietorship</option>
-              <option value="partnership">Partnership</option>
+              <option value="" className="text-[#000]">
+                Select Type
+              </option>
+              <option value="llc" className="text-black">
+                LLC
+              </option>
+              <option value="corporation" className="text-black">
+                Corporation
+              </option>
+              <option value="sole_proprietorship" className="text-black">
+                Sole Proprietorship
+              </option>
+              <option value="partnership" className="text-black">
+                Partnership
+              </option>
             </select>
           </div>
 
@@ -167,7 +188,7 @@ export default function CompanyManagement({
                   year_established: parseInt(e.target.value),
                 })
               }
-              className="bg-[#4895d0]/10 text-[#f1f0f3] w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+              className="bg-[#4895d0]/10 text-[#f1f0f3] w-full p-2 border border-[#4895d0]/10 rounded-md focus:ring-blue-500 focus:border-blue-500 "
             />
           </div>
 
@@ -184,7 +205,7 @@ export default function CompanyManagement({
                   insurance_policy_number: e.target.value,
                 })
               }
-              className="bg-[#4895d0]/10 text-[#f1f0f3] w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+              className="bg-[#4895d0]/10 text-[#f1f0f3] w-full p-2 border border-[#4895d0]/10 rounded-md focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
 
@@ -192,14 +213,21 @@ export default function CompanyManagement({
             <label className="block text-sm font-medium text-[#f1f0f3] mb-1">
               Insurance Expiry Date
             </label>
-            <input
-              type="date"
-              value={formData.insurance_expiry?.split("T")[0] || ""}
-              onChange={(e) =>
-                setFormData({ ...formData, insurance_expiry: e.target.value })
-              }
-              className="bg-[#4895d0]/10 text-[#f1f0f3] w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-            />
+            <div className="relative">
+              <input
+                type="date"
+                required
+                value={formData.insurance_expiry?.split("T")[0] || ""}
+                onChange={(e) =>
+                  setFormData({ ...formData, insurance_expiry: e.target.value })
+                }
+                className="date-input bg-[#4895d0]/10 text-[#f1f0f3] w-full p-2 border border-[#4895d0]/10 rounded-md focus:ring-blue-500 focus:border-blue-500 appearance-none"
+                style={{ paddingRight: "2.5rem" }}
+              />
+              <span className="absolute right-3 top-3 text-blue-500 cursor-pointer">
+                <FiCalendar size={20} />
+              </span>
+            </div>
           </div>
         </div>
 

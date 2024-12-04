@@ -1,30 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Bid } from "@/types/bids";
 import Link from "next/link";
 import { FiArrowLeft } from "react-icons/fi";
-
+import { Bid } from "@/types/bids";
+import { useBids } from "@/hooks/useBids";
 export default function TruckerBids() {
-  const [bids, setBids] = useState<Bid[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchBids = async () => {
-      try {
-        const response = await fetch("/api/bids/my-bids");
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.error);
-        setBids(data.bids);
-      } catch (error) {
-        console.error("Error fetching bids:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchBids();
-  }, []);
+  const { bids, isLoading } = useBids();
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">

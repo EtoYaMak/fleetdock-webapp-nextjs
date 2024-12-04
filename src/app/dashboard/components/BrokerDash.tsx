@@ -40,21 +40,21 @@ export default function BrokerDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8 w-full">
+    <div className="min-h-screen bg-gradient-to-t to-[#283d67] from-[#203152] py-12 px-4 sm:px-6 lg:px-8 w-full">
       <div className="max-w-7xl mx-auto">
         {/* Header with Create Load Button */}
         <div className="mb-8 flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">
+            <h1 className="text-2xl font-bold text-[#f1f0f3]">
               Load Management
             </h1>
-            <p className="mt-1 text-sm text-gray-500">
+            <p className="mt-1 text-sm text-[#f1f0f3]">
               Manage your posted loads and create new ones
             </p>
           </div>
           <button
             onClick={handleCreate}
-            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
+            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-[#f1f0f3] bg-[#4895d0]/80 hover:bg-[#4895d0] transition-colors duration-200"
           >
             <FiPlus className="-ml-1 mr-2 h-5 w-5" />
             Create New Load
@@ -63,32 +63,32 @@ export default function BrokerDashboard() {
 
         {/* Stats Overview */}
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-3 mb-8">
-          <div className="bg-white overflow-hidden shadow rounded-lg">
+          <div className="bg-gradient-to-r to-[#4895d0]/20 from-[#4895d0]/30 overflow-hidden shadow rounded-lg">
             <div className="px-4 py-5 sm:p-6">
-              <dt className="text-sm font-medium text-gray-500 truncate">
+              <dt className="text-sm font-medium text-[#f1f0f3] truncate">
                 Total Active Loads
               </dt>
-              <dd className="mt-1 text-3xl font-semibold text-gray-900">
+              <dd className="mt-1 text-3xl font-semibold text-[#f1f0f3]">
                 {stats.activeLoads}
               </dd>
             </div>
           </div>
-          <div className="bg-white overflow-hidden shadow rounded-lg">
+          <div className="bg-gradient-to-r to-[#4895d0]/20 from-[#4895d0]/30 overflow-hidden shadow rounded-lg">
             <div className="px-4 py-5 sm:p-6">
-              <dt className="text-sm font-medium text-gray-500 truncate">
+              <dt className="text-sm font-medium text-[#f1f0f3] truncate">
                 Pending Assignments
               </dt>
-              <dd className="mt-1 text-3xl font-semibold text-gray-900">
+              <dd className="mt-1 text-3xl font-semibold text-[#f1f0f3]">
                 {stats.pendingAssignments}
               </dd>
             </div>
           </div>
-          <div className="bg-white overflow-hidden shadow rounded-lg">
+          <div className="bg-gradient-to-r to-[#4895d0]/20 from-[#4895d0]/30 overflow-hidden shadow rounded-lg">
             <div className="px-4 py-5 sm:p-6">
-              <dt className="text-sm font-medium text-gray-500 truncate">
+              <dt className="text-sm font-medium text-[#f1f0f3] truncate">
                 Completed Loads
               </dt>
-              <dd className="mt-1 text-3xl font-semibold text-gray-900">
+              <dd className="mt-1 text-3xl font-semibold text-[#f1f0f3]">
                 {stats.completedLoads}
               </dd>
             </div>
@@ -96,7 +96,7 @@ export default function BrokerDashboard() {
         </div>
 
         {/* Loads Table */}
-        <div className="bg-white shadow rounded-lg">
+        <div className="bg-[#4895d0]/10 shadow rounded-lg">
           <LoadsTable
             loads={loads}
             onDelete={handleDelete}

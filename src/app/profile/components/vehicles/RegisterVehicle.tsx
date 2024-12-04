@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { useAuth } from "@/hooks/useAuth";
 import { FiTruck } from "react-icons/fi";
 
 interface VehicleType {
@@ -108,11 +107,11 @@ const RegisterVehicle = ({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white rounded-lg p-6 shadow-lg max-w-2xl mx-auto"
+      className="bg-gradient-to-t from-[#4895d0]/10 to-[#4895d0]/20 rounded-lg p-6 shadow-lg max-w-2xl mx-auto"
     >
       <div className="flex items-center mb-6">
-        <FiTruck className="w-6 h-6 text-blue-500 mr-2" />
-        <h2 className="text-2xl font-bold text-gray-800">
+        <FiTruck className="w-6 h-6 text-[#f1f0f3] mr-2" />
+        <h2 className="text-2xl font-bold text-[#f1f0f3]">
           Register New Vehicle
         </h2>
       </div>
@@ -134,14 +133,14 @@ const RegisterVehicle = ({
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-[#f1f0f3] mb-2">
               Vehicle Type
             </label>
             <select
               name="vehicle_type_id"
               value={formData.vehicle_type_id}
               onChange={handleChange}
-              className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+              className="w-full p-3 border border-[#f1f0f3] rounded-md focus:ring-2 focus:ring-blue-500 bg-[#203152] text-[#f1f0f3]"
               required
             >
               <option value="">Select Vehicle Type</option>
@@ -154,7 +153,7 @@ const RegisterVehicle = ({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-[#f1f0f3] mb-2">
               License Plate
             </label>
             <input
@@ -162,13 +161,13 @@ const RegisterVehicle = ({
               name="license_plate"
               value={formData.license_plate}
               onChange={handleChange}
-              className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+              className="w-full p-3 border border-[#f1f0f3] rounded-md focus:ring-2 focus:ring-blue-500 bg-[#203152] text-[#f1f0f3]"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-[#f1f0f3] mb-2">
               Manufacturer
             </label>
             <input
@@ -176,13 +175,13 @@ const RegisterVehicle = ({
               name="manufacturer"
               value={formData.manufacturer}
               onChange={handleChange}
-              className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+              className="w-full p-3 border border-[#f1f0f3] rounded-md focus:ring-2 focus:ring-blue-500 bg-[#203152] text-[#f1f0f3]"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-[#f1f0f3] mb-2">
               Model
             </label>
             <input
@@ -190,13 +189,13 @@ const RegisterVehicle = ({
               name="model"
               value={formData.model}
               onChange={handleChange}
-              className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+              className="w-full p-3 border border-[#f1f0f3] rounded-md focus:ring-2 focus:ring-blue-500 bg-[#203152] text-[#f1f0f3]"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-[#f1f0f3] mb-2">
               Year
             </label>
             <input
@@ -206,13 +205,13 @@ const RegisterVehicle = ({
               onChange={handleChange}
               min="1900"
               max={new Date().getFullYear() + 1}
-              className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+              className="w-full p-3 border border-[#f1f0f3] rounded-md focus:ring-2 focus:ring-blue-500 bg-[#203152] text-[#f1f0f3]"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-[#f1f0f3] mb-2">
               Insurance Expiry
             </label>
             <input
@@ -220,13 +219,13 @@ const RegisterVehicle = ({
               name="insurance_expiry"
               value={formData.insurance_expiry}
               onChange={handleChange}
-              className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+              className="w-full p-3 border border-[#f1f0f3] rounded-md focus:ring-2 focus:ring-blue-500 bg-[#203152] text-[#f1f0f3]"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-[#f1f0f3] mb-2">
               Last Maintenance Date
             </label>
             <input
@@ -234,13 +233,13 @@ const RegisterVehicle = ({
               name="last_maintenance_date"
               value={formData.last_maintenance_date}
               onChange={handleChange}
-              className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+              className="w-full p-3 border border-[#f1f0f3] rounded-md focus:ring-2 focus:ring-blue-500 bg-[#203152] text-[#f1f0f3]"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-[#f1f0f3] mb-2">
               Next Maintenance Date
             </label>
             <input
@@ -248,7 +247,7 @@ const RegisterVehicle = ({
               name="next_maintenance_date"
               value={formData.next_maintenance_date}
               onChange={handleChange}
-              className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+              className="w-full p-3 border border-[#f1f0f3] rounded-md focus:ring-2 focus:ring-blue-500 bg-[#203152] text-[#f1f0f3]"
               required
             />
           </div>
@@ -257,11 +256,14 @@ const RegisterVehicle = ({
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
+          transition={{ duration: 0.2 }}
           type="submit"
           disabled={isLoading}
-          className={`w-full p-4 bg-blue-600 text-white rounded-md font-medium 
+          className={`w-full p-4 bg-[#4895d0]/40 text-[#f1f0f3] rounded-md font-medium transition-colors
             ${
-              isLoading ? "opacity-70 cursor-not-allowed" : "hover:bg-blue-700"
+              isLoading
+                ? "opacity-70 cursor-not-allowed"
+                : "hover:bg-[#4895d0]/70"
             }`}
         >
           {isLoading ? (

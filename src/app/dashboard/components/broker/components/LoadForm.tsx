@@ -464,9 +464,10 @@ export default function LoadForm({
       <motion.button
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
+        duration={0.3}
         disabled={isSubmitting}
-        className={`w-full md:w-auto px-6 py-2 bg-blue-600 text-white rounded-md flex items-center justify-center space-x-2 ${
-          isSubmitting ? "opacity-70 cursor-not-allowed" : "hover:bg-blue-700"
+        className={`w-full md:w-auto px-6 py-2 bg-[#2d416d] transition-colors text-[#f1f0f3] rounded-md flex items-center justify-center space-x-2 ${
+          isSubmitting ? "opacity-70 cursor-not-allowed" : "hover:bg-[#4895d0]"
         }`}
       >
         {isSubmitting ? (

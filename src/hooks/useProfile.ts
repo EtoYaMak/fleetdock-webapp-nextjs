@@ -28,14 +28,18 @@ export function useProfile() {
 
     try {
       setIsLoading(true);
-      const { data: brokerData, error: brokerError } = await supabase
-        .from("broker_businesses")
-        .select("*")
-        .eq("profile_id", user.id)
-        .single();
+      if (user?.role === "broker") {
+        const { data: brokerData, error: brokerError } = await supabase
+          .from("broker_businesses")
+          .select("*")
+          .eq("profile_id", user.id)
+          .single();
 
-      if (brokerError) throw brokerError;
-      setBrokerProfile(brokerData);
+        if (brokerError) throw brokerError;
+        setBrokerProfile(brokerData);
+      } else if (user?.role === "trucker") {
+        return;
+      }
     } catch (error) {
       setError(
         error instanceof Error ? error.message : "Failed to fetch profile"

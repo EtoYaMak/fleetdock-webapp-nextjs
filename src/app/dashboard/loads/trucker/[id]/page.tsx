@@ -7,7 +7,8 @@ import { Load } from "@/types/loads";
 import { FiArrowLeft } from "react-icons/fi";
 import Link from "next/link";
 import { useLoads } from "@/hooks/useLoads";
-
+import { useBids } from "@/hooks/useBids";
+  
 export default function ViewLoad({
   params,
 }: {
@@ -15,7 +16,7 @@ export default function ViewLoad({
 }) {
   const { loads, isLoading, error } = useLoads();
   const [load, setLoad] = useState<Load | null>(null);
-
+  const { bids, isLoading: bidsLoading, error: bidsError } = useBids();
   useEffect(() => {
     const fetchLoadById = async () => {
       const { id } = await params;

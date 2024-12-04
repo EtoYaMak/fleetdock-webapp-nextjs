@@ -56,7 +56,7 @@ export default function LoadFilters({ onFilterChange }: LoadFiltersProps) {
       <div className="flex justify-between items-center mb-4">
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          className="inline-flex items-center px-4 py-2 rounded-md shadow-sm text-sm font-medium text-[#f1f0f3] bg-[#4895d0]/80 hover:bg-[#4895d0] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
         >
           <FiFilter className="mr-2 h-4 w-4" />
           Filters
@@ -64,7 +64,7 @@ export default function LoadFilters({ onFilterChange }: LoadFiltersProps) {
         {Object.values(filters).some((value) => value !== "") && (
           <button
             onClick={clearFilters}
-            className="text-sm text-gray-500 hover:text-gray-700 flex items-center"
+            className="text-sm text-[#f1f0f3] hover:text-[#f1f0f3] flex items-center"
           >
             <FiX className="mr-1" /> Clear filters
           </button>
@@ -72,17 +72,15 @@ export default function LoadFilters({ onFilterChange }: LoadFiltersProps) {
       </div>
 
       {isOpen && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div className="bg-[#f1f0f3] rounded-lg shadow-sm border border-[#4895d0]/80 p-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Status
-              </label>
+              <label className="block text-sm font-medium mb-1">Status</label>
               <select
                 name="status"
                 value={filters.status}
                 onChange={handleChange}
-                className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+                className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm h-10"
               >
                 <option value="">All Statuses</option>
                 <option value="posted">Posted</option>
@@ -101,7 +99,7 @@ export default function LoadFilters({ onFilterChange }: LoadFiltersProps) {
                   placeholder="Min"
                   value={filters.minPrice}
                   onChange={handleChange}
-                  className="w-1/2 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+                  className="w-1/2 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm h-10"
                 />
                 <input
                   type="number"
@@ -109,7 +107,7 @@ export default function LoadFilters({ onFilterChange }: LoadFiltersProps) {
                   placeholder="Max"
                   value={filters.maxPrice}
                   onChange={handleChange}
-                  className="w-1/2 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+                  className="w-1/2 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm h-10"
                 />
               </div>
             </div>
@@ -124,7 +122,7 @@ export default function LoadFilters({ onFilterChange }: LoadFiltersProps) {
                 value={filters.pickupLocation}
                 onChange={handleChange}
                 placeholder="Enter city or address"
-                className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+                className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm h-10"
               />
             </div>
 
@@ -138,7 +136,7 @@ export default function LoadFilters({ onFilterChange }: LoadFiltersProps) {
                 value={filters.deliveryLocation}
                 onChange={handleChange}
                 placeholder="Enter city or address"
-                className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+                className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm h-10"
               />
             </div>
           </div>

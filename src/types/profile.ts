@@ -25,11 +25,11 @@ export interface CompanyProfile extends BrokerProfile {
 }
 
 export interface TruckerProfile {
-  id: string;
-  name: string;
-  phone: string;
-  license_number: string;
-  license_expiry: string;
+  id: string | null;
+  full_name: string | null;
+  phone: string | null;
+  license_number: string | null;
+  license_expiry: string | null;
 }
 
 export interface VehicleProfile extends TruckerProfile {

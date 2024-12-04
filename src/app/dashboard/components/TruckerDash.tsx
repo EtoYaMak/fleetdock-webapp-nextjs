@@ -51,19 +51,14 @@ export default function TruckerDashboard() {
   if (!user || user.role !== "trucker") return null;
 
   const handleView = (loadId: string) => {
-    router.push(`/dashboard/loads/trucker/${loadId}`);
+    router.push(`/dashboard/loads/${loadId}`);
   };
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-        {/* When loadtypes not loaded, show filters component + table with headers but a loading spinner in center of table */}
-        {/*  <span className="flex justify-center w-full">
-          <div className="animate-pulse rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
-        </span> */}
-
+      <div className="min-h-screen bg-[#203152] py-12 px-4 sm:px-6 lg:px-8 text-[#f1f0f3]">
         <LoadFilters onFilterChange={handleFilters} />
-        <div className="bg-white shadow rounded-lg">
+        <div className="bg-[#203152] shadow rounded-lg text-[#f1f0f3]">
           <LoadsTable
             loads={[]}
             loadTypes={{}}
@@ -85,18 +80,18 @@ export default function TruckerDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#203152] py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Available Loads</h1>
-          <p className="mt-1 text-sm text-gray-500">
+          <h1 className="text-2xl font-bold text-[#f1f0f3]">Available Loads</h1>
+          <p className="mt-1 text-sm text-[#f1f0f3]">
             Browse and view available loads
           </p>
         </div>
 
         <LoadFilters onFilterChange={handleFilters} />
 
-        <div className="bg-white shadow rounded-lg">
+        <div className="bg-[#203152] shadow rounded-lg text-[#f1f0f3]">
           <LoadsTable
             loads={filteredLoads.length > 0 ? filteredLoads : loads}
             loadTypes={loadTypes}

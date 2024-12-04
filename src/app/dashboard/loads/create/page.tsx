@@ -13,8 +13,7 @@ export default function CreateLoad() {
   const router = useRouter();
   const { user, loading } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const handleSubmit = async (e: React.FormEvent, data: LoadFormData) => {
-    e.preventDefault();
+  const handleSubmit = async (data: LoadFormData) => {
     try {
       setIsSubmitting(true);
       delete data.load_type_name;
@@ -48,23 +47,23 @@ export default function CreateLoad() {
     return null;
   }
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen bg-[#203152] py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-4xl mx-auto ">
         <div className="mb-8">
           <Link
             href="/dashboard"
-            className="inline-flex items-center text-blue-600 hover:text-blue-800"
+            className="inline-flex items-center text-[#f1f0f3] hover:text-[#f1f0f3] bg-[#4895d0]/80 px-4 py-2 rounded-md hover:bg-[#4895d0] hover:scale-[102%]  ease-in-out transition-colors "
           >
             <FiArrowLeft className="mr-2" /> Back to Dashboard
           </Link>
         </div>
 
-        <div className="bg-white shadow rounded-lg">
-          <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
-            <h3 className="text-lg leading-6 font-medium text-gray-900">
+        <div className=" shadow rounded-lg bg-white">
+          <div className="px-4 py-5 sm:px-6 border-b border-gray-200 bg-[#4895d0]/90 rounded-t-lg">
+            <h3 className="text-lg leading-6 font-medium text-[#f1f0f3]">
               Create New Load
             </h3>
-            <p className="mt-1 text-sm text-gray-500">
+            <p className="mt-1 text-sm text-[#f1f0f3]">
               Fill in the details for your new load posting
             </p>
           </div>
