@@ -1,74 +1,71 @@
 "use client";
 
 import { supabase } from "@/lib/supabase";
-import { 
-  createContext, 
-  memo, 
-  useContext, 
-  useEffect, 
-  useState, 
-  useCallback,
-  useMemo 
-} from "react";
+import { createContext, memo, useContext, useEffect, useState } from "react";
 import { SignInType, SignUpType, UseContextType } from "@/types/auth";
 import { useRouter } from "next/navigation";
-
 export const UserContext = createContext<UseContextType>({} as UseContextType);
 
-const UserProvider = memo(function UserProvider({ children }: { children: React.ReactNode }) {
+const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
   const [user, setUser] = useState<UseContextType["user"]>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<UseContextType["error"]>(null);
 
-  const getUserProfile = useCallback(async () => {
-    try {
+  useEffect(() => {
+    const getUserProfile = async () => {
       setLoading(true);
       const sessionUser = await supabase.auth.getUser();
-      
       if (sessionUser.data.user) {
-        const { data: profile, error: profileError } = await supabase
+        const { data: profile } = await supabase
           .from("profiles")
           .select("*")
           .eq("id", sessionUser.data.user.id)
           .single();
-
-        if (profileError) throw profileError;
-
-        const updatedUser = { ...sessionUser.data.user, ...profile };
-        setUser(updatedUser);
-
+        //test
+        setUser({ ...sessionUser.data.user, ...profile });
         if (profile.role && window.location.pathname === "/") {
           router.push(`/dashboard`);
         }
       }
-    } catch (error) {
-      setError(error instanceof Error ? error.message : "Failed to get user profile");
-    } finally {
       setLoading(false);
-    }
-  }, [router]);
+    };
 
-  const signIn = useCallback(async (data: SignInType) => {
+    getUserProfile();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_, session) => {
+      if (session) {
+        getUserProfile();
+      } else {
+        setUser(null);
+      }
+    });
+
+    return () => {
+      subscription?.unsubscribe();
+    };
+  }, []);
+
+  const signIn = async (data: SignInType) => {
     try {
       setLoading(true);
-      setError(null);
-      
-      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-        email: data.email,
-        password: data.password,
-      });
+      const { data: authData, error: authError } =
+        await supabase.auth.signInWithPassword({
+          email: data.email,
+          password: data.password,
+        });
 
       if (authError) throw authError;
 
       if (authData.user) {
-        const { data: profile, error: profileError } = await supabase
+        const { data: profile } = await supabase
           .from("profiles")
           .select("*")
           .eq("id", authData.user.id)
           .single();
 
-        if (profileError) throw profileError;
         setUser({ ...authData.user, ...profile });
       }
     } catch (error) {
@@ -76,9 +73,9 @@ const UserProvider = memo(function UserProvider({ children }: { children: React.
     } finally {
       setLoading(false);
     }
-  }, []);
+  };
 
-  const signOut = useCallback(async () => {
+  const signOut = async () => {
     try {
       setLoading(true);
       await supabase.auth.signOut();
@@ -89,10 +86,11 @@ const UserProvider = memo(function UserProvider({ children }: { children: React.
     } finally {
       setLoading(false);
     }
-  }, [router]);
+  };
 
-  const signUp = useCallback(async (data: SignUpType) => {
+  const signUp = async (data: SignUpType) => {
     try {
+      // Check if email exists
       const { data: existingUser } = await supabase
         .from("profiles")
         .select("email")
@@ -106,7 +104,8 @@ const UserProvider = memo(function UserProvider({ children }: { children: React.
         };
       }
 
-      const { error: signUpError } = await supabase.auth.signUp({
+      // Proceed with signup
+      await supabase.auth.signUp({
         email: data.email,
         password: data.password,
         options: {
@@ -119,49 +118,24 @@ const UserProvider = memo(function UserProvider({ children }: { children: React.
           },
         },
       });
-
-      if (signUpError) throw signUpError;
       return { success: true };
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Failed to sign up",
+        error: error instanceof Error ? error.message : "Faidled to sign up",
       };
     }
-  }, []);
-
-  useEffect(() => {
-    getUserProfile();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (session) {
-        await getUserProfile();
-      } else {
-        setUser(null);
-      }
-    });
-
-    return () => {
-      subscription?.unsubscribe();
-    };
-  }, [getUserProfile]);
-
-  const contextValue = useMemo(() => ({
-    user,
-    loading,
-    error,
-    signIn,
-    signOut,
-    signUp
-  }), [user, loading, error, signIn, signOut, signUp]);
+  };
 
   return (
-    <UserContext.Provider value={contextValue}>
+    <UserContext.Provider
+      value={{ user, loading, error, signIn, signOut, signUp}}
+    >
       {children}
     </UserContext.Provider>
   );
-});
+};
 
 export const useAuth = () => useContext(UserContext);
 
-export default UserProvider;
+export default memo(UserProvider);

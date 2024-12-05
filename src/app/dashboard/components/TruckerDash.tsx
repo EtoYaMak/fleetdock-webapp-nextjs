@@ -14,7 +14,6 @@ export default function TruckerDashboard() {
   const { user } = useAuth();
   const { loads, isLoading, error } = useLoads();
   const [filteredLoads, setFilteredLoads] = useState<Load[]>([]);
-  const [loadTypes] = useState<Record<string, string>>({});
 
   const handleFilters = (filters: {
     status?: string;

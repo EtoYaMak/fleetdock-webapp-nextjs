@@ -14,7 +14,10 @@ export interface UseContextType {
   error: any;
   signIn: (data: SignInType) => Promise<void>;
   signOut: () => Promise<void>;
-  signUp: (data: SignUpType) => Promise<{ success: boolean; error?: string; }>;
+  signUp: (data: SignUpType) => Promise<{
+    success: boolean;
+    error?: string;
+  }>;
 }
 
 export interface SignInType {

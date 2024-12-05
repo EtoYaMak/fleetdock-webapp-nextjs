@@ -2,9 +2,10 @@
 
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { useEffect } from "react";
+import { useEffect, memo } from "react";
+import LoadingSpinner from "@/app/components/ui/LoadingSpinner";
 
-export default function DashboardLayout({
+const DashboardLayout = memo(function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -18,17 +19,19 @@ export default function DashboardLayout({
     }
   }, [user, loading, router]);
 
-  if (loading) {
+  if (loading && !user) {
     return (
       <div className="flex justify-center items-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+        <LoadingSpinner size="lg" color="border-blue-500" />
       </div>
     );
   }
 
-  if (!user) {
-    return null;
-  }
+  if (!user) return null;
 
   return <>{children}</>;
-}
+});
+
+DashboardLayout.displayName = "DashboardLayout";
+
+export default DashboardLayout;

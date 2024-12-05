@@ -193,33 +193,34 @@ function ViewLoad({ params }: { params: Promise<{ id: string }> }) {
             </h3>
             {/* if user is trucker, and has a bid already disabled bid functionlaity and show a sleek and modern looking message informing them */}
             {/*bids.truckerprofile.id === user.id */}
-            {user?.role === "trucker" &&
-            bids.find((bid) => bid.trucker_id === user?.id) ? (
-              <div className="text-sm text-gray-500">
-                You have already bid on this load.
-              </div>
-            ) : (
-              <div className="flex items-center">
-                <input
-                  type="number"
-                  value={amount}
-                  onChange={(e) => setAmount(Number(e.target.value))}
-                  className="w-24 mr-2 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Enter amount"
-                />
-                <button
-                  disabled={!amount}
-                  onClick={() => handlePlaceBid(load.id)}
-                  className={`inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
-                    amount
-                      ? "bg-blue-600 hover:bg-blue-700"
-                      : "bg-gray-400 cursor-not-allowed"
-                  }`}
-                >
-                  Place Bid
-                </button>
-              </div>
-            )}
+            {user?.role === "trucker" ? (
+              bids.find((bid) => bid.trucker_id === user?.id) ? (
+                <div className="text-sm text-gray-500">
+                  You have already bid on this load.
+                </div>
+              ) : (
+                <div className="flex items-center">
+                  <input
+                    type="number"
+                    value={amount}
+                    onChange={(e) => setAmount(Number(e.target.value))}
+                    className="w-24 mr-2 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Enter amount"
+                  />
+                  <button
+                    disabled={!amount}
+                    onClick={() => handlePlaceBid(load.id)}
+                    className={`inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
+                      amount
+                        ? "bg-blue-600 hover:bg-blue-700"
+                        : "bg-gray-400 cursor-not-allowed"
+                    }`}
+                  >
+                    Place Bid
+                  </button>
+                </div>
+              )
+            ) : null}
           </div>
           {!bids.length ? (
             <div className="px-4 py-5 sm:px-6 border-b border-gray-200">

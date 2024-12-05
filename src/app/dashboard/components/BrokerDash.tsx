@@ -2,14 +2,33 @@
 
 import { useRouter } from "next/navigation";
 import { FiPlus } from "react-icons/fi";
-import LoadsTable from "@/app/dashboard/components/broker/components/LoadsTable";
+import LoadsTable from "./broker/components/LoadsTable";
 import { useLoads } from "@/hooks/useLoads";
 import { useAuth } from "@/context/AuthContext";
-import { useCallback } from "react";
+import { useCallback, memo } from "react";
+import LoadingSpinner from "@/app/components/ui/LoadingSpinner";
 
-export default function BrokerDashboard() {
+// Memoize static components
+const StatsCard = memo(function StatsCard({
+  title,
+  value,
+}: {
+  title: string;
+  value: number;
+}) {
+  return (
+    <div className="bg-gradient-to-r to-[#4895d0]/20 from-[#4895d0]/30 overflow-hidden shadow rounded-lg">
+      <div className="px-4 py-5 sm:p-6">
+        <dt className="text-sm font-medium text-[#f1f0f3] truncate">{title}</dt>
+        <dd className="mt-1 text-3xl font-semibold text-[#f1f0f3]">{value}</dd>
+      </div>
+    </div>
+  );
+});
+
+const BrokerDashboard = memo(function BrokerDashboard() {
   const router = useRouter();
-  const { loading: authLoading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const {
     stats,
     loads,
@@ -42,15 +61,21 @@ export default function BrokerDashboard() {
   if (loadsLoading || authLoading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+        <LoadingSpinner size="lg" color="border-blue-500" />
       </div>
     );
   }
 
+  const statsData = [
+    { title: "Total Active Loads", value: stats.activeLoads },
+    { title: "Pending Assignments", value: stats.pendingAssignments },
+    { title: "Completed Loads", value: stats.completedLoads },
+  ];
+  if (!user || user.role !== "broker") return null;
+
   return (
     <div className="min-h-screen bg-gradient-to-t to-[#283d67] from-[#203152] py-12 px-4 sm:px-6 lg:px-8 w-full">
       <div className="max-w-7xl mx-auto">
-        {/* Header with Create Load Button */}
         <div className="mb-8 flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-bold text-[#f1f0f3]">
@@ -69,41 +94,12 @@ export default function BrokerDashboard() {
           </button>
         </div>
 
-        {/* Stats Overview */}
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-3 mb-8">
-          <div className="bg-gradient-to-r to-[#4895d0]/20 from-[#4895d0]/30 overflow-hidden shadow rounded-lg">
-            <div className="px-4 py-5 sm:p-6">
-              <dt className="text-sm font-medium text-[#f1f0f3] truncate">
-                Total Active Loads
-              </dt>
-              <dd className="mt-1 text-3xl font-semibold text-[#f1f0f3]">
-                {stats.activeLoads}
-              </dd>
-            </div>
-          </div>
-          <div className="bg-gradient-to-r to-[#4895d0]/20 from-[#4895d0]/30 overflow-hidden shadow rounded-lg">
-            <div className="px-4 py-5 sm:p-6">
-              <dt className="text-sm font-medium text-[#f1f0f3] truncate">
-                Pending Assignments
-              </dt>
-              <dd className="mt-1 text-3xl font-semibold text-[#f1f0f3]">
-                {stats.pendingAssignments}
-              </dd>
-            </div>
-          </div>
-          <div className="bg-gradient-to-r to-[#4895d0]/20 from-[#4895d0]/30 overflow-hidden shadow rounded-lg">
-            <div className="px-4 py-5 sm:p-6">
-              <dt className="text-sm font-medium text-[#f1f0f3] truncate">
-                Completed Loads
-              </dt>
-              <dd className="mt-1 text-3xl font-semibold text-[#f1f0f3]">
-                {stats.completedLoads}
-              </dd>
-            </div>
-          </div>
+          {statsData.map((stat) => (
+            <StatsCard key={stat.title} {...stat} />
+          ))}
         </div>
 
-        {/* Loads Table */}
         <div className="bg-[#4895d0]/10 shadow rounded-lg">
           <LoadsTable
             loads={loads}
@@ -114,4 +110,6 @@ export default function BrokerDashboard() {
       </div>
     </div>
   );
-}
+});
+
+export default BrokerDashboard;

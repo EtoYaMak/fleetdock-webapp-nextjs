@@ -1,37 +1,12 @@
 "use client";
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { memo } from "react";
 import { useAuth } from "@/context/AuthContext";
 import BrokerDash from "./components/BrokerDash";
 import TruckerDash from "./components/TruckerDash";
+import LoadingSpinner from "@/app/components/ui/LoadingSpinner";
 
-export default function Dashboard() {
-  const { user, loading } = useAuth();
-  const router = useRouter();
-
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return null;
-  }
-
-  const userRole = user?.role;
-
-  if (userRole === "broker") {
-    return <BrokerDash />;
-  }
-
-  if (userRole === "trucker") {
-    return <TruckerDash />;
-  }
-
+const InvalidRole = memo(function InvalidRole() {
   return (
     <div className="min-h-screen bg-[#203152] flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
@@ -46,4 +21,27 @@ export default function Dashboard() {
       </div>
     </div>
   );
-}
+});
+
+const Dashboard = memo(function Dashboard() {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <LoadingSpinner size="lg" color="border-blue-500" />
+      </div>
+    );
+  }
+
+  if (!user) return null;
+
+  const roleComponents = {
+    broker: <BrokerDash />,
+    trucker: <TruckerDash />,
+  };
+
+  return roleComponents[user.role as keyof typeof roleComponents] || <InvalidRole />;
+});
+
+export default Dashboard;

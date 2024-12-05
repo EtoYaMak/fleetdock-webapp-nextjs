@@ -22,7 +22,7 @@ const TruckerProfile = ({ activeTab }: TruckerProfileProps) => {
     const fetchData = async () => {
       if (!user) {
         setIsLoading(false);
-        return;
+        return null;
       }
 
       try {
