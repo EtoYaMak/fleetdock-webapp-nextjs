@@ -1,5 +1,5 @@
 "use client";
-import SignInForm from "@/components/auth/SignInForm";
+import SignInForm from "@/app/components/auth/SignInForm";
 import { redirect } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { useEffect } from "react";

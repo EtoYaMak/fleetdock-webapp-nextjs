@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiSave, FiAlertCircle, FiCheckCircle } from "react-icons/fi";
 import { LoadFormData, ValidationErrors } from "@/types/loads";
 import { useLoadTypes } from "@/hooks/useLoadTypes";
+import { memo } from "react";
 
 interface LoadFormProps {
   onSubmit: (
@@ -15,14 +16,14 @@ interface LoadFormProps {
   isSubmitting?: boolean;
 }
 
-function LoadForm({
+const LoadForm = memo(function LoadForm({
   onSubmit,
   initialData,
   isEdit,
   isSubmitting,
 }: LoadFormProps) {
   const { loadTypes } = useLoadTypes();
-  const [formData, setFormData] = useState<LoadFormData>({
+  const [formData, setFormData] = useState<LoadFormData>(() => ({
     load_type_id: initialData?.load_type_id || "",
     load_type_name: initialData?.load_type_name || "",
     weight_kg: initialData?.weight_kg || 0,
@@ -39,15 +40,13 @@ function LoadForm({
     special_instructions: initialData?.special_instructions || "",
     bid_enabled: initialData?.bid_enabled ?? true,
     fixed_rate: initialData?.fixed_rate || 0,
-  });
+  }));
 
-  const [validationErrors, setValidationErrors] = useState<ValidationErrors>(
-    {}
-  );
+  const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  const validateForm = (): boolean => {
+  const validateForm = useCallback((): boolean => {
     const errors: ValidationErrors = {};
     let isValid = true;
 
@@ -97,9 +96,9 @@ function LoadForm({
 
     setValidationErrors(errors);
     return isValid;
-  };
+  }, [formData]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setSuccess(false);
@@ -117,7 +116,34 @@ function LoadForm({
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
     }
-  };
+  }, [formData, onSubmit, validateForm]);
+
+  const handleChange = useCallback((
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    setValidationErrors(prev => ({
+      ...prev,
+      [name]: undefined
+    }));
+  }, []);
+
+  const isFormValid = useMemo(() => {
+    return Object.keys(validationErrors).length === 0;
+  }, [validationErrors]);
+
+  useEffect(() => {
+    if (initialData) {
+      setFormData(prev => ({
+        ...prev,
+        ...initialData
+      }));
+    }
+  }, [initialData]);
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -162,12 +188,8 @@ function LoadForm({
             type="text"
             required
             value={formData.pickup_location.address}
-            onChange={(e) =>
-              setFormData({
-                ...formData,
-                pickup_location: { address: e.target.value },
-              })
-            }
+            onChange={handleChange}
+            name="pickup_location.address"
             className={`w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 ${
               validationErrors.pickup_location
                 ? "border-red-300"
@@ -189,12 +211,8 @@ function LoadForm({
             type="text"
             required
             value={formData.delivery_location.address}
-            onChange={(e) =>
-              setFormData({
-                ...formData,
-                delivery_location: { address: e.target.value },
-              })
-            }
+            onChange={handleChange}
+            name="delivery_location.address"
             className={`w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 ${
               validationErrors.delivery_location
                 ? "border-red-300"
@@ -218,12 +236,8 @@ function LoadForm({
             min="0"
             step="0.01"
             value={formData.weight_kg}
-            onChange={(e) =>
-              setFormData({
-                ...formData,
-                weight_kg: parseFloat(e.target.value),
-              })
-            }
+            onChange={handleChange}
+            name="weight_kg"
             className={`w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 ${
               validationErrors.weight_kg ? "border-red-300" : "border-gray-300"
             }`}
@@ -242,9 +256,8 @@ function LoadForm({
           <input
             type="number"
             value={formData.length_cm}
-            onChange={(e) =>
-              setFormData({ ...formData, length_cm: Number(e.target.value) })
-            }
+            onChange={handleChange}
+            name="length_cm"
             className="w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 border-gray-300"
           />
         </div>
@@ -256,9 +269,8 @@ function LoadForm({
           <input
             type="number"
             value={formData.width_cm}
-            onChange={(e) =>
-              setFormData({ ...formData, width_cm: Number(e.target.value) })
-            }
+            onChange={handleChange}
+            name="width_cm"
             className="w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 border-gray-300"
           />
         </div>
@@ -270,9 +282,8 @@ function LoadForm({
           <input
             type="number"
             value={formData.height_cm}
-            onChange={(e) =>
-              setFormData({ ...formData, height_cm: Number(e.target.value) })
-            }
+            onChange={handleChange}
+            name="height_cm"
             className="w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 border-gray-300"
           />
         </div>
@@ -285,9 +296,8 @@ function LoadForm({
             type="datetime-local"
             required
             value={formData.pickup_deadline}
-            onChange={(e) =>
-              setFormData({ ...formData, pickup_deadline: e.target.value })
-            }
+            onChange={handleChange}
+            name="pickup_deadline"
             className={`w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 ${
               validationErrors.pickup_deadline
                 ? "border-red-300"
@@ -309,9 +319,8 @@ function LoadForm({
             type="datetime-local"
             required
             value={formData.delivery_deadline}
-            onChange={(e) =>
-              setFormData({ ...formData, delivery_deadline: e.target.value })
-            }
+            onChange={handleChange}
+            name="delivery_deadline"
             className={`w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 ${
               validationErrors.delivery_deadline
                 ? "border-red-300"
@@ -330,9 +339,8 @@ function LoadForm({
             <input
               type="checkbox"
               checked={formData.bid_enabled}
-              onChange={(e) =>
-                setFormData({ ...formData, bid_enabled: e.target.checked })
-              }
+              onChange={handleChange}
+              name="bid_enabled"
               className="h-4 w-4 text-blue-600 rounded border-gray-300"
             />
             <span className="text-sm font-medium text-gray-700">
@@ -352,12 +360,8 @@ function LoadForm({
               min="0"
               step="0.01"
               value={formData.fixed_rate}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  fixed_rate: Number(e.target.value),
-                })
-              }
+              onChange={handleChange}
+              name="fixed_rate"
               className="w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 border-gray-300"
             />
           </div>
@@ -373,12 +377,8 @@ function LoadForm({
             min="0"
             step="0.01"
             value={formData.budget_amount}
-            onChange={(e) =>
-              setFormData({
-                ...formData,
-                budget_amount: Number(e.target.value),
-              })
-            }
+            onChange={handleChange}
+            name="budget_amount"
             className="w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 border-gray-300"
           />
         </div>
@@ -389,9 +389,8 @@ function LoadForm({
           </label>
           <select
             value={formData.budget_currency}
-            onChange={(e) =>
-              setFormData({ ...formData, budget_currency: e.target.value })
-            }
+            onChange={handleChange}
+            name="budget_currency"
             className="w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 border-gray-300"
           >
             <option value="USD">USD</option>
@@ -407,9 +406,8 @@ function LoadForm({
           <select
             required
             value={formData.load_type_id}
-            onChange={(e) =>
-              setFormData({ ...formData, load_type_id: e.target.value })
-            }
+            onChange={handleChange}
+            name="load_type_id"
             className={`w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 ${
               validationErrors.load_type_id
                 ? "border-red-300"
@@ -436,12 +434,8 @@ function LoadForm({
           <input
             type="number"
             value={formData.distance_manual}
-            onChange={(e) =>
-              setFormData({
-                ...formData,
-                distance_manual: Number(e.target.value),
-              })
-            }
+            onChange={handleChange}
+            name="distance_manual"
             className="w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 border-gray-300"
           />
         </div>
@@ -453,9 +447,8 @@ function LoadForm({
         </label>
         <textarea
           value={formData.special_instructions}
-          onChange={(e) =>
-            setFormData({ ...formData, special_instructions: e.target.value })
-          }
+          onChange={handleChange}
+          name="special_instructions"
           rows={4}
           className="w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 border-gray-300"
         />
@@ -484,6 +477,8 @@ function LoadForm({
       </motion.button>
     </form>
   );
-}
+});
+
+LoadForm.displayName = 'LoadForm';
 
 export default LoadForm;

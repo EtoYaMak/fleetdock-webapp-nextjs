@@ -1,5 +1,5 @@
 //src/hooks/useProfile.ts
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import {
   BrokerProfile,
   CompanyProfile,
@@ -8,22 +8,31 @@ import {
 } from "@/types/profile";
 import supabase from "@/lib/supabase";
 import { useAuth } from "@/context/AuthContext";
+
 export function useProfile() {
   const { user } = useAuth();
-  const [brokerProfile, setBrokerProfile] = useState<BrokerProfile | null>(
-    null
-  );
-  const [companyProfile] = useState<CompanyProfile | null>(null);
-  const [truckerProfile] = useState<TruckerProfile | null>(null);
-  const [vehicleProfile] = useState<Vehicle | null>(null);
-
+  const [brokerProfile, setBrokerProfile] = useState<BrokerProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const fetchProfile = useCallback(async () => {
+
+  // Track component mount state and fetch status
+  const isMounted = useRef(true);
+  const lastFetchTime = useRef(0);
+  const FETCH_COOLDOWN = 5000; // 5 seconds
+
+  // Memoize fetch profile function
+  const fetchProfile = useCallback(async (forceFetch = false) => {
     if (!user?.id) return;
+
+    const now = Date.now();
+    if (!forceFetch && now - lastFetchTime.current < FETCH_COOLDOWN) {
+      return;
+    }
 
     try {
       setIsLoading(true);
+      setError(null);
+
       if (user?.role === "broker") {
         const { data: brokerData, error: brokerError } = await supabase
           .from("broker_businesses")
@@ -32,92 +41,126 @@ export function useProfile() {
           .single();
 
         if (brokerError) throw brokerError;
+        if (!isMounted.current) return;
+
         setBrokerProfile(brokerData);
-      } else if (user?.role === "trucker") {
-        return;
+        lastFetchTime.current = now;
       }
     } catch (error) {
-      setError(
-        error instanceof Error ? error.message : "Failed to fetch profile"
-      );
+      if (isMounted.current) {
+        setError(error instanceof Error ? error.message : "Failed to fetch profile");
+      }
     } finally {
-      setIsLoading(false);
+      if (isMounted.current) {
+        setIsLoading(false);
+      }
     }
   }, [user?.id, user?.role]);
 
-  //Update Broker Profile
-  const updateBrokerBusiness = async (businessData: Partial<BrokerProfile>) => {
+  // Memoize update broker business function
+  const updateBrokerBusiness = useCallback(async (businessData: Partial<BrokerProfile>) => {
+    if (!user?.id) {
+      return { success: false, error: "User not authenticated" };
+    }
+
     try {
-      const { data: updatedData, error: updateError } = await supabase
+      setIsLoading(true);
+      setError(null);
+
+      const { error: updateError } = await supabase
         .from("broker_businesses")
         .update(businessData)
-        .eq("profile_id", user?.id);
+        .eq("profile_id", user.id);
+
+      if (updateError) throw updateError;
+
+      // Refresh profile after update
+      await fetchProfile(true);
       return { success: true };
     } catch (err) {
-      return {
-        success: false,
-        error: err instanceof Error ? err.message : "Failed to update business",
-      };
+      const errorMessage = err instanceof Error ? err.message : "Failed to update business";
+      setError(errorMessage);
+      return { success: false, error: errorMessage };
+    } finally {
+      setIsLoading(false);
     }
-  };
+  }, [user?.id, fetchProfile]);
 
-  //fetch vehicles
+  // Memoize fetch vehicles function
   const fetchVehicles = useCallback(async () => {
+    if (!user?.id) return { vehicles: [], error: "User not authenticated" };
+
     try {
-      if (!user?.id) return;
-      const { data: vehicles, error } = await supabase
+      setError(null);
+      const { data: vehicles, error: vehiclesError } = await supabase
         .from("vehicles")
-        .select(
-          `
-        *,
-        vehicle_types (
-          name,
-          capacity
-        )
-      `
-        )
+        .select(`
+          *,
+          vehicle_types (
+            name,
+            capacity
+          )
+        `)
         .eq("profile_id", user.id)
         .eq("is_active", true)
         .order("created_at", { ascending: false });
 
-      return { vehicles, error };
+      if (vehiclesError) throw vehiclesError;
+      return { vehicles, error: null };
     } catch (error) {
-      setError(
-        error instanceof Error ? error.message : "Failed to fetch vehicles"
-      );
-    } finally {
-      setIsLoading(false);
+      const errorMessage = error instanceof Error ? error.message : "Failed to fetch vehicles";
+      setError(errorMessage);
+      return { vehicles: [], error: errorMessage };
     }
   }, [user?.id]);
 
-  //fetch vehicle types
+  // Memoize fetch vehicle types function
   const fetchVehicleTypes = useCallback(async () => {
     try {
-      const { data: vehicleTypes, error } = await supabase
+      setError(null);
+      const { data: vehicleTypes, error: typesError } = await supabase
         .from("vehicle_types")
         .select("*");
-      return { vehicleTypes, error };
+
+      if (typesError) throw typesError;
+      return { vehicleTypes, error: null };
     } catch (error) {
-      setError(
-        error instanceof Error ? error.message : "Failed to fetch vehicle types"
-      );
+      const errorMessage = error instanceof Error ? error.message : "Failed to fetch vehicle types";
+      setError(errorMessage);
+      return { vehicleTypes: [], error: errorMessage };
     }
   }, []);
 
+  // Initial fetch and cleanup
   useEffect(() => {
-    fetchProfile();
+    fetchProfile(true);
+
+    return () => {
+      isMounted.current = false;
+    };
   }, [fetchProfile]);
 
-  return {
+  // Reset fetch status when user changes
+  useEffect(() => {
+    lastFetchTime.current = 0;
+  }, [user?.id]);
+
+  // Memoize return value
+  return useMemo(() => ({
     brokerProfile,
-    companyProfile,
-    truckerProfile,
-    vehicleProfile,
     isLoading,
     error,
     updateBrokerBusiness,
     fetchProfile,
     fetchVehicles,
     fetchVehicleTypes,
-  };
+  }), [
+    brokerProfile,
+    isLoading,
+    error,
+    updateBrokerBusiness,
+    fetchProfile,
+    fetchVehicles,
+    fetchVehicleTypes,
+  ]);
 }

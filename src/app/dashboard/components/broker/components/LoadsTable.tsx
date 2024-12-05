@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, memo } from "react";
+import { useState, memo, useCallback, useMemo } from "react";
 import { FiTrash2, FiEye, FiAlertCircle } from "react-icons/fi";
 import { LoadsTableProps } from "@/types/loads";
 import { useRouter } from "next/navigation";
@@ -12,20 +12,26 @@ const LoadsTable = memo(function LoadsTable({
   const [deleteLoadId, setDeleteLoadId] = useState<string | null>(null);
   const router = useRouter();
 
-  const handleView = (loadId: string) => {
-    router.push(`/dashboard/loads/${loadId}`);
-  };
+  const handleView = useCallback((loadId: string) => {
+    onView(loadId);
+  }, [onView]);
 
-  const handleDeleteClick = (loadId: string) => {
+  const handleDeleteClick = useCallback((loadId: string) => {
     setDeleteLoadId(loadId);
-  };
+  }, []);
 
-  const handleConfirmDelete = async () => {
+  const handleConfirmDelete = useCallback(async () => {
     if (deleteLoadId) {
       await onDelete(deleteLoadId);
       setDeleteLoadId(null);
     }
-  };
+  }, [deleteLoadId, onDelete]);
+
+  const sortedLoads = useMemo(() => {
+    return [...loads].sort((a, b) => 
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+  }, [loads]);
 
   return (
     <>
@@ -85,7 +91,7 @@ const LoadsTable = memo(function LoadsTable({
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {loads.map((load) => (
+            {sortedLoads.map((load) => (
               <tr key={load.id}>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm font-medium text-gray-900">

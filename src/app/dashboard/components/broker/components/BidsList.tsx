@@ -1,4 +1,4 @@
-import { memo, useEffect, useState } from "react";
+import { memo, useEffect, useState, useRef, useMemo } from "react";
 import { FiCheck, FiX, FiUser } from "react-icons/fi";
 import { useBids } from "@/hooks/useBids";
 import { BidWithProfile } from "@/types/bids";
@@ -10,36 +10,42 @@ const BidsList = memo(
   ({ bids, loading }: { bids: BidWithProfile[]; loading: boolean }) => {
     const { updateBidStatus, isLoading } = useBids();
     const { user } = useAuth();
+    const hasFetchedRef = useRef(false);
     const [truckerProfile, setTruckerProfile] = useState<TruckerProfile | null>(
       null
     );
-    const [hasFetched, setHasFetched] = useState(false);
+
     useEffect(() => {
-      if (user?.id && bids.length > 0 && !hasFetched) {
+      const fetchTruckerProfile = async () => {
+        if (!user?.id || !bids.length || hasFetchedRef.current) return;
+
         try {
-          const fetchTruckerProfile = async () => {
-            const { data, error } = await supabase
-              .from("profiles")
-              .select("*")
-              .eq("id", bids[0].trucker_id);
-            if (error) throw error;
-            setTruckerProfile(data[0]);
-          };
-          fetchTruckerProfile();
-          setHasFetched(true);
+          const { data, error } = await supabase
+            .from("profiles")
+            .select("*")
+            .eq("id", bids[0].trucker_id)
+            .single();
+
+          if (error) throw error;
+          setTruckerProfile(data);
+          hasFetchedRef.current = true;
         } catch (error) {
           console.error(error);
         }
-      }
-    }, [bids, user?.id, hasFetched]);
+      };
 
-    //transform the trucker name to intials
-    const truckerName = truckerProfile?.full_name
-      ? truckerProfile?.full_name
-          .split(" ")
-          .map((name) => name[0])
-          .join("")
-      : "Unknown Trucker";
+      fetchTruckerProfile();
+    }, [bids, user?.id]);
+
+    const truckerName = useMemo(() => {
+      return truckerProfile?.full_name
+        ? truckerProfile.full_name
+            .split(" ")
+            .map((name) => name[0])
+            .join("")
+        : "Unknown Trucker";
+    }, [truckerProfile?.full_name]);
+
     if (isLoading) {
       return (
         <div className="flex justify-center items-center h-64">

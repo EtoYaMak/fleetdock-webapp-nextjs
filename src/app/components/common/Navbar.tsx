@@ -1,0 +1,117 @@
+"use client";
+
+import { useAuth } from "@/context/AuthContext";
+import Link from "next/link";
+import { FiUser, FiLogOut, FiTruck, FiPackage } from "react-icons/fi";
+import { memo, useMemo } from "react";
+
+// Memoize static components
+const NavLink = memo(function NavLink({ href, children, className }: { 
+  href: string; 
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <Link href={href} className={className}>
+      {children}
+    </Link>
+  );
+});
+
+const NavIcon = memo(function NavIcon({ 
+  icon: Icon, 
+  className 
+}: { 
+  icon: typeof FiUser;
+  className?: string;
+}) {
+  return <Icon className={className} />;
+});
+
+const Navbar = memo(function Navbar() {
+  const { user, loading, signOut } = useAuth();
+
+  // Memoize navigation items based on user state
+  const navigationItems = useMemo(() => {
+    if (loading) {
+      return <div className="animate-pulse h-8 w-20 bg-[#203152] rounded" />;
+    }
+
+    if (user) {
+      return (
+        <>
+          <div className="flex items-center text-[#f1f0f3]">
+            <NavIcon 
+              icon={user.role === "trucker" ? FiTruck : FiPackage} 
+              className="h-5 w-5" 
+            />
+          </div>
+
+          <NavLink
+            href="/dashboard"
+            className="text-[#f1f0f3]/80 hover:text-[#f1f0f3] px-3 py-2 rounded-md text-sm font-medium
+              hover:bg-[#203152] hover:scale-105 transition-all duration-300"
+          >
+            Dashboard
+          </NavLink>
+
+          <div className="relative ml-3 flex items-center space-x-4">
+            <NavLink
+              href="/profile"
+              className="flex items-center text-[#f1f0f3]/80 hover:text-[#f1f0f3] p-2 hover:bg-[#203152] rounded-md group"
+            >
+              <NavIcon icon={FiUser} className="h-5 w-5 group-hover:scale-110 transition-all duration-300" />
+            </NavLink>
+
+            <button
+              onClick={signOut}
+              className="flex items-center text-[#f1f0f3]/80 hover:text-[#f1f0f3] p-2 hover:bg-[#203152] rounded-md group"
+            >
+              <NavIcon icon={FiLogOut} className="h-5 w-5 group-hover:scale-110 transition-all duration-300" />
+            </button>
+          </div>
+        </>
+      );
+    }
+
+    return (
+      <div className="flex items-center space-x-4">
+        <NavLink
+          href="/signin"
+          className="text-[#4895d0] hover:bg-[#f1f0f3] px-4 py-2 rounded-3xl text-sm font-medium uppercase transition-all duration-300"
+        >
+          Sign In
+        </NavLink>
+        <NavLink
+          href="/signup"
+          className="text-[#4895d0] hover:bg-[#f1f0f3] px-4 py-2 rounded-3xl text-sm font-medium uppercase transition-all duration-300"
+        >
+          Sign Up
+        </NavLink>
+      </div>
+    );
+  }, [user, loading, signOut]);
+
+  return (
+    <nav className="bg-transparent">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between h-16">
+          <div className="flex">
+            <NavLink
+              href={user?.role ? "/dashboard" : "/"}
+              className="flex items-center px-2 text-[#f1f0f3] font-bold text-xl"
+            >
+              FleetDock
+            </NavLink>
+          </div>
+
+          <div className="flex items-center space-x-4">
+            {navigationItems}
+          </div>
+        </div>
+      </div>
+    </nav>
+  );
+});
+
+export default Navbar;

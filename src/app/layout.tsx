@@ -1,19 +1,23 @@
 import "./globals.css";
-import Navbar from "@/components/common/Navbar";
-import Footer from "@/components/common/Footer";
+import Navbar from "@/app/components/common/Navbar";
+import Footer from "@/app/components/common/Footer";
 import UserProvider from "@/context/AuthContext";
 import { memo } from "react";
+import { Metadata } from "next";
 
-export const metadata = {
+// Define metadata outside component for better performance
+export const metadata: Metadata = {
   title: "FleetDock",
   description: "Revolutionize Your Logistics",
+  keywords: "logistics, freight, trucking, shipping",
 };
 
 // Memoize static components
 const MemoizedNavbar = memo(Navbar);
 const MemoizedFooter = memo(Footer);
 
-export default function RootLayout({
+// Memoize the layout component itself
+const RootLayout = memo(function RootLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -29,4 +33,6 @@ export default function RootLayout({
       </body>
     </html>
   );
-}
+});
+
+export default RootLayout;

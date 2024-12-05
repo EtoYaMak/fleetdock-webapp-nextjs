@@ -1,36 +1,41 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { Load, LoadType } from "@/types/loads";
 import supabase from "@/lib/supabase";
 
 export function useLoads() {
   const [loads, setLoads] = useState<Load[]>([]);
-  const [stats, setStats] = useState({
-    activeLoads: 0,
-    pendingAssignments: 0,
-    completedLoads: 0,
-  });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [loadTypes] = useState<Record<string, LoadType>>({});
 
-  // Use ref to track if the component is mounted
+  // Use ref to track component mount state and fetch cooldown
   const isMounted = useRef(true);
-
-  // Track last fetch time to prevent too frequent updates
   const lastFetchTime = useRef(0);
   const FETCH_COOLDOWN = 5000; // 5 seconds
 
-  const fetchLoads = useCallback(async () => {
+  // Memoize stats calculation
+  const stats = useMemo(() => ({
+    activeLoads: loads.filter((load) => load.status === "available").length,
+    pendingAssignments: loads.filter(
+      (load) => load.status === "pending" || load.status === "posted"
+    ).length,
+    completedLoads: loads.filter((load) => load.status === "completed").length,
+  }), [loads]);
+
+  // Optimize fetch loads with better error handling and cooldown
+  const fetchLoads = useCallback(async (forceFetch = false) => {
     const now = Date.now();
-    if (now - lastFetchTime.current < FETCH_COOLDOWN) {
+    if (!forceFetch && now - lastFetchTime.current < FETCH_COOLDOWN) {
       return;
     }
 
     try {
       setIsLoading(true);
+      setError(null);
 
-      // Fetch loads with load type information using a join
-      const { data, error: loadError } = await supabase.from("loads").select(`
+      const { data, error: loadError } = await supabase
+        .from("loads")
+        .select(`
           *,
           load_types (
             name,
@@ -40,20 +45,18 @@ export function useLoads() {
 
       if (loadError) throw loadError;
 
-      // Transform the data to merge load_type name into each load
-      const transformedLoads = (data || []).map((load) => ({
+      if (!isMounted.current) return;
+
+      // Transform data only if component is still mounted
+      const transformedLoads = data?.map((load) => ({
         ...load,
         load_type_name: load.load_types?.name,
-        // Remove the nested load_types object if you don't need it
         load_types: undefined,
-      }));
+      })) || [];
 
-      if (isMounted.current) {
-        setLoads(transformedLoads);
-        // Update stats based on the loads
-        setStats(calculateStats(transformedLoads));
-        lastFetchTime.current = now;
-      }
+      setLoads(transformedLoads);
+      lastFetchTime.current = now;
+
     } catch (err) {
       if (isMounted.current) {
         setError(err instanceof Error ? err.message : "Failed to fetch loads");
@@ -65,43 +68,36 @@ export function useLoads() {
     }
   }, []);
 
-  const calculateStats = (loadData: Load[]) => {
-    return {
-      activeLoads: loadData.filter((load) => load.status === "available")
-        .length,
-      pendingAssignments: loadData.filter(
-        (load) => load.status === "pending" || load.status === "posted"
-      ).length,
-      completedLoads: loadData.filter((load) => load.status === "completed")
-        .length,
-    };
-  };
-
-  const deleteLoad = async (loadId: string) => {
+  // Memoize delete function
+  const deleteLoad = useCallback(async (loadId: string) => {
     try {
-      await supabase.from("loads").delete().eq("id", loadId);
+      setError(null);
+      const { error } = await supabase.from("loads").delete().eq("id", loadId);
+      
+      if (error) throw error;
 
       setLoads((prevLoads) => prevLoads.filter((load) => load.id !== loadId));
       return { success: true };
     } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Failed to delete load";
+      setError(errorMessage);
       return {
         success: false,
-        error: err instanceof Error ? err.message : "Failed to delete load",
+        error: errorMessage,
       };
     }
-  };
+  }, []);
 
+  // Initial fetch and cleanup
   useEffect(() => {
-    isMounted.current = true;
-    fetchLoads();
+    fetchLoads(true);
 
-    // Cleanup function
     return () => {
       isMounted.current = false;
     };
   }, [fetchLoads]);
 
-  // Only re-fetch on window focus if enough time has passed
+  // Window focus handler with cooldown
   useEffect(() => {
     const handleFocus = () => {
       if (Date.now() - lastFetchTime.current >= FETCH_COOLDOWN) {
@@ -113,7 +109,8 @@ export function useLoads() {
     return () => window.removeEventListener("focus", handleFocus);
   }, [fetchLoads]);
 
-  return {
+  // Memoize return value to prevent unnecessary re-renders
+  return useMemo(() => ({
     loads,
     stats,
     isLoading,
@@ -121,5 +118,5 @@ export function useLoads() {
     refetch: fetchLoads,
     loadTypes,
     deleteLoad,
-  };
+  }), [loads, stats, isLoading, error, fetchLoads, loadTypes, deleteLoad]);
 }

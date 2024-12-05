@@ -1,5 +1,5 @@
 //src/hooks/useBids.ts
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { Bid, BidWithProfile } from "@/types/bids";
 import supabase from "@/lib/supabase";
 import { useAuth } from "@/context/AuthContext";
@@ -10,174 +10,172 @@ export function useBids() {
   const [bids, setBids] = useState<BidWithProfile[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [hasFetched, setHasFetched] = useState(false); // Track if bids have been fetched
+  
+  // Use refs for tracking mount state and fetch status
+  const isMounted = useRef(true);
+  const hasFetchedRef = useRef(false);
+  const lastFetchTime = useRef(0);
+  const FETCH_COOLDOWN = 5000; // 5 seconds
 
-  //PUBLIC fetch trucker profile via bids.trucker_id
-  const fetchTruckerProfile = useCallback(
-    async (truckerId: string) => {
-      try {
-        if (!truckerId) return;
-        if (hasFetched) return;
-        setIsLoading(true);
-        const { data, error } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", truckerId);
+  // Memoize trucker profile fetch
+  const fetchTruckerProfile = useCallback(async (truckerId: string) => {
+    if (!truckerId || hasFetchedRef.current) return;
+    
+    try {
+      setIsLoading(true);
+      setError(null);
 
-        if (error) throw error;
-        return data;
-      } catch (error) {
-        setError(error as string);
-      }
-    },
-    [hasFetched]
-  );
-  //PUBLIC all FETCH BIDS
-  const fetchAllBids = useCallback(
-    async (loadId: string) => {
-      try {
-        if (hasFetched) return;
-        setIsLoading(true);
-        const { data, error } = await supabase
-          .from("bids")
-          .select("*")
-          .eq("load_id", loadId);
-        if (error) throw error;
-        setBids(data as BidWithProfile[]);
-        setHasFetched(true);
-      } catch (error) {
-        setError(error as string);
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [hasFetched]
-  );
-  //PUBLIC trucker can place bid on load
-  const placeBid = async (loadId: string, bidAmount: number) => {
-    try {
-      if (!user?.id) return;
-      if (hasFetched) return;
-      setIsLoading(true);
-      const { error } = await supabase.from("bids").insert({
-        load_id: loadId,
-        trucker_id: user?.id,
-        bid_amount: bidAmount,
-      });
-      if (error) throw error;
-    } catch (error) {
-      setError(error as string);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-  //PRIVATE trucker fetch ALL my bids
-  const fetchBids = useCallback(async () => {
-    try {
-      if (hasFetched) return;
-      setIsLoading(true);
-      if (!user?.id) return;
-      const { data, error } = await supabase
-        .from("bids")
+      const { data, error: profileError } = await supabase
+        .from("profiles")
         .select("*")
-        .eq("trucker_id", user.id);
-      if (error) throw error;
-      setBids(data);
-      setHasFetched(true);
-    } catch (error) {
-      setError(error as string);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [user?.id, hasFetched]);
+        .eq("id", truckerId)
+        .single();
 
-  //PUBLIC fetch Bids For Load.id
-  const fetchBidsForLoad = useCallback(
-    async (loadId: string) => {
-      try {
-        if (hasFetched) return;
-        setIsLoading(true);
-        const { data, error } = await supabase
-          .from("bids")
-          .select(
-            `
-        id,
-        load_id,
-        trucker_id,
-        bid_amount,
-        bid_status,
-        created_at,
-        updated_at
-      `
-          )
-          .eq("load_id", loadId)
-          .order("bid_amount", { ascending: false });
-        if (error) throw error;
-        setBids(data as BidWithProfile[]);
-        setHasFetched(true);
-      } catch (error) {
-        setError(error as string);
-      } finally {
+      if (profileError) throw profileError;
+      if (!isMounted.current) return;
+
+      hasFetchedRef.current = true;
+      return data;
+    } catch (error) {
+      if (isMounted.current) {
+        setError(error instanceof Error ? error.message : "Failed to fetch trucker profile");
+      }
+    } finally {
+      if (isMounted.current) {
         setIsLoading(false);
       }
-    },
-    [hasFetched]
-  );
+    }
+  }, []);
 
-  //PRIVATE broker PUT bid status
-  const updateBidStatus = async (bidId: string, status: Bid["bid_status"]) => {
+  // Optimize fetch all bids with cooldown
+  const fetchAllBids = useCallback(async (loadId: string, forceFetch = false) => {
+    const now = Date.now();
+    if (!forceFetch && now - lastFetchTime.current < FETCH_COOLDOWN) {
+      return;
+    }
+
     try {
-      //get bid status from request
-      if (!status || !["accepted", "rejected"].includes(status)) {
-        return NextResponse.json(
-          { error: 'Invalid bid status. Must be "accepted" or "rejected"' },
-          { status: 400 }
-        );
-      }
+      setIsLoading(true);
+      setError(null);
 
-      // Update the bid status
-      const { error: bidError } = await supabase
+      const { data, error: bidsError } = await supabase
         .from("bids")
-        .update({ bid_status: status })
-        .eq("id", bidId)
-        .select()
-        .single();
+        .select("*, profiles(*)")
+        .eq("load_id", loadId)
+        .order("created_at", { ascending: false });
+
+      if (bidsError) throw bidsError;
+      if (!isMounted.current) return;
+
+      setBids(data as BidWithProfile[]);
+      lastFetchTime.current = now;
+    } catch (error) {
+      if (isMounted.current) {
+        setError(error instanceof Error ? error.message : "Failed to fetch bids");
+      }
+    } finally {
+      if (isMounted.current) {
+        setIsLoading(false);
+      }
+    }
+  }, []);
+
+  // Optimize place bid with proper error handling
+  const placeBid = useCallback(async (loadId: string, bidAmount: number) => {
+    if (!user?.id) {
+      setError("User must be logged in to place a bid");
+      return { success: false, error: "User not authenticated" };
+    }
+
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const { error: bidError } = await supabase.from("bids").insert({
+        load_id: loadId,
+        trucker_id: user.id,
+        bid_amount: bidAmount,
+        bid_status: "pending"
+      });
 
       if (bidError) throw bidError;
-    } catch (error) {
-      setError(error as string);
-    }
-  };
 
-  //Private Trucker DELETE my bid for load.id
-  const deleteBidforLoad = async (loadId: string) => {
+      // Refresh bids after placing new bid
+      await fetchAllBids(loadId, true);
+      return { success: true };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to place bid";
+      setError(errorMessage);
+      return { success: false, error: errorMessage };
+    } finally {
+      setIsLoading(false);
+    }
+  }, [user?.id, fetchAllBids]);
+
+  // Optimize update bid status
+  const updateBidStatus = useCallback(async (bidId: string, status: Bid["bid_status"]) => {
+    if (!["accepted", "rejected"].includes(status)) {
+      setError("Invalid bid status");
+      return { success: false, error: "Invalid bid status" };
+    }
+
     try {
-      const { error } = await supabase
-        .from("bids")
-        .delete()
-        .eq("load_id", loadId)
-        .eq("trucker_id", user?.id)
-        .single();
-      if (error) throw error;
-    } catch (error) {
-      setError(error as string);
-    }
-  };
-  //hooks
-  useEffect(() => {
-    fetchBids();
-  }, [fetchBids]);
+      setIsLoading(true);
+      setError(null);
 
-  return {
+      const { error: updateError } = await supabase
+        .from("bids")
+        .update({ bid_status: status })
+        .eq("id", bidId);
+
+      if (updateError) throw updateError;
+      
+      // Update local state
+      setBids(prevBids => 
+        prevBids.map(bid => 
+          bid.id === bidId ? { ...bid, bid_status: status } : bid
+        )
+      );
+
+      return { success: true };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to update bid status";
+      setError(errorMessage);
+      return { success: false, error: errorMessage };
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
+
+  // Reset fetch status when user changes
+  useEffect(() => {
+    hasFetchedRef.current = false;
+    lastFetchTime.current = 0;
+  }, [user?.id]);
+
+  // Memoize return value
+  return useMemo(() => ({
     bids,
     isLoading,
     error,
-    fetchAllBids,
-    fetchBids,
-    fetchBidsForLoad,
-    updateBidStatus,
-    deleteBidforLoad,
     fetchTruckerProfile,
+    fetchAllBids,
     placeBid,
-  };
+    updateBidStatus
+  }), [
+    bids,
+    isLoading,
+    error,
+    fetchTruckerProfile,
+    fetchAllBids,
+    placeBid,
+    updateBidStatus
+  ]);
 }

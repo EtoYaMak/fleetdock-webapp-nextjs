@@ -1,28 +1,36 @@
 "use client";
 
-import Link from "next/link";
-import { useAuth } from "@/context/AuthContext";
+import { memo } from 'react';
+import Link from 'next/link';
+import { motion } from 'framer-motion';
 
-export default function NotFound() {
-  const { user } = useAuth();
-
+const NotFound = memo(function NotFound() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#203152]/10 to-[#4895d0]/10 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-[#4895d0] py-8 px-4 shadow sm:rounded-lg sm:px-10 text-center">
-          <h2 className="text-6xl font-bold text-[#f1f0f3] mb-4">404</h2>
-          <p className="text-xl text-[#f1f0f3] mb-8">Page not found</p>
-          <p className="text-[#f1f0f3] mb-8">
-            The page you are looking for doesn't exist or has been moved.
-          </p>
-          <Link
-            href={user ? "/dashboard" : "/"}
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-          >
-            Go back {user ? "to dashboard" : "home"}
-          </Link>
-        </div>
-      </div>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b to-[#283d67] from-[#203152] px-4">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="text-center"
+      >
+        <h1 className="text-6xl font-bold text-[#f1f0f3] mb-4">404</h1>
+        <h2 className="text-2xl font-semibold text-[#f1f0f3] mb-6">
+          Page Not Found
+        </h2>
+        <p className="text-[#f1f0f3]/80 mb-8">
+          The page you're looking for doesn't exist or has been moved.
+        </p>
+        <Link
+          href="/"
+          className="inline-block px-6 py-3 bg-[#4895d0] text-[#f1f0f3] rounded-lg 
+            hover:bg-[#4895d0]/80 transition-all duration-300"
+        >
+          Return Home
+        </Link>
+      </motion.div>
     </div>
   );
-}
+});
+
+NotFound.displayName = 'NotFound';
+
+export default NotFound;
