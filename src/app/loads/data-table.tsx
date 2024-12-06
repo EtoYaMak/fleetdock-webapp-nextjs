@@ -29,6 +29,18 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import { Button } from "@/components/ui/button";
+import { Filter } from "lucide-react";
+import { cn } from "@/lib/utils";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import DatePicker from "@/components/ui/date-picker";
+import { Slider } from "@/components/ui/slider";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -63,12 +75,154 @@ const ResultsCounter = ({
   );
 };
 
+const FilterPanel = ({
+  table,
+  showFilters,
+}: {
+  table: any;
+  showFilters: boolean;
+}) => {
+  return (
+    <div
+      className={cn(
+        "flex flex-1 items-start gap-4 overflow-hidden transition-all duration-300",
+        showFilters ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
+      )}
+    >
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-[#f1f0f3]">
+            Locations
+          </label>
+          <Input
+            placeholder="Pickup location..."
+            value={
+              (table
+                .getColumn("pickup_location")
+                ?.getFilterValue() as string) ?? ""
+            }
+            onChange={(event) =>
+              table
+                .getColumn("pickup_location")
+                ?.setFilterValue(event.target.value)
+            }
+            className="bg-[#1a2b47] border-[#4895d0]/30 text-[#f1f0f3]"
+          />
+          <Input
+            placeholder="Delivery location..."
+            value={
+              (table
+                .getColumn("delivery_location")
+                ?.getFilterValue() as string) ?? ""
+            }
+            onChange={(event) =>
+              table
+                .getColumn("delivery_location")
+                ?.setFilterValue(event.target.value)
+            }
+            className="bg-[#1a2b47] border-[#4895d0]/30 text-[#f1f0f3]"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-[#f1f0f3]">
+            Load Details
+          </label>
+          <Select
+            onValueChange={(value) =>
+              table.getColumn("load_type_name")?.setFilterValue(value)
+            }
+          >
+            <SelectTrigger className="bg-[#1a2b47] border-[#4895d0]/30 text-[#f1f0f3]">
+              <SelectValue placeholder="Load Type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="flatbed">Flatbed</SelectItem>
+              <SelectItem value="dry_van">Dry Van</SelectItem>
+              <SelectItem value="reefer">Reefer</SelectItem>
+            </SelectContent>
+          </Select>
+          <div className="space-y-1">
+            <label className="text-xs text-[#f1f0f3]">Weight Range (kg)</label>
+            <Slider
+              defaultValue={[0, 45000]}
+              min={0}
+              max={45000}
+              step={100}
+              onValueChange={(value) =>
+                table.getColumn("weight_kg")?.setFilterValue(value)
+              }
+              className="py-4"
+            />
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-[#f1f0f3]">
+            Payment & Status
+          </label>
+          <div className="space-y-1">
+            <label className="text-xs text-[#f1f0f3]">Budget Range</label>
+            <Slider
+              defaultValue={[0, 10000]}
+              min={0}
+              max={10000}
+              step={100}
+              onValueChange={(value) =>
+                table.getColumn("budget_amount")?.setFilterValue(value)
+              }
+              className="py-4"
+            />
+          </div>
+          <Select
+            onValueChange={(value) =>
+              table.getColumn("status")?.setFilterValue(value)
+            }
+          >
+            <SelectTrigger className="bg-[#1a2b47] border-[#4895d0]/30 text-[#f1f0f3]">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="available">Available</SelectItem>
+              <SelectItem value="assigned">Assigned</SelectItem>
+              <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="in_progress">In Progress</SelectItem>
+              <SelectItem value="completed">Completed</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-[#f1f0f3]">
+            Deadlines
+          </label>
+          <DatePicker
+            placeholder="Pickup deadline from"
+            onChange={(date) =>
+              table.getColumn("pickup_deadline")?.setFilterValue(date)
+            }
+            className="w-full"
+          />
+          <DatePicker
+            placeholder="Delivery deadline from"
+            onChange={(date) =>
+              table.getColumn("delivery_deadline")?.setFilterValue(date)
+            }
+            className="w-full"
+          />
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export function DataTable<TData, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [showFilters, setShowFilters] = useState(false);
 
   const table = useReactTable({
     data,
@@ -86,11 +240,23 @@ export function DataTable<TData, TValue>({
     filterFns: {
       custom: (row, id, filterValue) => {
         const value = row.getValue(id);
+
         if (typeof value === "object" && value !== null && "address" in value) {
           return (value as { address: string }).address
             .toLowerCase()
             .includes(filterValue.toLowerCase());
         }
+
+        if (Array.isArray(filterValue) && typeof value === "number") {
+          const [min, max] = filterValue;
+          return value >= min && value <= max;
+        }
+
+        if (filterValue instanceof Date && typeof value === "string") {
+          const dateValue = new Date(value);
+          return dateValue >= filterValue;
+        }
+
         return String(value).toLowerCase().includes(filterValue.toLowerCase());
       },
     },
@@ -98,103 +264,22 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="w-full">
-      <div className="flex flex-col sm:flex-row items-center gap-4 py-4 max-w-7xl mx-auto">
-        <div className="relative w-full sm:w-auto">
-          <Input
-            placeholder="Filter pickup location..."
-            value={
-              (table
-                .getColumn("pickup_location")
-                ?.getFilterValue() as string) ?? ""
-            }
-            onChange={(event) =>
-              table
-                .getColumn("pickup_location")
-                ?.setFilterValue(event.target.value)
-            }
-            className="w-full sm:w-[300px] bg-[#1a2b47] border-[#4895d0]/30 text-[#f1f0f3] 
-              placeholder:text-gray-400 focus:border-[#4895d0] focus:ring-[#4895d0]
-              rounded-lg py-2 px-4"
-          />
-          <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-            <svg
-              className="h-5 w-5 text-gray-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+      <div className="relative mb-4">
+        <div className="flex flex-col gap-4 max-w-7xl mx-auto">
+          <div className="flex justify-end">
+            <Button
+              variant="outline"
+              onClick={() => setShowFilters(!showFilters)}
+              className={cn(
+                "flex items-center gap-2 transition-colors",
+                showFilters && "bg-[#4895d0] text-white"
+              )}
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              />
-            </svg>
+              <Filter className="h-4 w-4" />
+              Refine Search
+            </Button>
           </div>
-        </div>
-
-        <div className="relative w-full sm:w-auto">
-          <Input
-            placeholder="Filter delivery location..."
-            value={
-              (table
-                .getColumn("delivery_location")
-                ?.getFilterValue() as string) ?? ""
-            }
-            onChange={(event) =>
-              table
-                .getColumn("delivery_location")
-                ?.setFilterValue(event.target.value)
-            }
-            className="w-full sm:w-[300px] bg-[#1a2b47] border-[#4895d0]/30 text-[#f1f0f3] 
-              placeholder:text-gray-400 focus:border-[#4895d0] focus:ring-[#4895d0]
-              rounded-lg py-2 px-4"
-          />
-          <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-            <svg
-              className="h-5 w-5 text-gray-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              />
-            </svg>
-          </div>
-        </div>
-
-        <div className="relative w-full sm:w-auto">
-          <Input
-            placeholder="Filter status..."
-            value={
-              (table.getColumn("status")?.getFilterValue() as string) ?? ""
-            }
-            onChange={(event) =>
-              table.getColumn("status")?.setFilterValue(event.target.value)
-            }
-            className="w-full sm:w-[300px] bg-[#1a2b47] border-[#4895d0]/30 text-[#f1f0f3] 
-              placeholder:text-gray-400 focus:border-[#4895d0] focus:ring-[#4895d0]
-              rounded-lg py-2 px-4"
-          />
-          <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-            <svg
-              className="h-5 w-5 text-gray-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              />
-            </svg>
-          </div>
+          <FilterPanel table={table} showFilters={showFilters} />
         </div>
       </div>
 
