@@ -1,20 +1,37 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { ReactNode } from "react";
-import { redirect } from "next/navigation";
+import { useEffect, memo } from "react";
+import LoadingSpinner from "@/app/components/ui/LoadingSpinner";
 
-export default function LoadsLayout({ children }: { children: ReactNode }) {
+const LoadsLayout = memo(function LoadsLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const { user, loading } = useAuth();
-  if (!user && !loading) {
-    redirect("/signin");
-  }
-  if (loading) {
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push("/");
+    }
+  }, [user, loading, router]);
+
+  if (loading && !user) {
     return (
       <div className="flex justify-center items-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+        <LoadingSpinner size="lg" color="border-blue-500" />
       </div>
     );
   }
-  return <div>{children}</div>;
-}
+
+  if (!user) return null;
+
+  return <>{children}</>;
+});
+
+LoadsLayout.displayName = "LoadsLayout";
+
+export default LoadsLayout;
