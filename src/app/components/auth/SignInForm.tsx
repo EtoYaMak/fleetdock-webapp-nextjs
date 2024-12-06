@@ -7,7 +7,11 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 
 // Memoize static components
-const FormIcon = memo(function FormIcon({ icon: Icon }: { icon: typeof FiMail }) {
+const FormIcon = memo(function FormIcon({
+  icon: Icon,
+}: {
+  icon: typeof FiMail;
+}) {
   return <Icon className="text-gray-400" />;
 });
 
@@ -55,7 +59,11 @@ const FormInput = memo(function FormInput({
 });
 
 // Memoize error message component
-const ErrorMessage = memo(function ErrorMessage({ message }: { message: string }) {
+const ErrorMessage = memo(function ErrorMessage({
+  message,
+}: {
+  message: string;
+}) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -77,46 +85,55 @@ const SignInForm = memo(function SignInForm() {
     password: "",
   });
 
-  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    setError(null);
-  }, []);
+  const handleInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const { name, value } = e.target;
+      setFormData((prev) => ({ ...prev, [name]: value }));
+      setError(null);
+    },
+    []
+  );
 
-  const handleSubmit = useCallback(async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError(null);
+  const handleSubmit = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      setIsLoading(true);
+      setError(null);
 
-    try {
-      await signIn(formData);
-      router.push(`/profile`);
-    } catch (error) {
-      setError(error instanceof Error ? error.message : "Failed to sign in");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [formData, signIn, router]);
+      try {
+        await signIn(formData);
+        router.push(`/profile`);
+      } catch (error) {
+        setError(error instanceof Error ? error.message : "Failed to sign in");
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [formData, signIn, router]
+  );
 
   // Memoize form inputs
-  const formInputs = useMemo(() => [
-    {
-      id: "email",
-      type: "email",
-      name: "email",
-      placeholder: "Enter your email",
-      icon: FiMail,
-      value: formData.email,
-    },
-    {
-      id: "password",
-      type: "password",
-      name: "password",
-      placeholder: "Enter your password",
-      icon: FiLock,
-      value: formData.password,
-    },
-  ], [formData.email, formData.password]);
+  const formInputs = useMemo(
+    () => [
+      {
+        id: "email",
+        type: "email",
+        name: "email",
+        placeholder: "Enter your email",
+        icon: FiMail,
+        value: formData.email,
+      },
+      {
+        id: "password",
+        type: "password",
+        name: "password",
+        placeholder: "Enter your password",
+        icon: FiLock,
+        value: formData.password,
+      },
+    ],
+    [formData.email, formData.password]
+  );
 
   return (
     <div className="min-h-screen w-full min-w-full bg-gradient-to-b to-[#283d67] from-[#203152] flex items-center justify-center p-4">
@@ -145,7 +162,7 @@ const SignInForm = memo(function SignInForm() {
               exit={{ opacity: 0, y: -20 }}
               className="space-y-6"
             >
-              {formInputs.map(input => (
+              {formInputs.map((input) => (
                 <FormInput
                   key={input.id}
                   {...input}

@@ -15,7 +15,7 @@ const DashboardLayout = memo(function DashboardLayout({
 
   useEffect(() => {
     if (!loading && !user) {
-      router.push("/signin");
+      router.push("/");
     }
   }, [user, loading, router]);
 

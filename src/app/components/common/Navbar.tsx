@@ -2,12 +2,17 @@
 
 import { useAuth } from "@/context/AuthContext";
 import Link from "next/link";
-import { FiUser, FiLogOut, FiTruck, FiPackage } from "react-icons/fi";
+import { FiUser, FiLogOut, FiPackage } from "react-icons/fi";
 import { memo, useMemo } from "react";
+import { TbLayoutDashboard } from "react-icons/tb";
 
 // Memoize static components
-const NavLink = memo(function NavLink({ href, children, className }: { 
-  href: string; 
+const NavLink = memo(function NavLink({
+  href,
+  children,
+  className,
+}: {
+  href: string;
   children: React.ReactNode;
   className?: string;
 }) {
@@ -18,10 +23,10 @@ const NavLink = memo(function NavLink({ href, children, className }: {
   );
 });
 
-const NavIcon = memo(function NavIcon({ 
-  icon: Icon, 
-  className 
-}: { 
+const NavIcon = memo(function NavIcon({
+  icon: Icon,
+  className,
+}: {
   icon: typeof FiUser;
   className?: string;
 }) {
@@ -40,34 +45,42 @@ const Navbar = memo(function Navbar() {
     if (user) {
       return (
         <>
-          <div className="flex items-center text-[#f1f0f3]">
-            <NavIcon 
-              icon={user.role === "trucker" ? FiTruck : FiPackage} 
-              className="h-5 w-5" 
-            />
-          </div>
+          <NavLink
+            href="/loads"
+            className="text-[#f1f0f3]/80 hover:text-[#f1f0f3] px-3 py-2 rounded-md text-sm font-medium
+              hover:bg-[#203152] hover:scale-105 transition-all duration-300 flex items-center gap-1"
+          >
+            <NavIcon icon={FiPackage} className="h-5 w-5" />
+            Loads
+          </NavLink>
 
           <NavLink
             href="/dashboard"
             className="text-[#f1f0f3]/80 hover:text-[#f1f0f3] px-3 py-2 rounded-md text-sm font-medium
-              hover:bg-[#203152] hover:scale-105 transition-all duration-300"
+              hover:bg-[#203152] hover:scale-105 transition-all duration-300 flex items-center gap-1"
           >
+            <NavIcon icon={TbLayoutDashboard} className="h-5 w-5 " />
             Dashboard
           </NavLink>
 
           <div className="relative ml-3 flex items-center space-x-4">
             <NavLink
               href="/profile"
-              className="flex items-center text-[#f1f0f3]/80 hover:text-[#f1f0f3] p-2 hover:bg-[#203152] rounded-md group"
+              className="text-[#f1f0f3]/80 hover:text-[#f1f0f3] px-3 py-2 rounded-md text-sm font-medium
+              hover:bg-[#203152] hover:scale-105 transition-all duration-300 flex items-center gap-1"
             >
-              <NavIcon icon={FiUser} className="h-5 w-5 group-hover:scale-110 transition-all duration-300" />
+              <NavIcon icon={FiUser} className="h-5 w-5" />
+              Profile
             </NavLink>
 
             <button
               onClick={signOut}
               className="flex items-center text-[#f1f0f3]/80 hover:text-[#f1f0f3] p-2 hover:bg-[#203152] rounded-md group"
             >
-              <NavIcon icon={FiLogOut} className="h-5 w-5 group-hover:scale-110 transition-all duration-300" />
+              <NavIcon
+                icon={FiLogOut}
+                className="h-5 w-5 group-hover:scale-110 transition-all duration-300"
+              />
             </button>
           </div>
         </>
@@ -105,9 +118,7 @@ const Navbar = memo(function Navbar() {
             </NavLink>
           </div>
 
-          <div className="flex items-center space-x-4">
-            {navigationItems}
-          </div>
+          <div className="flex items-center space-x-4">{navigationItems}</div>
         </div>
       </div>
     </nav>

@@ -39,13 +39,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import DatePicker from "@/components/ui/date-picker";
-import { Slider } from "@/components/ui/slider";
+import { RangeSlider } from "@/components/ui/range-slider";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
 }
+
+const formatCurrency = (value: number) => {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(value);
+};
 
 const ResultsCounter = ({
   table,
@@ -78,10 +86,37 @@ const ResultsCounter = ({
 const FilterPanel = ({
   table,
   showFilters,
+  data,
 }: {
   table: any;
   showFilters: boolean;
+  data: any[];
 }) => {
+  const budgetRange = data.reduce(
+    (acc, curr) => ({
+      min: Math.min(acc.min, curr.budget_amount),
+      max: Math.max(acc.max, curr.budget_amount),
+    }),
+    { min: Infinity, max: -Infinity }
+  );
+
+  const currentBudgetRange = table
+    .getColumn("budget_amount")
+    ?.getFilterValue() || [budgetRange.min, budgetRange.max];
+
+  const weightRange = data.reduce(
+    (acc, curr) => ({
+      min: Math.min(acc.min, curr.weight_kg),
+      max: Math.max(acc.max, curr.weight_kg),
+    }),
+    { min: Infinity, max: -Infinity }
+  );
+
+  const currentWeightRange = table.getColumn("weight_kg")?.getFilterValue() || [
+    weightRange.min,
+    weightRange.max,
+  ];
+
   return (
     <div
       className={cn(
@@ -89,127 +124,238 @@ const FilterPanel = ({
         showFilters ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
       )}
     >
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-[#f1f0f3]">
-            Locations
-          </label>
-          <Input
-            placeholder="Pickup location..."
-            value={
-              (table
-                .getColumn("pickup_location")
-                ?.getFilterValue() as string) ?? ""
-            }
-            onChange={(event) =>
-              table
-                .getColumn("pickup_location")
-                ?.setFilterValue(event.target.value)
-            }
-            className="bg-[#1a2b47] border-[#4895d0]/30 text-[#f1f0f3]"
-          />
-          <Input
-            placeholder="Delivery location..."
-            value={
-              (table
-                .getColumn("delivery_location")
-                ?.getFilterValue() as string) ?? ""
-            }
-            onChange={(event) =>
-              table
-                .getColumn("delivery_location")
-                ?.setFilterValue(event.target.value)
-            }
-            className="bg-[#1a2b47] border-[#4895d0]/30 text-[#f1f0f3]"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-[#f1f0f3]">
-            Load Details
-          </label>
-          <Select
-            onValueChange={(value) =>
-              table.getColumn("load_type_name")?.setFilterValue(value)
-            }
-          >
-            <SelectTrigger className="bg-[#1a2b47] border-[#4895d0]/30 text-[#f1f0f3]">
-              <SelectValue placeholder="Load Type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="flatbed">Flatbed</SelectItem>
-              <SelectItem value="dry_van">Dry Van</SelectItem>
-              <SelectItem value="reefer">Reefer</SelectItem>
-            </SelectContent>
-          </Select>
-          <div className="space-y-1">
-            <label className="text-xs text-[#f1f0f3]">Weight Range (kg)</label>
-            <Slider
-              defaultValue={[0, 45000]}
-              min={0}
-              max={45000}
-              step={100}
-              onValueChange={(value) =>
-                table.getColumn("weight_kg")?.setFilterValue(value)
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full p-6 bg-[#1a2b47] rounded-lg border border-[#4895d0]/30">
+        {/* Locations Section */}
+        <div className="space-y-4">
+          <h3 className="text-sm font-medium text-[#f1f0f3]">Locations</h3>
+          <div className="space-y-3">
+            <Input
+              placeholder="Pickup location..."
+              value={
+                (table
+                  .getColumn("pickup_location")
+                  ?.getFilterValue() as string) ?? ""
               }
-              className="py-4"
+              onChange={(event) =>
+                table
+                  .getColumn("pickup_location")
+                  ?.setFilterValue(event.target.value)
+              }
+              className="bg-[#1a2b47] border-[#4895d0]/30 text-[#f1f0f3]"
+            />
+            <Input
+              placeholder="Delivery location..."
+              value={
+                (table
+                  .getColumn("delivery_location")
+                  ?.getFilterValue() as string) ?? ""
+              }
+              onChange={(event) =>
+                table
+                  .getColumn("delivery_location")
+                  ?.setFilterValue(event.target.value)
+              }
+              className="bg-[#1a2b47] border-[#4895d0]/30 text-[#f1f0f3]"
             />
           </div>
         </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-[#f1f0f3]">
+        {/* Load Details Section */}
+        <div className="space-y-4">
+          <h3 className="text-sm font-medium text-[#f1f0f3]">Load Details</h3>
+          <div className="space-y-3">
+            <Select
+              value={
+                (table
+                  .getColumn("load_type_name")
+                  ?.getFilterValue() as string) || "all"
+              }
+              onValueChange={(value) =>
+                table
+                  .getColumn("load_type_name")
+                  ?.setFilterValue(value === "all" ? undefined : value)
+              }
+            >
+              <SelectTrigger className="bg-[#1a2b47] border-[#4895d0]/30 text-[#f1f0f3]">
+                <SelectValue placeholder="Load Type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Types</SelectItem>
+                <SelectItem value="Construction">Construction</SelectItem>
+                <SelectItem value="Electronics">Electronics</SelectItem>
+                <SelectItem value="Furniture">Furniture</SelectItem>
+                <SelectItem value="Hazardous">Hazardous</SelectItem>
+                <SelectItem value="FMCG">FMCG</SelectItem>
+                <SelectItem value="Perishables">Perishables</SelectItem>
+                <SelectItem value="Automotive">Automotive</SelectItem>
+                <SelectItem value="Heavy Equipment">Heavy Equipment</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-[#f1f0f3]">
+                Weight Range
+              </label>
+              <div className="space-y-4">
+                <div className="flex items-center gap-4">
+                  <div className="flex-1">
+                    <label className="text-xs text-[#f1f0f3] mb-1.5 block">
+                      Min (kg)
+                    </label>
+                    <input
+                      type="number"
+                      value={currentWeightRange[0]}
+                      onChange={(e) =>
+                        table
+                          .getColumn("weight_kg")
+                          ?.setFilterValue([
+                            Number(e.target.value),
+                            currentWeightRange[1],
+                          ])
+                      }
+                      className="flex h-9 w-full rounded-md border border-[#4895d0]/30 bg-[#1a2b47] px-3 py-1 text-sm text-[#f1f0f3] shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#4895d0]"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <label className="text-xs text-[#f1f0f3] mb-1.5 block">
+                      Max (kg)
+                    </label>
+                    <input
+                      type="number"
+                      value={currentWeightRange[1]}
+                      onChange={(e) =>
+                        table
+                          .getColumn("weight_kg")
+                          ?.setFilterValue([
+                            currentWeightRange[0],
+                            Number(e.target.value),
+                          ])
+                      }
+                      className="flex h-9 w-full rounded-md border border-[#4895d0]/30 bg-[#1a2b47] px-3 py-1 text-sm text-[#f1f0f3] shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#4895d0]"
+                    />
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="min-w-[60px] text-xs text-[#f1f0f3]">
+                    {currentWeightRange[0].toLocaleString()} kg
+                  </span>
+                  <RangeSlider
+                    defaultValue={[weightRange.min, weightRange.max]}
+                    value={currentWeightRange}
+                    min={weightRange.min}
+                    max={weightRange.max}
+                    step={100}
+                    minStepsBetweenThumbs={1}
+                    onValueChange={(value) =>
+                      table.getColumn("weight_kg")?.setFilterValue(value)
+                    }
+                    className="flex-1"
+                  />
+                  <span className="min-w-[60px] text-right text-xs text-[#f1f0f3]">
+                    {currentWeightRange[1].toLocaleString()} kg
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Payment & Status Section */}
+        <div className="space-y-4">
+          <h3 className="text-sm font-medium text-[#f1f0f3]">
             Payment & Status
-          </label>
-          <div className="space-y-1">
-            <label className="text-xs text-[#f1f0f3]">Budget Range</label>
-            <Slider
-              defaultValue={[0, 10000]}
-              min={0}
-              max={10000}
-              step={100}
-              onValueChange={(value) =>
-                table.getColumn("budget_amount")?.setFilterValue(value)
+          </h3>
+          <div className="space-y-3">
+            <Select
+              value={
+                (table.getColumn("status")?.getFilterValue() as string) || "all"
               }
-              className="py-4"
-            />
+              onValueChange={(value) =>
+                table
+                  .getColumn("status")
+                  ?.setFilterValue(value === "all" ? undefined : value)
+              }
+            >
+              <SelectTrigger className="bg-[#1a2b47] border-[#4895d0]/30 text-[#f1f0f3]">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Statuses</SelectItem>
+                <SelectItem value="available">Available</SelectItem>
+                <SelectItem value="accepted">Accepted</SelectItem>
+                <SelectItem value="assigned">Assigned</SelectItem>
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="posted">Posted</SelectItem>
+                <SelectItem value="in_progress">In Progress</SelectItem>
+                <SelectItem value="completed">Completed</SelectItem>
+              </SelectContent>
+            </Select>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-[#f1f0f3]">
+                Budget Range
+              </label>
+              <div className="space-y-4">
+                <div className="flex items-center gap-4">
+                  <div className="flex-1">
+                    <label className="text-xs text-[#f1f0f3] mb-1.5 block">
+                      Min
+                    </label>
+                    <input
+                      type="number"
+                      value={currentBudgetRange[0]}
+                      onChange={(e) =>
+                        table
+                          .getColumn("budget_amount")
+                          ?.setFilterValue([
+                            Number(e.target.value),
+                            currentBudgetRange[1],
+                          ])
+                      }
+                      className="flex h-9 w-full rounded-md border border-[#4895d0]/30 bg-[#1a2b47] px-3 py-1 text-sm text-[#f1f0f3] shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#4895d0]"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <label className="text-xs text-[#f1f0f3] mb-1.5 block">
+                      Max
+                    </label>
+                    <input
+                      type="number"
+                      value={currentBudgetRange[1]}
+                      onChange={(e) =>
+                        table
+                          .getColumn("budget_amount")
+                          ?.setFilterValue([
+                            currentBudgetRange[0],
+                            Number(e.target.value),
+                          ])
+                      }
+                      className="flex h-9 w-full rounded-md border border-[#4895d0]/30 bg-[#1a2b47] px-3 py-1 text-sm text-[#f1f0f3] shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#4895d0]"
+                    />
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="min-w-[60px] text-xs text-[#f1f0f3]">
+                    {formatCurrency(currentBudgetRange[0])}
+                  </span>
+                  <RangeSlider
+                    defaultValue={[budgetRange.min, budgetRange.max]}
+                    value={currentBudgetRange}
+                    min={budgetRange.min}
+                    max={budgetRange.max}
+                    step={100}
+                    minStepsBetweenThumbs={1}
+                    onValueChange={(value) =>
+                      table.getColumn("budget_amount")?.setFilterValue(value)
+                    }
+                    className="flex-1"
+                  />
+                  <span className="min-w-[60px] text-right text-xs text-[#f1f0f3]">
+                    {formatCurrency(currentBudgetRange[1])}
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
-          <Select
-            onValueChange={(value) =>
-              table.getColumn("status")?.setFilterValue(value)
-            }
-          >
-            <SelectTrigger className="bg-[#1a2b47] border-[#4895d0]/30 text-[#f1f0f3]">
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="available">Available</SelectItem>
-              <SelectItem value="assigned">Assigned</SelectItem>
-              <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="in_progress">In Progress</SelectItem>
-              <SelectItem value="completed">Completed</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-[#f1f0f3]">
-            Deadlines
-          </label>
-          <DatePicker
-            placeholder="Pickup deadline from"
-            onChange={(date) =>
-              table.getColumn("pickup_deadline")?.setFilterValue(date)
-            }
-            className="w-full"
-          />
-          <DatePicker
-            placeholder="Delivery deadline from"
-            onChange={(date) =>
-              table.getColumn("delivery_deadline")?.setFilterValue(date)
-            }
-            className="w-full"
-          />
         </div>
       </div>
     </div>
@@ -279,64 +425,59 @@ export function DataTable<TData, TValue>({
               Refine Search
             </Button>
           </div>
-          <FilterPanel table={table} showFilters={showFilters} />
+          <FilterPanel table={table} showFilters={showFilters} data={data} />
         </div>
       </div>
 
-      <div className="rounded-lg border border-[#4895d0]/30 max-w-7xl mx-auto overflow-hidden bg-[#1a2b47]">
-        <Table className="w-full">
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
+      <Table className="w-full ">
+        <TableHeader className="bg-[#4895d0]/50 backdrop-blur-sm">
+          {table.getHeaderGroups().map((headerGroup) => (
+            <TableRow
+              key={headerGroup.id}
+              className="bg-[#4895d0]/50 backdrop-blur-sm hover:bg-[#4895d0]/50 border-b-0"
+            >
+              {headerGroup.headers.map((header) => (
+                <TableHead
+                  key={header.id}
+                  className="text-[#f1f0f3] h-12 font-semibold hover:text-white transition-colors duration-100"
+                >
+                  {header.isPlaceholder
+                    ? null
+                    : flexRender(
+                        header.column.columnDef.header,
+                        header.getContext()
+                      )}
+                </TableHead>
+              ))}
+            </TableRow>
+          ))}
+        </TableHeader>
+        <TableBody className="bg-[hsl(217,46%,10%)]">
+          {table.getRowModel().rows?.length ? (
+            table.getRowModel().rows.map((row) => (
               <TableRow
-                key={headerGroup.id}
-                className="bg-[#4895d0] hover:bg-[#4895d0] border-b-0"
+                key={row.id}
+                className="border-b border-[#4895d0]/20 hover:bg-[#4895d0]/10 transition-colors"
               >
-                {headerGroup.headers.map((header) => (
-                  <TableHead
-                    key={header.id}
-                    className="text-[#f1f0f3] h-12 font-semibold hover:text-white transition-colors first:rounded-tl-lg last:rounded-tr-lg"
-                  >
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                  </TableHead>
+                {row.getVisibleCells().map((cell) => (
+                  <TableCell key={cell.id} className="text-[#f1f0f3] py-4">
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </TableCell>
                 ))}
               </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody className="bg-[#1a2b47]">
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  className="border-b border-[#4895d0]/20 hover:bg-[#4895d0]/10 transition-colors"
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} className="text-[#f1f0f3] py-4">
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center text-[#f1f0f3]"
-                >
-                  No results.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell
+                colSpan={columns.length}
+                className="h-24 text-center text-[#f1f0f3]"
+              >
+                No results.
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
 
       <div className="flex items-center justify-between py-4 max-w-7xl mx-auto">
         <ResultsCounter table={table} totalRows={data.length} />

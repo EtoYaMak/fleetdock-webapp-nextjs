@@ -25,7 +25,7 @@ const UserProvider = ({ children }: { children: React.ReactNode }) => {
         //test
         setUser({ ...sessionUser.data.user, ...profile });
         if (profile.role && window.location.pathname === "/") {
-          router.push(`/dashboard`);
+          router.push(`/loads`);
         }
       }
       setLoading(false);
@@ -129,7 +129,7 @@ const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <UserContext.Provider
-      value={{ user, loading, error, signIn, signOut, signUp}}
+      value={{ user, loading, error, signIn, signOut, signUp }}
     >
       {children}
     </UserContext.Provider>

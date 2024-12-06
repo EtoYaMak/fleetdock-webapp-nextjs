@@ -11,7 +11,7 @@ export default function SigninPage() {
 
   useEffect(() => {
     if (user && !loading) {
-      router.push("/dashboard");
+      router.push("/loads");
     }
   }, [user, loading, router]);
 
