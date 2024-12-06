@@ -1,6 +1,6 @@
 //src/hooks/useProfile.ts
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
-import { BrokerProfile } from "@/types/profile";
+import { BrokerProfile, Vehicle } from "@/types/profile";
 import supabase from "@/lib/supabase";
 import { useAuth } from "@/context/AuthContext";
 
@@ -136,6 +136,31 @@ export function useProfile() {
     }
   }, []);
 
+  // Memoize register vehicle function
+  const registerVehicle = useCallback(async (vehicleData: Partial<Vehicle>) => {
+    if (!user?.id) return { success: false, error: "User not authenticated" };
+
+    try {
+      setIsLoading(true);
+      setError(null);
+      const { error: registerError } = await supabase
+        .from("vehicles")
+        .insert({
+          ...vehicleData,
+          profile_id: user.id,
+          is_active: true
+        });
+
+      if (registerError) throw registerError;
+      return { success: true };
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to register vehicle";
+      setError(errorMessage);
+      return { success: false, error: errorMessage };
+    }
+  }, [user?.id]);
+
   useEffect(() => {
     // Initial fetch
     fetchProfile();
@@ -160,6 +185,7 @@ export function useProfile() {
       fetchProfile,
       fetchVehicles,
       fetchVehicleTypes,
+      registerVehicle,
     }),
     [
       brokerProfile,
@@ -169,6 +195,7 @@ export function useProfile() {
       fetchProfile,
       fetchVehicles,
       fetchVehicleTypes,
+      registerVehicle,
     ]
   );
 }

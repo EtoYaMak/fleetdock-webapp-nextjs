@@ -3,6 +3,24 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { FiTruck } from "react-icons/fi";
+import { format } from "date-fns";
+import { CalendarIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useProfile } from "@/hooks/useProfile";
 
 interface VehicleType {
   id: string;
@@ -34,6 +52,7 @@ const RegisterVehicle = ({
   vehicleTypes,
   onVehicleAdded,
 }: RegisterVehicleProps) => {
+  const { registerVehicle } = useProfile();
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<{
     type: "success" | "error";
@@ -46,10 +65,19 @@ const RegisterVehicle = ({
     manufacturer: "",
     model: "",
     year: new Date().getFullYear(),
-    insurance_expiry: "",
-    last_maintenance_date: "",
-    next_maintenance_date: "",
+    insurance_expiry: undefined as Date | undefined,
+    last_maintenance_date: undefined as Date | undefined,
+    next_maintenance_date: undefined as Date | undefined,
   });
+
+  const generateYearOptions = () => {
+    const currentYear = new Date().getFullYear();
+    const years = [];
+    for (let year = currentYear + 1; year >= currentYear - 20; year--) {
+      years.push(year);
+    }
+    return years;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,37 +85,50 @@ const RegisterVehicle = ({
     setMessage(null);
 
     try {
-      const response = await fetch("/api/vehicles", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
+      const formattedData = {
+        ...formData,
+        insurance_expiry: formData.insurance_expiry
+          ? format(formData.insurance_expiry, "yyyy-MM-dd")
+          : "",
+        last_maintenance_date: formData.last_maintenance_date
+          ? format(formData.last_maintenance_date, "yyyy-MM-dd")
+          : "",
+        next_maintenance_date: formData.next_maintenance_date
+          ? format(formData.next_maintenance_date, "yyyy-MM-dd")
+          : "",
+      };
 
-      const data = await response.json();
+      const { success, error } = await registerVehicle(formattedData);
 
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to register vehicle");
+      if (error) {
+        setMessage({
+          type: "error",
+          text: error,
+        });
+        return;
       }
 
-      onVehicleAdded(data.vehicle);
-      setMessage({ type: "success", text: "Vehicle registered successfully!" });
-      setFormData({
-        vehicle_type_id: "",
-        license_plate: "",
-        manufacturer: "",
-        model: "",
-        year: new Date().getFullYear(),
-        insurance_expiry: "",
-        last_maintenance_date: "",
-        next_maintenance_date: "",
-      });
+      if (success) {
+        setMessage({
+          type: "success",
+          text: "Vehicle registered successfully!",
+        });
+
+        setFormData({
+          vehicle_type_id: "",
+          license_plate: "",
+          manufacturer: "",
+          model: "",
+          year: new Date().getFullYear(),
+          insurance_expiry: undefined,
+          last_maintenance_date: undefined,
+          next_maintenance_date: undefined,
+        });
+      }
     } catch (error) {
       setMessage({
         type: "error",
-        text:
-          error instanceof Error ? error.message : "Failed to register vehicle",
+        text: "An unexpected error occurred",
       });
     } finally {
       setIsLoading(false);
@@ -107,7 +148,7 @@ const RegisterVehicle = ({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-gradient-to-t from-[#4895d0]/10 to-[#4895d0]/20 rounded-lg p-6 shadow-lg max-w-2xl mx-auto"
+      className="bg-gradient-to-t from-[#4895d0]/10 to-[#4895d0]/20 rounded-lg p-6 shadow-lg max-w-4xl mx-auto w-full"
     >
       <div className="flex items-center mb-6">
         <FiTruck className="w-6 h-6 text-[#f1f0f3] mr-2" />
@@ -136,20 +177,23 @@ const RegisterVehicle = ({
             <label className="block text-sm font-medium text-[#f1f0f3] mb-2">
               Vehicle Type
             </label>
-            <select
-              name="vehicle_type_id"
+            <Select
               value={formData.vehicle_type_id}
-              onChange={handleChange}
-              className="w-full p-3 border border-[#f1f0f3] rounded-md focus:ring-2 focus:ring-blue-500 bg-[#203152] text-[#f1f0f3]"
-              required
+              onValueChange={(value) =>
+                setFormData((prev) => ({ ...prev, vehicle_type_id: value }))
+              }
             >
-              <option value="">Select Vehicle Type</option>
-              {vehicleTypes.map((type) => (
-                <option key={type.id} value={type.id}>
-                  {type.name} ({type.capacity} tons)
-                </option>
-              ))}
-            </select>
+              <SelectTrigger className="w-full p-3 h-12 border border-[#f1f0f3] bg-[#203152] text-[#f1f0f3]">
+                <SelectValue placeholder="Select Vehicle Type" />
+              </SelectTrigger>
+              <SelectContent className="bg-[#203152] text-[#f1f0f3]">
+                {vehicleTypes.map((type) => (
+                  <SelectItem key={type.id} value={type.id} className="py-3">
+                    {type.name} ({type.capacity} tons)
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div>
@@ -198,58 +242,156 @@ const RegisterVehicle = ({
             <label className="block text-sm font-medium text-[#f1f0f3] mb-2">
               Year
             </label>
-            <input
-              type="number"
-              name="year"
-              value={formData.year}
-              onChange={handleChange}
-              min="1900"
-              max={new Date().getFullYear() + 1}
-              className="w-full p-3 border border-[#f1f0f3] rounded-md focus:ring-2 focus:ring-blue-500 bg-[#203152] text-[#f1f0f3]"
-              required
-            />
+            <Select
+              value={formData.year.toString()}
+              onValueChange={(value) =>
+                setFormData((prev) => ({ ...prev, year: parseInt(value) }))
+              }
+            >
+              <SelectTrigger className="w-full p-3 h-12 border border-[#f1f0f3] bg-[#203152] text-[#f1f0f3]">
+                <SelectValue placeholder="Select Year" />
+              </SelectTrigger>
+              <SelectContent className="bg-[#203152] text-[#f1f0f3]">
+                {generateYearOptions().map((year) => (
+                  <SelectItem
+                    key={year}
+                    value={year.toString()}
+                    className="p-3"
+                  >
+                    {year}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-[#f1f0f3] mb-2">
               Insurance Expiry
             </label>
-            <input
-              type="date"
-              name="insurance_expiry"
-              value={formData.insurance_expiry}
-              onChange={handleChange}
-              className="w-full p-3 border border-[#f1f0f3] rounded-md focus:ring-2 focus:ring-blue-500 bg-[#203152] text-[#f1f0f3]"
-              required
-            />
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-full p-3 h-12 border border-[#f1f0f3] bg-[#203152] text-[#f1f0f3] group",
+                    !formData.insurance_expiry && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4 text-[#f1f0f3] group-hover:text-[#4895d0]" />
+                  {formData.insurance_expiry ? (
+                    format(formData.insurance_expiry, "PPP")
+                  ) : (
+                    <span className="text-[#f1f0f3] group-hover:text-[#4895d0]">
+                      Pick a date
+                    </span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0">
+                <Calendar
+                  mode="single"
+                  selected={formData.insurance_expiry}
+                  onSelect={(date) =>
+                    setFormData((prev) => ({ ...prev, insurance_expiry: date }))
+                  }
+                  className={`bg-[#203152] text-[#f1f0f3]`}
+                  classNames={{
+                    head_cell:
+                      "text-[#4895d0] rounded-md w-8 font-normal text-[0.8rem]",
+                  }}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-[#f1f0f3] mb-2">
               Last Maintenance Date
             </label>
-            <input
-              type="date"
-              name="last_maintenance_date"
-              value={formData.last_maintenance_date}
-              onChange={handleChange}
-              className="w-full p-3 border border-[#f1f0f3] rounded-md focus:ring-2 focus:ring-blue-500 bg-[#203152] text-[#f1f0f3]"
-              required
-            />
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-full p-3 h-12 border border-[#f1f0f3] bg-[#203152] text-[#f1f0f3] group",
+                    !formData.last_maintenance_date && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4 text-[#f1f0f3] group-hover:text-[#4895d0]" />
+                  {formData.last_maintenance_date ? (
+                    format(formData.last_maintenance_date, "PPP")
+                  ) : (
+                    <span className="text-[#f1f0f3] group-hover:text-[#4895d0]">
+                      Pick a date
+                    </span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0">
+                <Calendar
+                  mode="single"
+                  selected={formData.last_maintenance_date}
+                  onSelect={(date) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      last_maintenance_date: date,
+                    }))
+                  }
+                  className={`bg-[#203152] text-[#f1f0f3]`}
+                  classNames={{
+                    head_cell:
+                      "text-[#4895d0] rounded-md w-8 font-normal text-[0.8rem]",
+                  }}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-[#f1f0f3] mb-2">
               Next Maintenance Date
             </label>
-            <input
-              type="date"
-              name="next_maintenance_date"
-              value={formData.next_maintenance_date}
-              onChange={handleChange}
-              className="w-full p-3 border border-[#f1f0f3] rounded-md focus:ring-2 focus:ring-blue-500 bg-[#203152] text-[#f1f0f3]"
-              required
-            />
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-full p-3 h-12 border border-[#f1f0f3] bg-[#203152] text-[#f1f0f3] group",
+                    !formData.next_maintenance_date && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4 text-[#f1f0f3] group-hover:text-[#4895d0]" />
+                  {formData.next_maintenance_date ? (
+                    format(formData.next_maintenance_date, "PPP")
+                  ) : (
+                    <span className="text-[#f1f0f3] group-hover:text-[#4895d0]">
+                      Pick a date
+                    </span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0">
+                <Calendar
+                  mode="single"
+                  selected={formData.next_maintenance_date}
+                  onSelect={(date) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      next_maintenance_date: date,
+                    }))
+                  }
+                  className={`bg-[#203152] text-[#f1f0f3]`}
+                  classNames={{
+                    head_cell:
+                      "text-[#4895d0] rounded-md w-8 font-normal text-[0.8rem]",
+                  }}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
           </div>
         </div>
 
