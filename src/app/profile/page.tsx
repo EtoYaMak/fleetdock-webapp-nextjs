@@ -7,13 +7,15 @@ import BrokerProfile from "./components/BrokerProfile";
 import TruckerProfile from "./components/TruckerProfile";
 import { useAuth } from "@/context/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
-
+import { redirect } from "next/navigation";
 function ProfileContent() {
   const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState(
     searchParams.get("tab") || "profile"
   );
   const { user } = useAuth();
+  if (!user) redirect("/");
+
   const { isLoading: profileLoading, error: profileError } = useProfile();
 
   // Update URL when tab changes

@@ -50,7 +50,7 @@ export interface LoadFormData {
   budget_amount: number;
   budget_currency: string;
   special_instructions?: string;
-  bid_enabled: boolean;
+  bid_enabled: boolean; 
   fixed_rate: number;
 }
 

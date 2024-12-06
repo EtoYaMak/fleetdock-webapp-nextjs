@@ -7,7 +7,9 @@ import { LoadFormData, ValidationErrors } from "@/types/loads";
 import { useLoadTypes } from "@/hooks/useLoadTypes";
 
 interface LoadFormProps {
-  onSubmit: (data: LoadFormData) => Promise<{ success: boolean; error?: string }>;
+  onSubmit: (
+    data: LoadFormData
+  ) => Promise<{ success: boolean; error?: string }>;
   initialData?: Partial<LoadFormData>;
   isEdit?: boolean;
   isSubmitting?: boolean;
@@ -117,70 +119,89 @@ const LoadForm = memo(function LoadForm({
     budget_amount: initialData?.budget_amount || 0,
     budget_currency: initialData?.budget_currency || "USD",
     special_instructions: initialData?.special_instructions || "",
+    bid_enabled: initialData?.bid_enabled || false,
+    fixed_rate: initialData?.fixed_rate || 0,
   }));
 
   const [errors, setErrors] = useState<ValidationErrors>({});
 
-  const handleChange = useCallback((
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => {
-      if (name === "pickup_location" || name === "delivery_location") {
-        return {
-          ...prev,
-          [name]: { address: value },
-        };
-      }
-      return { ...prev, [name]: value };
-    });
-    setErrors((prev) => ({ ...prev, [name]: "" }));
-  }, []);
+  const handleChange = useCallback(
+    (
+      e: React.ChangeEvent<
+        HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+      >
+    ) => {
+      const { name, value } = e.target;
+      setFormData((prev) => {
+        if (name === "pickup_location" || name === "delivery_location") {
+          return {
+            ...prev,
+            [name]: { address: value },
+          };
+        }
+        return { ...prev, [name]: value };
+      });
+      setErrors((prev) => ({ ...prev, [name]: "" }));
+    },
+    []
+  );
 
   const validateForm = useCallback(() => {
     const newErrors: ValidationErrors = {};
-    
-    if (!formData.load_type_id) newErrors.load_type_id = "Load type is required";
+
+    if (!formData.load_type_id)
+      newErrors.load_type_id = "Load type is required";
     if (!formData.weight_kg) newErrors.weight_kg = "Weight is required";
-    if (!formData.pickup_location.address) newErrors.pickup_location = "Pickup location is required";
-    if (!formData.delivery_location.address) newErrors.delivery_location = "Delivery location is required";
-    if (!formData.pickup_deadline) newErrors.pickup_deadline = "Pickup deadline is required";
-    if (!formData.delivery_deadline) newErrors.delivery_deadline = "Delivery deadline is required";
-    if (!formData.budget_amount) newErrors.budget_amount = "Budget amount is required";
+    if (!formData.pickup_location.address)
+      newErrors.pickup_location = "Pickup location is required";
+    if (!formData.delivery_location.address)
+      newErrors.delivery_location = "Delivery location is required";
+    if (!formData.pickup_deadline)
+      newErrors.pickup_deadline = "Pickup deadline is required";
+    if (!formData.delivery_deadline)
+      newErrors.delivery_deadline = "Delivery deadline is required";
+    if (!formData.budget_amount)
+      newErrors.budget_amount = "Budget amount is required";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   }, [formData]);
 
-  const handleSubmit = useCallback(async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!validateForm()) return;
+  const handleSubmit = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!validateForm()) return;
 
-    const selectedLoadType = loadTypes.find(
-      (lt) => lt.id === formData.load_type_id
-    );
-    const dataToSubmit = {
-      ...formData,
-      load_type_name: selectedLoadType?.name || "",
-    };
+      const selectedLoadType = loadTypes.find(
+        (lt) => lt.id === formData.load_type_id
+      );
+      const dataToSubmit = {
+        ...formData,
+        load_type_name: selectedLoadType?.name || "",
+      };
 
-    await onSubmit(dataToSubmit);
-  }, [formData, loadTypes, onSubmit, validateForm]);
+      await onSubmit(dataToSubmit);
+    },
+    [formData, loadTypes, onSubmit, validateForm]
+  );
 
-  const formFields = useMemo(() => [
-    { name: "load_type_id", label: "Load Type", type: "select" },
-    { name: "weight_kg", label: "Weight (kg)", type: "number" },
-    { name: "length_cm", label: "Length (cm)", type: "number" },
-    { name: "width_cm", label: "Width (cm)", type: "number" },
-    { name: "height_cm", label: "Height (cm)", type: "number" },
-    { name: "pickup_location", label: "Pickup Location", type: "text" },
-    { name: "delivery_location", label: "Delivery Location", type: "text" },
-    { name: "distance_manual", label: "Distance (km)", type: "number" },
-    { name: "pickup_deadline", label: "Pickup Deadline", type: "date" },
-    { name: "delivery_deadline", label: "Delivery Deadline", type: "date" },
-    { name: "budget_amount", label: "Budget Amount", type: "number" },
-    { name: "budget_currency", label: "Currency", type: "text" },
-  ], []);
+  const formFields = useMemo(
+    () => [
+      { name: "load_type_id", label: "Load Type", type: "select" },
+      { name: "weight_kg", label: "Weight (kg)", type: "number" },
+      { name: "length_cm", label: "Length (cm)", type: "number" },
+      { name: "width_cm", label: "Width (cm)", type: "number" },
+      { name: "height_cm", label: "Height (cm)", type: "number" },
+      { name: "pickup_location", label: "Pickup Location", type: "text" },
+      { name: "delivery_location", label: "Delivery Location", type: "text" },
+      { name: "distance_manual", label: "Distance (km)", type: "number" },
+      { name: "pickup_deadline", label: "Pickup Deadline", type: "date" },
+      { name: "delivery_deadline", label: "Delivery Deadline", type: "date" },
+      { name: "budget_amount", label: "Budget Amount", type: "number" },
+      { name: "budget_currency", label: "Currency", type: "text" },
+    ],
+    []
+  );
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -208,7 +229,11 @@ const LoadForm = memo(function LoadForm({
                 <FormInput
                   type={field.type}
                   name={field.name}
-                  value={formData[field.name as keyof LoadFormData]}
+                  value={
+                    formData[field.name as keyof LoadFormData] as
+                      | string
+                      | number
+                  }
                   onChange={handleChange}
                   required
                 />
@@ -255,9 +280,9 @@ const LoadForm = memo(function LoadForm({
   );
 });
 
-FormField.displayName = 'FormField';
-FormInput.displayName = 'FormInput';
-FormSelect.displayName = 'FormSelect';
-LoadForm.displayName = 'LoadForm';
+FormField.displayName = "FormField";
+FormInput.displayName = "FormInput";
+FormSelect.displayName = "FormSelect";
+LoadForm.displayName = "LoadForm";
 
 export default LoadForm;

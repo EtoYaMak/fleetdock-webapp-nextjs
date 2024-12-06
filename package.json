@@ -43,5 +43,8 @@
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.15",
     "typescript": "^5"
+  },
+  "npmConfig": {
+    "legacy-peer-deps": true
   }
 }

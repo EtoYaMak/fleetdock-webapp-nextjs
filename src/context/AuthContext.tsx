@@ -24,9 +24,6 @@ const UserProvider = ({ children }: { children: React.ReactNode }) => {
           .single();
         //test
         setUser({ ...sessionUser.data.user, ...profile });
-        if (profile.role && window.location.pathname === "/") {
-          router.push(`/loads`);
-        }
       }
       setLoading(false);
     };
