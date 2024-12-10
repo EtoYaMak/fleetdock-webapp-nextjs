@@ -2,21 +2,16 @@
 
 import React, { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import SideNav from "./components/SideNav";
-import BrokerProfile from "./components/BrokerProfile";
-import TruckerProfile from "./components/TruckerProfile";
 import { useAuth } from "@/context/AuthContext";
-import { useProfile } from "@/hooks/useProfile";
 import { redirect } from "next/navigation";
 function ProfileContent() {
   const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState(
     searchParams.get("tab") || "profile"
   );
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   if (!user) redirect("/");
 
-  const { isLoading: profileLoading, error: profileError } = useProfile();
 
   // Update URL when tab changes
   const handleTabChange = (tab: string) => {
@@ -36,7 +31,7 @@ function ProfileContent() {
     }
   }, [searchParams, activeTab]);
 
-  if (profileLoading) {
+  if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
@@ -44,23 +39,6 @@ function ProfileContent() {
     );
   }
 
-  return (
-    <div className="flex flex-col md:flex-row gap-4 p-4 min-h-screen">
-      <SideNav activeTab={activeTab} setActiveTab={handleTabChange} />
-      {user?.role === "broker" ? (
-        <BrokerProfile
-          activeTab={activeTab}
-          isLoading={profileLoading}
-          error={profileError}
-        />
-      ) : (
-        <TruckerProfile activeTab={activeTab} />
-      )}
-    </div>
-  );
-}
-
-export default function ProfilePage() {
   return (
     <Suspense fallback={<div>Loading...</div>}>
       <ProfileContent />

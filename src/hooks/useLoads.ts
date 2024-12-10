@@ -1,102 +1,94 @@
-import { useState, useEffect, useCallback, useRef } from "react";
-import { Load, LoadType } from "@/types/loads";
-import supabase from "@/lib/supabase";
-
-export function useLoads() {
+import { useState, useEffect, useCallback } from "react";
+import { Load, LoadType } from "@/types/load";
+import { createClient } from "@/utils/supabase/client";
+export const useLoads = () => {
+  const supabase = createClient();
   const [loads, setLoads] = useState<Load[]>([]);
-  const [stats, setStats] = useState({
-    activeLoads: 0,
-    pendingAssignments: 0,
-    completedLoads: 0,
-  });
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [loadTypes] = useState<Record<string, LoadType>>({});
 
-  // Use ref to track if the component is mounted
-  const isMounted = useRef(true);
-
-  // Track last fetch time to prevent too frequent updates
-  const lastFetchTime = useRef(0);
-  const FETCH_COOLDOWN = 5000; // 5 seconds
-
+  // Fetch loads from Supabase
   const fetchLoads = useCallback(async () => {
-    const now = Date.now();
-    if (now - lastFetchTime.current < FETCH_COOLDOWN) return;
-
-    setIsLoading(true);
+    setLoading(true);
 
     try {
       const { data, error: loadError } = await supabase.from("loads").select(`
-          *,
-          load_types (
-            name,
-            id
-          )
-      `);
+                *,
+                load_types (
+                    name,
+                    id
+                )                
+            `);
 
       if (loadError) throw loadError;
 
       const transformedLoads = (data || []).map((load) => ({
         ...load,
         load_type_name: load.load_types?.name,
-        load_types: undefined,
+        load_types: load.load_types.id,
       }));
 
-      if (isMounted.current) {
-        setLoads(transformedLoads);
-        setStats(calculateStats(transformedLoads));
-        lastFetchTime.current = now;
-      }
+      setLoads(transformedLoads);
     } catch (err) {
-      if (isMounted.current) {
-        setError(err instanceof Error ? err.message : "Failed to fetch loads");
-      }
+      setError(err instanceof Error ? err.message : "Failed to fetch loads");
     } finally {
-      if (isMounted.current) setIsLoading(false);
+      setLoading(false);
     }
   }, []);
 
-  const calculateStats = (loadData: Load[]) => ({
-    activeLoads: loadData.filter((load) => load.status === "available").length,
-    pendingAssignments: loadData.filter(
-      (load) => load.status === "pending" || load.status === "posted"
-    ).length,
-    completedLoads: loadData.filter((load) => load.status === "completed")
-      .length,
-  });
-
-  const deleteLoad = async (loadId: string) => {
-    try {
-      await supabase.from("loads").delete().eq("id", loadId);
-
-      setLoads((prevLoads) => prevLoads.filter((load) => load.id !== loadId));
-      return { success: true };
-    } catch (err) {
-      return {
-        success: false,
-        error: err instanceof Error ? err.message : "Failed to delete load",
-      };
+  // Create a new load
+  const createLoad = async (newLoad: Load) => {
+    setLoading(true);
+    const { data, error } = await supabase.from("loads").insert([newLoad]);
+    if (error) {
+      setError(error.message);
+    } else {
+      setLoads((prevLoads) => [...prevLoads, ...(data || [])]);
     }
+    setLoading(false);
+  };
+
+  // Update an existing load
+  const updateLoad = async (updatedLoad: Load) => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from("loads")
+      .update(updatedLoad)
+      .eq("id", updatedLoad.id);
+    if (error) {
+      setError(error.message);
+    } else {
+      setLoads((prevLoads) =>
+        prevLoads.map((load) =>
+          load.id === updatedLoad.id ? (data ? data[0] : load) : load
+        )
+      );
+    }
+    setLoading(false);
+  };
+
+  // Delete a load
+  const deleteLoad = async (loadId: string) => {
+    setLoading(true);
+    const { error } = await supabase.from("loads").delete().eq("id", loadId);
+    if (error) {
+      setError(error.message);
+    } else {
+      setLoads((prevLoads) => prevLoads.filter((load) => load.id !== loadId));
+    }
+    setLoading(false);
   };
 
   useEffect(() => {
-    isMounted.current = true;
     fetchLoads();
-
-    // Cleanup function
-    return () => {
-      isMounted.current = false;
-    };
-  }, [fetchLoads]);
+  }, []);
 
   return {
     loads,
-    stats,
     isLoading,
     error,
-    refetch: fetchLoads,
-    loadTypes,
+    createLoad,
+    updateLoad,
     deleteLoad,
   };
-}
+};

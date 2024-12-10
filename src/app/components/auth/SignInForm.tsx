@@ -102,7 +102,7 @@ const SignInForm = memo(function SignInForm() {
 
       try {
         await signIn(formData);
-        router.push(`/profile`);
+        router.push(`/loads`);
       } catch (error) {
         setError(error instanceof Error ? error.message : "Failed to sign in");
       } finally {

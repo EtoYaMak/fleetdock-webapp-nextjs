@@ -1,288 +1,386 @@
 "use client";
 
-import { useState, useCallback, useMemo, memo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { FiSave, FiAlertCircle } from "react-icons/fi";
-import { LoadFormData, ValidationErrors } from "@/types/loads";
+import { useState } from "react";
+import { Load, LoadStatus } from "@/types/load";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { DatePicker } from "@/components/ui/date-picker";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { FiSave, FiX } from "react-icons/fi";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 import { useLoadTypes } from "@/hooks/useLoadTypes";
 
 interface LoadFormProps {
-  onSubmit: (
-    data: LoadFormData
-  ) => Promise<{ success: boolean; error?: string }>;
-  initialData?: Partial<LoadFormData>;
+  initialData?: Partial<Load>;
+  onSubmit: (data: Load) => Promise<void>;
   isEdit?: boolean;
-  isSubmitting?: boolean;
 }
 
-// Memoize form field component
-const FormField = memo(function FormField({
-  label,
-  error,
-  children,
-}: {
-  label: string;
-  error?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="mb-4">
-      <label className="block text-sm font-medium text-gray-700 mb-1">
-        {label}
-      </label>
-      {children}
-      {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
-    </div>
-  );
-});
-
-// Memoize form input component
-const FormInput = memo(function FormInput({
-  type,
-  name,
-  value,
-  onChange,
-  placeholder,
-  required,
-}: {
-  type: string;
-  name: string;
-  value: string | number;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  placeholder?: string;
-  required?: boolean;
-}) {
-  return (
-    <input
-      type={type}
-      name={name}
-      value={value}
-      onChange={onChange}
-      placeholder={placeholder}
-      required={required}
-      className="w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 border-gray-300"
-    />
-  );
-});
-
-// Memoize form select component
-const FormSelect = memo(function FormSelect({
-  name,
-  value,
-  onChange,
-  options,
-  required,
-}: {
-  name: string;
-  value: string;
-  onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
-  options: { id: string; name: string }[];
-  required?: boolean;
-}) {
-  return (
-    <select
-      name={name}
-      value={value}
-      onChange={onChange}
-      required={required}
-      className="w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 border-gray-300"
-    >
-      <option value="">Select a load type</option>
-      {options.map((option) => (
-        <option key={option.id} value={option.id}>
-          {option.name}
-        </option>
-      ))}
-    </select>
-  );
-});
-
-const LoadForm = memo(function LoadForm({
-  onSubmit,
+export default function LoadForm({
   initialData,
-  isEdit,
-  isSubmitting,
+  onSubmit,
+  isEdit = false,
 }: LoadFormProps) {
-  const { loadTypes } = useLoadTypes();
-  const [formData, setFormData] = useState<LoadFormData>(() => ({
+  const router = useRouter();
+  const { user } = useAuth();
+  const { loadTypes, isLoading: loadTypesLoading } = useLoadTypes();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState<Partial<Load>>({
+    broker_id: user?.id || "",
     load_type_id: initialData?.load_type_id || "",
-    load_type_name: initialData?.load_type_name || "",
+    temperature_controlled: initialData?.temperature_controlled || false,
     weight_kg: initialData?.weight_kg || 0,
-    length_cm: initialData?.length_cm || 0,
-    width_cm: initialData?.width_cm || 0,
-    height_cm: initialData?.height_cm || 0,
-    pickup_location: initialData?.pickup_location || { address: "" },
-    delivery_location: initialData?.delivery_location || { address: "" },
-    distance_manual: initialData?.distance_manual || 0,
-    pickup_deadline: initialData?.pickup_deadline || "",
-    delivery_deadline: initialData?.delivery_deadline || "",
+    dimensions: initialData?.dimensions || { length: 0, width: 0, height: 0 },
+    pickup_location: initialData?.pickup_location || {
+      address: "",
+      city: "",
+      state: "",
+      zip: "",
+    },
+    delivery_location: initialData?.delivery_location || {
+      address: "",
+      city: "",
+      state: "",
+      zip: "",
+    },
+    pickup_date: initialData?.pickup_date || new Date(),
+    delivery_date: initialData?.delivery_date || new Date(),
+    distance_km: initialData?.distance_km || 0,
+    special_instructions: initialData?.special_instructions || "",
+    load_status: initialData?.load_status || LoadStatus.POSTED,
     budget_amount: initialData?.budget_amount || 0,
     budget_currency: initialData?.budget_currency || "USD",
-    special_instructions: initialData?.special_instructions || "",
     bid_enabled: initialData?.bid_enabled || false,
-    fixed_rate: initialData?.fixed_rate || 0,
-  }));
+    bidding_deadline: initialData?.bidding_deadline || null,
+    fixed_rate: initialData?.fixed_rate || null,
+    equipment_required: initialData?.equipment_required || "",
+    truck_type_required: initialData?.truck_type_required || "",
+    contact_name: initialData?.contact_name || "",
+    contact_phone: initialData?.contact_phone || "",
+    contact_email: initialData?.contact_email || "",
+  });
 
-  const [errors, setErrors] = useState<ValidationErrors>({});
-
-  const handleChange = useCallback(
-    (
-      e: React.ChangeEvent<
-        HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-      >
-    ) => {
-      const { name, value } = e.target;
-      setFormData((prev) => {
-        if (name === "pickup_location" || name === "delivery_location") {
-          return {
-            ...prev,
-            [name]: { address: value },
-          };
-        }
-        return { ...prev, [name]: value };
-      });
-      setErrors((prev) => ({ ...prev, [name]: "" }));
-    },
-    []
-  );
-
-  const validateForm = useCallback(() => {
-    const newErrors: ValidationErrors = {};
-
-    if (!formData.load_type_id)
-      newErrors.load_type_id = "Load type is required";
-    if (!formData.weight_kg) newErrors.weight_kg = "Weight is required";
-    if (!formData.pickup_location.address)
-      newErrors.pickup_location = "Pickup location is required";
-    if (!formData.delivery_location.address)
-      newErrors.delivery_location = "Delivery location is required";
-    if (!formData.pickup_deadline)
-      newErrors.pickup_deadline = "Pickup deadline is required";
-    if (!formData.delivery_deadline)
-      newErrors.delivery_deadline = "Delivery deadline is required";
-    if (!formData.budget_amount)
-      newErrors.budget_amount = "Budget amount is required";
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  }, [formData]);
-
-  const handleSubmit = useCallback(
-    async (e: React.FormEvent) => {
-      e.preventDefault();
-      if (!validateForm()) return;
-
-      const selectedLoadType = loadTypes.find(
-        (lt) => lt.id === formData.load_type_id
-      );
-      const dataToSubmit = {
-        ...formData,
-        load_type_name: selectedLoadType?.name || "",
-      };
-
-      await onSubmit(dataToSubmit);
-    },
-    [formData, loadTypes, onSubmit, validateForm]
-  );
-
-  const formFields = useMemo(
-    () => [
-      { name: "load_type_id", label: "Load Type", type: "select" },
-      { name: "weight_kg", label: "Weight (kg)", type: "number" },
-      { name: "length_cm", label: "Length (cm)", type: "number" },
-      { name: "width_cm", label: "Width (cm)", type: "number" },
-      { name: "height_cm", label: "Height (cm)", type: "number" },
-      { name: "pickup_location", label: "Pickup Location", type: "text" },
-      { name: "delivery_location", label: "Delivery Location", type: "text" },
-      { name: "distance_manual", label: "Distance (km)", type: "number" },
-      { name: "pickup_deadline", label: "Pickup Deadline", type: "date" },
-      { name: "delivery_deadline", label: "Delivery Deadline", type: "date" },
-      { name: "budget_amount", label: "Budget Amount", type: "number" },
-      { name: "budget_currency", label: "Currency", type: "text" },
-    ],
-    []
-  );
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      await onSubmit(formData as Load);
+      router.push("/dashboard");
+    } catch (error) {
+      console.error("Error submitting form:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <AnimatePresence mode="wait">
-        {formFields.map((field) => (
-          <motion.div
-            key={field.name}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-          >
-            <FormField
-              label={field.label}
-              error={errors[field.name as keyof ValidationErrors]}
+    <form onSubmit={handleSubmit} className="space-y-6 text-[#f1f0f3]">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">Load Type</label>
+            <Select
+              disabled={loadTypesLoading}
+              value={formData.load_type_id}
+              onValueChange={(value) =>
+                setFormData((prev) => ({ ...prev, load_type_id: value }))
+              }
             >
-              {field.type === "select" ? (
-                <FormSelect
-                  name={field.name}
-                  value={formData[field.name as keyof LoadFormData] as string}
-                  onChange={handleChange}
-                  options={loadTypes}
-                  required
-                />
-              ) : (
-                <FormInput
-                  type={field.type}
-                  name={field.name}
-                  value={
-                    formData[field.name as keyof LoadFormData] as
-                      | string
-                      | number
-                  }
-                  onChange={handleChange}
-                  required
-                />
-              )}
-            </FormField>
-          </motion.div>
-        ))}
-      </AnimatePresence>
+              <SelectTrigger className="bg-[#203152] border-[#4895d0]/30">
+                <SelectValue placeholder="Select load type" />
+              </SelectTrigger>
+              <SelectContent className="bg-[#203152] border-[#4895d0]/30">
+                {loadTypes?.map((type) => (
+                  <SelectItem key={type.id} value={type.id}>
+                    {type.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Special Instructions
-        </label>
-        <textarea
-          value={formData.special_instructions}
-          onChange={handleChange}
-          name="special_instructions"
-          rows={4}
-          className="w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 border-gray-300"
-        />
+          <div className="flex items-center gap-2">
+            <label className="text-sm font-medium">
+              Temperature Controlled
+            </label>
+            <input
+              type="checkbox"
+              checked={formData.temperature_controlled}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  temperature_controlled: e.target.checked,
+                }))
+              }
+              className="rounded border-[#4895d0]/30 bg-[#203152]"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="block text-sm font-medium">Dimensions</label>
+            <div className="grid grid-cols-3 gap-2">
+              {["length", "width", "height"].map((dim) => (
+                <Input
+                  key={dim}
+                  type="number"
+                  placeholder={dim}
+                  value={formData.dimensions?.[dim] || 0}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      dimensions: {
+                        ...prev.dimensions,
+                        [dim]: parseFloat(e.target.value),
+                      },
+                    }))
+                  }
+                  className="bg-[#203152] border-[#4895d0]/30"
+                />
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              Weight (kg)
+            </label>
+            <Input
+              type="number"
+              value={formData.weight_kg}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  weight_kg: parseFloat(e.target.value),
+                }))
+              }
+              className="bg-[#203152] border-[#4895d0]/30"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              Pickup Date
+            </label>
+            <DatePicker
+              value={formData.pickup_date as Date}
+              onChange={(date) =>
+                setFormData((prev) => ({ ...prev, pickup_date: date }))
+              }
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              Delivery Date
+            </label>
+            <DatePicker
+              value={formData.delivery_date as Date}
+              onChange={(date) =>
+                setFormData((prev) => ({ ...prev, delivery_date: date }))
+              }
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              Pricing Method
+            </label>
+            <Select
+              value={formData.bid_enabled ? "bidding" : "fixed"}
+              onValueChange={(value) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  bid_enabled: value === "bidding",
+                  fixed_rate: value === "bidding" ? null : prev.fixed_rate,
+                  bidding_deadline: value === "bidding" ? new Date() : null,
+                }))
+              }
+            >
+              <SelectTrigger className="bg-[#203152] border-[#4895d0]/30">
+                <SelectValue placeholder="Select pricing method" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="fixed">Fixed Rate</SelectItem>
+                <SelectItem value="bidding">Bidding</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {formData.bid_enabled ? (
+            <>
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Bidding Deadline
+                </label>
+                <DatePicker
+                  value={formData.bidding_deadline as Date}
+                  onChange={(date) =>
+                    setFormData((prev) => ({ ...prev, bidding_deadline: date }))
+                  }
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Budget Amount
+                </label>
+                <Input
+                  type="number"
+                  value={formData.budget_amount}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      budget_amount: parseFloat(e.target.value),
+                    }))
+                  }
+                  className="bg-[#203152] border-[#4895d0]/30"
+                />
+              </div>
+            </>
+          ) : (
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                Fixed Rate
+              </label>
+              <Input
+                type="number"
+                value={formData.fixed_rate || 0}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    fixed_rate: parseFloat(e.target.value),
+                  }))
+                }
+                className="bg-[#203152] border-[#4895d0]/30"
+              />
+            </div>
+          )}
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              Equipment Required
+            </label>
+            <Input
+              value={formData.equipment_required}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  equipment_required: e.target.value,
+                }))
+              }
+              className="bg-[#203152] border-[#4895d0]/30"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              Truck Type Required
+            </label>
+            <Input
+              value={formData.truck_type_required || ""}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  truck_type_required: e.target.value,
+                }))
+              }
+              className="bg-[#203152] border-[#4895d0]/30"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              Contact Name
+            </label>
+            <Input
+              value={formData.contact_name || ""}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  contact_name: e.target.value,
+                }))
+              }
+              className="bg-[#203152] border-[#4895d0]/30"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              Contact Phone
+            </label>
+            <Input
+              value={formData.contact_phone || ""}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  contact_phone: e.target.value,
+                }))
+              }
+              className="bg-[#203152] border-[#4895d0]/30"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              Contact Email
+            </label>
+            <Input
+              type="email"
+              value={formData.contact_email || ""}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  contact_email: e.target.value,
+                }))
+              }
+              className="bg-[#203152] border-[#4895d0]/30"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              Special Instructions
+            </label>
+            <Input
+              value={formData.special_instructions}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  special_instructions: e.target.value,
+                }))
+              }
+              className="bg-[#203152] border-[#4895d0]/30"
+            />
+          </div>
+        </div>
       </div>
 
-      <motion.button
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
-        disabled={isSubmitting}
-        className={`w-full md:w-auto px-6 py-2 bg-[#2d416d] transition-colors text-[#f1f0f3] rounded-md flex items-center justify-center space-x-2 ${
-          isSubmitting ? "opacity-70 cursor-not-allowed" : "hover:bg-[#4895d0]"
-        }`}
-      >
-        {isSubmitting ? (
-          <>
-            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white" />
-            <span>Saving...</span>
-          </>
-        ) : (
-          <>
-            <FiSave className="w-5 h-5" />
-            <span>{isEdit ? "Update Load" : "Create Load"}</span>
-          </>
-        )}
-      </motion.button>
+      <div className="flex justify-end gap-4">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => router.back()}
+          className="bg-[#203152] border-[#4895d0]/30 text-[#f1f0f3] hover:bg-[#203152]/90"
+        >
+          <FiX className="mr-2" /> Cancel
+        </Button>
+        <Button
+          type="submit"
+          disabled={isSubmitting}
+          className="bg-[#4895d0] text-[#f1f0f3] hover:bg-[#4895d0]/90"
+        >
+          <FiSave className="mr-2" />
+          {isSubmitting ? "Saving..." : isEdit ? "Update Load" : "Create Load"}
+        </Button>
+      </div>
     </form>
   );
-});
-
-FormField.displayName = "FormField";
-FormInput.displayName = "FormInput";
-FormSelect.displayName = "FormSelect";
-LoadForm.displayName = "LoadForm";
-
-export default LoadForm;
+}

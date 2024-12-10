@@ -3,7 +3,7 @@
 import { useLoads } from "@/hooks/useLoads";
 import { columns } from "@/app/loads/columns";
 import { DataTable } from "@/app/loads/data-table";
-
+import { LoadCombined } from "@/types/load";
 export default function LoadsPage() {
   const { loads, isLoading, error } = useLoads();
 
@@ -17,7 +17,7 @@ export default function LoadsPage() {
 
   return (
     <div className="container mx-auto py-10 w-full">
-      <DataTable columns={columns} data={loads || []} />
+      <DataTable columns={columns} data={loads as LoadCombined[]} />
     </div>
   );
 }

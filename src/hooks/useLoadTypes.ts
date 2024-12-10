@@ -1,45 +1,34 @@
-import { useState, useEffect } from "react";
-import supabase from "@/lib/supabase";
-import { LoadType } from "@/types/loads";
+import { useState, useEffect, useCallback } from "react";
+import { LoadType } from "@/types/load";
+import { createClient } from "@/utils/supabase/client";
 
-export function useLoadTypes() {
+export const useLoadTypes = () => {
+  const supabase = createClient();
   const [loadTypes, setLoadTypes] = useState<LoadType[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
+  const fetchLoadTypes = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const { data, error: loadTypesError } = await supabase
+        .from("load_types")
+        .select("*");
+
+      if (loadTypesError) throw loadTypesError;
+      setLoadTypes(data || []);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to fetch load types"
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  }, [supabase]);
+
   useEffect(() => {
-    let isMounted = true;
-
-    const fetchLoadTypes = async () => {
-      try {
-        setIsLoading(true);
-        const { data, error } = await supabase
-          .from("load_types")
-          .select("*")
-          .order("name");
-
-        if (error) throw error;
-
-        if (isMounted) {
-          setLoadTypes(data || []);
-        }
-      } catch (err) {
-        if (isMounted) {
-          setError(
-            err instanceof Error ? err.message : "Failed to fetch load types"
-          );
-        }
-      } finally {
-        if (isMounted) setIsLoading(false);
-      }
-    };
-
     fetchLoadTypes();
+  }, [fetchLoadTypes]);
 
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
-  return { loadTypes, isLoading, error };
-}
+  return { loadTypes, isLoading, error, fetchLoadTypes };
+};

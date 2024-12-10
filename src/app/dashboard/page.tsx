@@ -1,11 +1,10 @@
 "use client";
 
-import { memo } from "react";
+import { memo, useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
-import BrokerDash from "./components/BrokerDash";
-import TruckerDash from "./components/TruckerDash";
 import LoadingSpinner from "@/app/components/ui/LoadingSpinner";
-
+import BrokerDashboard from "./components/BrokerDashboard";
+import TruckerDashboard from "./components/TruckerDashboard";
 const InvalidRole = memo(function InvalidRole() {
   return (
     <div className="min-h-screen bg-[#203152] flex flex-col justify-center py-12 sm:px-6 lg:px-8">
@@ -37,11 +36,13 @@ const Dashboard = memo(function Dashboard() {
   if (!user) return null;
 
   const roleComponents = {
-    broker: <BrokerDash />,
-    trucker: <TruckerDash />,
+    broker: <BrokerDashboard />,
+    trucker: <TruckerDashboard />,
   };
 
-  return roleComponents[user.role as keyof typeof roleComponents] || <InvalidRole />;
+  return (
+    roleComponents[user.role as keyof typeof roleComponents] || <InvalidRole />
+  );
 });
 
 export default Dashboard;

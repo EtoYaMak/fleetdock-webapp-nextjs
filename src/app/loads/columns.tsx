@@ -4,6 +4,7 @@ import { ColumnDef, FilterFn } from "@tanstack/react-table";
 import { formatDistanceToNow } from "date-fns";
 import { ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Load } from "@/types/load";
 
 // Declare the custom filter type
 declare module "@tanstack/table-core" {
@@ -11,21 +12,6 @@ declare module "@tanstack/table-core" {
     custom: FilterFn<any>;
   }
 }
-
-// Define the Load type based on your data structure
-type Load = {
-  id: string;
-  pickup_location: { address: string };
-  delivery_location: { address: string };
-  weight_kg: number;
-  budget_amount: number;
-  budget_currency: string;
-  status: string;
-  pickup_deadline: string;
-  delivery_deadline: string;
-  created_at: string;
-  load_type_name: string;
-};
 
 export const columns: ColumnDef<Load>[] = [
   {
@@ -42,7 +28,7 @@ export const columns: ColumnDef<Load>[] = [
       );
     },
     cell: ({ row }) => {
-      const created_at = new Date(row.original.created_at);
+      const created_at = new Date(row.original.created_at || "");
       return formatDistanceToNow(created_at, { addSuffix: true });
     },
   },
@@ -59,7 +45,7 @@ export const columns: ColumnDef<Load>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => row.original.pickup_location.address,
+    cell: ({ row }) => row.original.pickup_location,
     filterFn: "custom",
   },
   {
@@ -75,7 +61,7 @@ export const columns: ColumnDef<Load>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => row.original.delivery_location.address,
+    cell: ({ row }) => row.original.delivery_location,
     filterFn: "custom",
   },
   {
@@ -151,13 +137,13 @@ export const columns: ColumnDef<Load>[] = [
     },
     cell: ({ row }) => (
       <span className="px-2 py-1 rounded-full text-xs font-semibold bg-[#4895d0] text-[#f1f0f3]">
-        {row.original.status.toUpperCase()}
+        {row.original.load_status}
       </span>
     ),
   },
 
   {
-    accessorKey: "pickup_deadline",
+    accessorKey: "pickup_date",
     header: ({ column }) => {
       return (
         <Button
@@ -169,11 +155,10 @@ export const columns: ColumnDef<Load>[] = [
         </Button>
       );
     },
-    cell: ({ row }) =>
-      new Date(row.original.pickup_deadline).toLocaleDateString(),
+    cell: ({ row }) => new Date(row.original.pickup_date).toLocaleDateString(),
   },
   {
-    accessorKey: "delivery_deadline",
+    accessorKey: "delivery_date",
     header: ({ column }) => {
       return (
         <Button
@@ -186,6 +171,6 @@ export const columns: ColumnDef<Load>[] = [
       );
     },
     cell: ({ row }) =>
-      new Date(row.original.delivery_deadline).toLocaleDateString(),
+      new Date(row.original.delivery_date).toLocaleDateString(),
   },
 ];
