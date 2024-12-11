@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
-import { Load, LoadType } from "@/types/load";
-import { createClient } from "@/utils/supabase/client";
+import { Load } from "@/types/load";
+import supabase from "@/lib/supabase";
+
 export const useLoads = () => {
-  const supabase = createClient();
   const [loads, setLoads] = useState<Load[]>([]);
   const [isLoading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);

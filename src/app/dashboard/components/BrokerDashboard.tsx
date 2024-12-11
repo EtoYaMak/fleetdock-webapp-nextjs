@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { FiPlus, FiTrash2, FiEdit2 } from "react-icons/fi";
+import { FiPlus, FiTrash2, FiEdit2, FiEye } from "react-icons/fi";
 import { useLoads } from "@/hooks/useLoads";
 import { useAuth } from "@/context/AuthContext";
 import { memo } from "react";
@@ -34,6 +34,10 @@ const BrokerDashboard = memo(() => {
       (load) => load.load_status === LoadStatus.ACCEPTED
     ).length,
     biddingLoads: brokerLoads.filter((load) => load.bid_enabled).length,
+  };
+
+  const handleView = (loadId: string) => {
+    router.push(`/dashboard/loads/${loadId}`);
   };
 
   const handleCreate = () => {
@@ -147,6 +151,14 @@ const BrokerDashboard = memo(() => {
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleView(load.id)}
+                      className="bg-[#1a2b47] border-[#4895d0]/30 hover:bg-[#4895d0]/20"
+                    >
+                      <FiEye className="h-4 w-4" />
+                    </Button>
                     <Button
                       variant="outline"
                       size="sm"

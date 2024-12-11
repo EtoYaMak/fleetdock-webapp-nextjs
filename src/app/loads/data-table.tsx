@@ -40,6 +40,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { RangeSlider } from "@/components/ui/range-slider";
+import { Location } from "@/types/load";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -268,11 +269,11 @@ const FilterPanel = ({
           <div className="space-y-3">
             <Select
               value={
-                (table.getColumn("status")?.getFilterValue() as string) || "all"
+                (table.getColumn("load_status")?.getFilterValue() as string) || "all"
               }
               onValueChange={(value) =>
                 table
-                  .getColumn("status")
+                  .getColumn("load_status")
                   ?.setFilterValue(value === "all" ? undefined : value)
               }
             >
@@ -387,22 +388,30 @@ export function DataTable<TData, TValue>({
       custom: (row, id, filterValue) => {
         const value = row.getValue(id);
 
-        if (typeof value === "object" && value !== null && "address" in value) {
-          return (value as { address: string }).address
-            .toLowerCase()
-            .includes(filterValue.toLowerCase());
+        // Handle Location objects
+        if (value && typeof value === "object" && "city" in value) {
+          const location = value as Location;
+          const searchStr = filterValue.toLowerCase();
+          return (
+            location.city.toLowerCase().includes(searchStr) ||
+            location.state.toLowerCase().includes(searchStr) ||
+            location.zip.toLowerCase().includes(searchStr)
+          );
         }
 
+        // Handle number ranges
         if (Array.isArray(filterValue) && typeof value === "number") {
           const [min, max] = filterValue;
           return value >= min && value <= max;
         }
 
+        // Handle dates
         if (filterValue instanceof Date && typeof value === "string") {
           const dateValue = new Date(value);
           return dateValue >= filterValue;
         }
 
+        // Default string comparison
         return String(value).toLowerCase().includes(filterValue.toLowerCase());
       },
     },

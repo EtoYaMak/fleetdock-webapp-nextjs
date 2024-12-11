@@ -32,9 +32,11 @@ export default function CreateLoad() {
         </Link>
       </div>
 
-      <div className="bg-[#1a2b47] shadow rounded-lg border border-[#4895d0]/30">
-        <div className="px-4 py-5 sm:p-6">
-          <h1 className="text-2xl font-bold text-[#f1f0f3] mb-6">Create New Load</h1>
+      <div className="rounded-lg  ">
+        <div className="">
+          <h1 className="text-2xl font-bold text-[#f1f0f3] mb-6">
+            Create New Load
+          </h1>
           <LoadForm onSubmit={handleSubmit} />
         </div>
       </div>

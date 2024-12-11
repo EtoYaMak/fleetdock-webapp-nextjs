@@ -9,17 +9,33 @@ import Link from "next/link";
 import LoadingSpinner from "@/app/components/ui/LoadingSpinner";
 import { useAuth } from "@/context/AuthContext";
 
-export default function EditLoad({ params }: { params: { id: string } }) {
+export default function EditLoad({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { loads, updateLoad, isLoading } = useLoads();
   const { user } = useAuth();
   const [load, setLoad] = useState<Load | null>(null);
+  const [id, setId] = useState<string | null>(null);
 
   useEffect(() => {
-    const currentLoad = loads.find((l) => l.id === params.id);
-    if (currentLoad) {
-      setLoad(currentLoad);
+    const fetchParams = async () => {
+      const resolvedParams = await params;
+      setId(resolvedParams.id);
+    };
+
+    fetchParams();
+  }, [params]);
+
+  useEffect(() => {
+    if (id) {
+      const currentLoad = loads.find((l) => l.id === id);
+      if (currentLoad) {
+        setLoad(currentLoad);
+      }
     }
-  }, [loads, params.id]);
+  }, [loads, id]);
 
   const handleSubmit = async (data: Load) => {
     if (load) {

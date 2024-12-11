@@ -1,30 +1,34 @@
 export interface BrokerBusiness {
-  id: string; // UUID
-  profile_id?: string; // UUID
-  business_license_number: string; // Text
-  business_license_expiry: Date; // Date
-  tax_id?: string; // Text
-  business_type?: string; // Text
-  year_established?: number; // Integer
-  insurance_policy_number?: string; // Text
-  insurance_expiry?: Date; // Date
-  verification_status?: string; // Text
-  verification_date?: Date; // Timestamp
-  created_at?: Date; // Timestamp
-  updated_at?: Date; // Timestamp
+  id: string;
+  profile_id: string;
+  company_name: string;
+  license_number: string;
+  business_license_number: string;
+  business_license_expiry: Date;
+  tax_id?: string;
+  business_type?: string;
+  year_established?: number;
+  insurance_policy_number?: string;
+  insurance_expiry?: Date;
+  location?: {
+    address?: string;
+    city?: string;
+    state?: string;
+    country?: string;
+    postal_code?: string;
+  };
+  business_details?: {
+    description?: string;
+    website?: string;
+    phone?: string;
+    email?: string;
+  };
+  verification_status: "pending" | "verified" | "rejected";
+  verification_date?: Date;
+  created_at: Date;
+  updated_at: Date;
 }
 
-export interface BrokerDetail {
-  id: string; // UUID
-  profile_id: string; // UUID
-  company_name: string; // Text
-  license_number: string; // Text
-  location?: object; // JSONB
-  business_details?: object; // JSONB
-  verification_status?: string; // Text
-  created_at?: Date; // Timestamp
-  updated_at?: Date; // Timestamp
-}
-
-//combined type
-export type Broker = BrokerBusiness & BrokerDetail;
+export type BrokerFormData = Partial<
+  Omit<BrokerBusiness, "id" | "profile_id" | "created_at" | "updated_at">
+>;

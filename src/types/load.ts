@@ -5,9 +5,9 @@ export interface Load {
   load_type_name?: string; // Text
   temperature_controlled?: boolean; // Boolean
   weight_kg: number; // Numeric
-  dimensions?: object; // JSONB
-  pickup_location: object; // JSONB
-  delivery_location: object; // JSONB
+  dimensions?: Dimensions; // JSONB
+  pickup_location: Location; // Update type from object to Location
+  delivery_location: Location; // Update type from object to Location
   pickup_date: Date; // Timestamp
   delivery_date: Date; // Timestamp
   distance_km?: number; // Numeric
@@ -18,15 +18,19 @@ export interface Load {
   bid_enabled?: boolean | null; // Boolean
   bidding_deadline?: Date | null; // Timestamp
   fixed_rate?: number | null; // Numeric
-  equipment_required?: string; // Text
-  truck_type_required?: string | null; // Text
+  equipment_required: string; // UUID
+  truck_type_required: string; // UUID
   contact_name: string | null; // Text
   contact_phone: string | null; // Text
   contact_email: string | null; // Text
   created_at?: Date; // Timestamp
   updated_at?: Date; // Timestamp
 }
-
+export interface Dimensions {
+  length: number;
+  width: number;
+  height: number;
+}
 export enum LoadStatus {
   POSTED = "posted",
   PENDING = "pending",
@@ -61,3 +65,10 @@ export interface LoadReport {
 
 //combined type
 export type LoadCombined = Load & LoadType;
+
+export interface Location {
+  address: string;
+  city: string;
+  state: string;
+  zip: string;
+}
