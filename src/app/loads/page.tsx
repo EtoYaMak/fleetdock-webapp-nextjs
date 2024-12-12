@@ -4,6 +4,7 @@ import { useLoads } from "@/hooks/useLoads";
 import { columns } from "@/app/loads/columns";
 import { DataTable } from "@/app/loads/data-table";
 import { LoadCombined } from "@/types/load";
+
 export default function LoadsPage() {
   const { loads, isLoading, error } = useLoads();
 

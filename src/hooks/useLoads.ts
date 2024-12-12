@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { Load } from "@/types/load";
-import supabase from "@/lib/supabase";
+import { supabase } from "@/lib/supabase";
 
 export const useLoads = () => {
   const [loads, setLoads] = useState<Load[]>([]);
@@ -12,13 +12,16 @@ export const useLoads = () => {
     setLoading(true);
 
     try {
+      // Add logging to see the current user
+      const { data: userData } = await supabase.auth.getUser();
+
       const { data, error: loadError } = await supabase.from("loads").select(`
-                *,
-                load_types (
-                    name,
-                    id
-                )                
-            `);
+          *,
+          load_types (
+            name,
+            id
+          )                
+        `);
 
       if (loadError) throw loadError;
 
@@ -30,6 +33,7 @@ export const useLoads = () => {
 
       setLoads(transformedLoads);
     } catch (err) {
+      console.error("Load fetch error:", err);
       setError(err instanceof Error ? err.message : "Failed to fetch loads");
     } finally {
       setLoading(false);

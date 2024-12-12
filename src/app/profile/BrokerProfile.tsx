@@ -5,9 +5,10 @@ import BrokerProfileForm from "./components/BrokerProfileForm";
 import ViewBrokerProfileData from "./components/ViewBrokerProfileData";
 import { BrokerFormData } from "@/types/broker";
 import { useAuth } from "@/context/AuthContext";
+import { User } from "@/types/auth";
 type TabType = "edit" | "view";
 
-export default function BrokerProfile() {
+export default function BrokerProfile({ user }: { user: User }) {
   const { broker, isLoading, error, createBroker, updateBroker } = useBroker();
   const { signOut } = useAuth();
   const [activeTab, setActiveTab] = useState<TabType>("view");
@@ -86,7 +87,7 @@ export default function BrokerProfile() {
           <div>
             <h1 className="text-2xl font-bold mb-6">Profile Details</h1>
             {broker ? (
-              <ViewBrokerProfileData broker={broker} />
+              <ViewBrokerProfileData broker={broker} user={user as User} />
             ) : (
               <div className="text-[#4895d0]">No profile data available</div>
             )}

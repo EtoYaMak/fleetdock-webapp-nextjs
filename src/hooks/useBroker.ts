@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { BrokerBusiness, BrokerFormData } from "@/types/broker";
-import supabase from "@/lib/supabase";
+import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/context/AuthContext";
 
 export const useBroker = () => {
@@ -20,7 +20,7 @@ export const useBroker = () => {
         .single();
 
       if (error) {
-        if (error.code === 'PGRST116') {
+        if (error.code === "PGRST116") {
           setBroker(null);
           return;
         }
@@ -39,13 +39,11 @@ export const useBroker = () => {
     if (!user?.id) return;
     setIsLoading(true);
     try {
-      const { error } = await supabase
-        .from("broker_businesses")
-        .insert({
-          profile_id: user.id,
-          ...data,
-          verification_status: "pending"
-        });
+      const { error } = await supabase.from("broker_businesses").insert({
+        profile_id: user.id,
+        ...data,
+        verification_status: "pending",
+      });
 
       if (error) throw error;
       await fetchBroker();

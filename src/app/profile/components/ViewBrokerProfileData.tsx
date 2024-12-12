@@ -1,11 +1,12 @@
-import React from "react";
+import { memo } from "react";
 import { BrokerBusiness } from "@/types/broker";
-
+import { User } from "@/types/auth";
 interface ViewBrokerProfileDataProps {
   broker: BrokerBusiness | null;
+  user: User;
 }
 
-export default function ViewBrokerProfileData({
+const ViewBrokerProfileData = memo(function ViewBrokerProfileData({
   broker,
 }: ViewBrokerProfileDataProps) {
   if (!broker) return null;
@@ -74,4 +75,8 @@ export default function ViewBrokerProfileData({
       </div>
     </div>
   );
-}
+});
+
+ViewBrokerProfileData.displayName = "ViewBrokerProfileData";
+
+export default ViewBrokerProfileData;

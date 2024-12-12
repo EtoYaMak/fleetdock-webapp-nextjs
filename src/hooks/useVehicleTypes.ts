@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { Vehicle } from "@/types/vehicles";
-import supabase from "@/lib/supabase";
+import { supabase } from "@/lib/supabase";
 
 export const useVehiclesTypes = () => {
   const [vehiclesTypes, setVehiclesTypes] = useState<Vehicle[]>([]);

@@ -2,20 +2,32 @@
 
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
+import { memo, useEffect } from "react";
+import LoadingSpinner from "@/app/components/ui/LoadingSpinner";
 
-export default function ProfileLayout({
+const ProfileLayout = memo(function ProfileLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const router = useRouter();
 
-  // Redirect if user is not authenticated
-  if (!user) {
-    router.push("/login");
-    return null; // Prevent rendering while redirecting
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push("/");
+    }
+  }, [user, loading, router]);
+
+  if (loading && !user) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <LoadingSpinner size="lg" color="border-blue-500" />
+      </div>
+    );
   }
+
+  if (!user) return null;
 
   return (
     <div className="profile-layout">
@@ -23,4 +35,8 @@ export default function ProfileLayout({
       {children}
     </div>
   );
-}
+});
+
+ProfileLayout.displayName = "ProfileLayout";
+
+export default ProfileLayout;

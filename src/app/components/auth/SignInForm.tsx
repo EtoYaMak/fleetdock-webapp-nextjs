@@ -136,7 +136,7 @@ const SignInForm = memo(function SignInForm() {
   );
 
   return (
-    <div className="min-h-screen w-full min-w-full bg-gradient-to-b to-[#283d67] from-[#203152] flex items-center justify-center p-4">
+    <div className="min-h-screen w-full min-w-full bg-gradient-to-t to-[#111a2e] from-[#17233e]/60 flex items-center justify-center p-4">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}

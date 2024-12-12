@@ -28,7 +28,7 @@ export default function SigninPage() {
   }
 
   return (
-    <main className="bg-gray-50 dark:bg-gray-900 min-h-screen flex items-center justify-center">
+    <main className="bg-[#111a2e] min-h-screen flex items-center justify-center">
       <SignInForm />
     </main>
   );

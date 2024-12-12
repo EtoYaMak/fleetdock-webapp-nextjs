@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { LoadType } from "@/types/load";
-import supabase from "@/lib/supabase";
+import { supabase } from "@/lib/supabase";
 
 export const useLoadTypes = () => {
   const [loadTypes, setLoadTypes] = useState<LoadType[]>([]);

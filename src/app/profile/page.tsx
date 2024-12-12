@@ -4,7 +4,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useEffect, useState } from "react";
 import BrokerProfile from "@/app/profile/BrokerProfile";
 import TruckerProfile from "@/app/profile/TruckerProfile";
-
+import { User } from "@/types/auth";
 export default function ProfilePage() {
   const { user } = useAuth();
   const [role, setRole] = useState<string | null>(null);
@@ -21,7 +21,11 @@ export default function ProfilePage() {
 
   return (
     <div className="profile-page">
-      {role === "broker" ? <BrokerProfile /> : <TruckerProfile />}
+      {role === "broker" ? (
+        <BrokerProfile user={user as User} />
+      ) : (
+        <TruckerProfile user={user as User} />
+      )}
     </div>
   );
 }

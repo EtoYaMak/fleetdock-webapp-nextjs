@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from "react";
 
 import { useAuth } from "@/context/AuthContext";
-import supabase from "@/lib/supabase";
+import { supabase } from "@/lib/supabase";
 import { User } from "@/types/auth";
 
 export const useProfile = () => {

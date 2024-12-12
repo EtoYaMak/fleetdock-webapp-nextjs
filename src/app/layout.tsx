@@ -24,7 +24,7 @@ const RootLayout = memo(function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="min-h-screen flex flex-col bg-[#203152]">
+      <body className="min-h-screen flex flex-col bg-[#111a2e]">
         <UserProvider>
           <MemoizedNavbar />
           <main className="flex-grow">{children}</main>

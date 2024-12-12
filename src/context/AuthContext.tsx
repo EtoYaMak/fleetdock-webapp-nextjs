@@ -1,5 +1,4 @@
 "use client";
-
 import { supabase } from "@/lib/supabase";
 import { createContext, memo, useContext, useEffect, useState } from "react";
 import { SignInType, SignUpType, UseContextType } from "@/types/auth";
