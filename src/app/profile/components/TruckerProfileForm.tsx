@@ -1,14 +1,19 @@
 import React, { useState } from "react";
-import { TruckerFormData, TruckerDetails } from "@/types/trucker";
+import {
+  TruckerFormData,
+  TruckerDetails,
+  DocumentMetadata,
+  ContactDetails,
+} from "@/types/trucker";
 import DocumentUpload from "@/app/profile/components/components/DocumenUploadForm";
 import { Plus } from "lucide-react"; // or whatever icon library you're using
 import { useAuth } from "@/context/AuthContext";
-
-interface DocumentMetadata {
-  name: string;
-  url: string;
-  uploadedAt: string;
-}
+import {
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from "@/components/ui/accordion";
 
 interface Document {
   id?: string;
@@ -16,12 +21,7 @@ interface Document {
   name: string;
   url: string | null;
   size: number;
-}
-
-interface ContactDetails {
-  work_phone: string;
-  personal_phone: string;
-  email: string;
+  verification_status: string;
 }
 
 interface TruckerProfileFormProps {
@@ -42,12 +42,30 @@ export default function TruckerProfileForm({
   const [errors, setErrors] = useState<
     Partial<Record<keyof TruckerFormData, string>>
   >({});
-  const [licenses, setLicenses] = useState<Document[]>([
-    { name: "", url: null, size: 0 },
-  ]);
-  const [certifications, setCertifications] = useState<Document[]>([
-    { name: "", url: null, size: 0 },
-  ]);
+  const [licenses, setLicenses] = useState<Document[]>(() => {
+    if (initialData?.licenses) {
+      return Object.entries(initialData.licenses).map(([name, metadata]) => ({
+        name,
+        url: metadata.url,
+        size: 0, // You might want to store this in your metadata if needed
+        verification_status: metadata.verification_status,
+      }));
+    }
+    return [{ name: "", url: null, size: 0, verification_status: "" }];
+  });
+  const [certifications, setCertifications] = useState<Document[]>(() => {
+    if (initialData?.certifications) {
+      return Object.entries(initialData.certifications).map(
+        ([name, metadata]) => ({
+          name,
+          url: metadata.url,
+          size: 0,
+          verification_status: metadata.verification_status,
+        })
+      );
+    }
+    return [{ name: "", url: null, size: 0, verification_status: "" }];
+  });
   const [contactDetails, setContactDetails] = useState<ContactDetails>({
     work_phone: initialData?.contact_details?.work_phone || "",
     personal_phone: initialData?.contact_details?.personal_phone || "",
@@ -82,27 +100,35 @@ export default function TruckerProfileForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const certificationsObject = certifications.reduce((acc, cert) => {
-      if (cert.name && cert.url) {
-        acc[cert.name] = {
-          name: cert.name,
-          url: cert.url,
-          uploadedAt: new Date().toISOString(),
-        };
-      }
-      return acc;
-    }, {} as Record<string, DocumentMetadata>);
+    const certificationsObject = {
+      ...(initialData?.certifications || {}),
+      ...certifications.reduce((acc, cert) => {
+        if (cert.name && cert.url) {
+          acc[cert.name] = {
+            name: cert.name,
+            url: cert.url,
+            uploadedAt: new Date().toISOString(),
+            verification_status: "pending",
+          };
+        }
+        return acc;
+      }, {} as Record<string, DocumentMetadata>),
+    };
 
-    const licensesObject = licenses.reduce((acc, license) => {
-      if (license.name && license.url) {
-        acc[license.name] = {
-          name: license.name,
-          url: license.url,
-          uploadedAt: new Date().toISOString(),
-        };
-      }
-      return acc;
-    }, {} as Record<string, DocumentMetadata>);
+    const licensesObject = {
+      ...(initialData?.licenses || {}),
+      ...licenses.reduce((acc, license) => {
+        if (license.name && license.url) {
+          acc[license.name] = {
+            name: license.name,
+            url: license.url,
+            uploadedAt: new Date().toISOString(),
+            verification_status: "pending",
+          };
+        }
+        return acc;
+      }, {} as Record<string, DocumentMetadata>),
+    };
 
     const updatedFormData = {
       ...formData,
@@ -117,23 +143,25 @@ export default function TruckerProfileForm({
   const handleDocumentMetadataUpdate = async (
     type: "licenses" | "certifications",
     name: string,
-    url: string
+    url: string,
+    verification_status: string
   ) => {
     const updatedFormData = { ...formData };
     const metadata = {
       name,
       url,
       uploadedAt: new Date().toISOString(),
+      verification_status,
     };
 
     if (type === "licenses") {
       updatedFormData.licenses = {
-        ...(updatedFormData.licenses || {}),
+        ...(formData.licenses || {}),
         [name]: metadata,
       };
     } else {
       updatedFormData.certifications = {
-        ...(updatedFormData.certifications || {}),
+        ...(formData.certifications || {}),
         [name]: metadata,
       };
     }
@@ -153,7 +181,8 @@ export default function TruckerProfileForm({
           await handleDocumentMetadataUpdate(
             type,
             newLicenses[index].name,
-            url
+            url,
+            "pending"
           );
         }
       } else {
@@ -164,7 +193,8 @@ export default function TruckerProfileForm({
           await handleDocumentMetadataUpdate(
             type,
             newCertifications[index].name,
-            url
+            url,
+            "pending"
           );
         }
       }
@@ -172,9 +202,15 @@ export default function TruckerProfileForm({
 
   const addDocument = (type: "licenses" | "certifications") => {
     if (type === "licenses") {
-      setLicenses([...licenses, { name: "", url: null, size: 0 }]);
+      setLicenses([
+        ...licenses,
+        { name: "", url: null, size: 0, verification_status: "" },
+      ]);
     } else {
-      setCertifications([...certifications, { name: "", url: null, size: 0 }]);
+      setCertifications([
+        ...certifications,
+        { name: "", url: null, size: 0, verification_status: "" },
+      ]);
     }
   };
 
@@ -182,38 +218,87 @@ export default function TruckerProfileForm({
     doc: Document,
     index: number,
     type: "licenses" | "certifications"
-  ) => (
-    <div
-      key={`${type}-${index}`}
-      className="space-y-4 bg-[#1a2b47] p-4 rounded-lg border border-[#4895d0]/30"
-    >
-      <input
-        type="text"
-        placeholder={`${
-          type === "licenses" ? "License" : "Certification"
-        } Name`}
-        value={doc.name}
-        onChange={(e) => {
-          const newDocs =
-            type === "licenses" ? [...licenses] : [...certifications];
-          newDocs[index] = { ...newDocs[index], name: e.target.value };
-          type === "licenses"
-            ? setLicenses(newDocs)
-            : setCertifications(newDocs);
-        }}
-        className="w-full rounded-md bg-[#203152] border-[#4895d0]/30 text-[#f1f0f3] px-3 py-2"
-      />
-      <DocumentUpload
-        uid={user?.id || trucker?.id || ""}
-        url={doc.url}
-        size={doc.size}
-        type={type}
-        onUpload={handleDocumentUpload(type, index)}
-        acceptedFileTypes="application/pdf,image/*"
-        previewSize={{ width: 200, height: 200 }}
-      />
-    </div>
-  );
+  ) => {
+    const isExistingDocument = doc.url && doc.name;
+    console.log(doc);
+    if (isExistingDocument) {
+      return (
+        <Accordion
+          type="single"
+          collapsible
+          className="w-full"
+          key={`${type}-${index}`}
+        >
+          <AccordionItem
+            value={`${type}-${index}`}
+            className="border border-[#4895d0]/30 bg-[#111a2e] rounded-lg"
+          >
+            <AccordionTrigger className="hover:no-underline ">
+              <div className="flex justify-between items-center w-full px-6   ">
+                <span className="font-medium text-[#4895d0]">{doc.name}</span>
+                <span className="text-sm text-[#f1f0f3]/70 px-2 py-1 rounded">
+                  {doc.verification_status}
+                </span>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="bg-[#111a2e]/50">
+              <div className="space-y-4 p-4">
+                <div className="border-t border-[#4895d0]/20 pt-4">
+                  <DocumentUpload
+                    uid={user?.id || trucker?.id || ""}
+                    url={doc.url}
+                    size={doc.size}
+                    type={type}
+                    onUpload={handleDocumentUpload(type, index)}
+                    acceptedFileTypes="application/pdf,image/*"
+                    previewSize={{ width: 200, height: 200 }}
+                    isExisting={isExistingDocument}
+                  />
+                </div>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+      );
+    }
+
+    // Return the regular upload form for new documents
+    return (
+      <div
+        key={`${type}-${index}`}
+        className="bg-[#1a2b47] p-4 rounded-lg border border-[#4895d0]/30"
+      >
+        <div className="flex flex-col gap-2">
+          <input
+            type="text"
+            placeholder={`${
+              type === "licenses" ? "License" : "Certification"
+            } Name`}
+            value={doc.name}
+            onChange={(e) => {
+              const newDocs =
+                type === "licenses" ? [...licenses] : [...certifications];
+              newDocs[index] = { ...newDocs[index], name: e.target.value };
+              type === "licenses"
+                ? setLicenses(newDocs)
+                : setCertifications(newDocs);
+            }}
+            className="w-full rounded-md bg-[#203152] border-[#4895d0]/30 text-[#f1f0f3] px-3 py-2"
+          />
+          <DocumentUpload
+            uid={user?.id || trucker?.id || ""}
+            url={doc.url}
+            size={doc.size}
+            type={type}
+            onUpload={handleDocumentUpload(type, index)}
+            acceptedFileTypes="application/pdf,image/*"
+            previewSize={{ width: 200, height: 200 }}
+            isExisting={isExistingDocument ? doc.name : null}
+          />
+        </div>
+      </div>
+    );
+  };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 p-6">

@@ -8,6 +8,7 @@ export interface DocumentMetadata {
   name: string;
   url: string;
   uploadedAt: string;
+  verification_status: string;
 }
 
 export interface TruckerDetails {
