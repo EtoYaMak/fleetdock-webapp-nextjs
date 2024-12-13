@@ -14,6 +14,7 @@ import {
   AccordionTrigger,
   AccordionContent,
 } from "@/components/ui/accordion";
+import { supabase } from "@/lib/supabase";
 
 interface Document {
   id?: string;
@@ -72,22 +73,6 @@ export default function TruckerProfileForm({
     email: initialData?.contact_details?.email || "",
   });
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-    if (errors[name as keyof TruckerFormData]) {
-      setErrors((prev) => ({
-        ...prev,
-        [name]: "",
-      }));
-    }
-  };
-
   const handleContactChange =
     (field: keyof ContactDetails) =>
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -108,7 +93,7 @@ export default function TruckerProfileForm({
             name: cert.name,
             url: cert.url,
             uploadedAt: new Date().toISOString(),
-            verification_status: "pending",
+            verification_status: cert.verification_status,
           };
         }
         return acc;
@@ -123,7 +108,7 @@ export default function TruckerProfileForm({
             name: license.name,
             url: license.url,
             uploadedAt: new Date().toISOString(),
-            verification_status: "pending",
+            verification_status: license.verification_status,
           };
         }
         return acc;
@@ -175,26 +160,38 @@ export default function TruckerProfileForm({
     async (url: string) => {
       if (type === "licenses") {
         const newLicenses = [...licenses];
-        newLicenses[index] = { ...newLicenses[index], url };
+        const existingStatus =
+          newLicenses[index].verification_status || "pending";
+        newLicenses[index] = {
+          ...newLicenses[index],
+          url,
+          verification_status: existingStatus,
+        };
         setLicenses(newLicenses);
         if (newLicenses[index].name) {
           await handleDocumentMetadataUpdate(
             type,
             newLicenses[index].name,
             url,
-            "pending"
+            existingStatus
           );
         }
       } else {
         const newCertifications = [...certifications];
-        newCertifications[index] = { ...newCertifications[index], url };
+        const existingStatus =
+          newCertifications[index].verification_status || "pending";
+        newCertifications[index] = {
+          ...newCertifications[index],
+          url,
+          verification_status: existingStatus,
+        };
         setCertifications(newCertifications);
         if (newCertifications[index].name) {
           await handleDocumentMetadataUpdate(
             type,
             newCertifications[index].name,
             url,
-            "pending"
+            existingStatus
           );
         }
       }
@@ -214,13 +211,71 @@ export default function TruckerProfileForm({
     }
   };
 
+  const handleDocumentDelete = async (
+    type: "licenses" | "certifications",
+    docName: string,
+    docUrl: string | null
+  ) => {
+    try {
+      const confirmDelete = window.confirm(
+        `Are you sure you want to delete this ${
+          type === "licenses" ? "license" : "certification"
+        }?`
+      );
+
+      if (!confirmDelete) return;
+
+      // Remove file from Storage if URL exists
+      if (docUrl) {
+        // Extract the full path including subfolder
+        const fullPath =
+          docUrl.includes("certifications/") || docUrl.includes("licenses/")
+            ? docUrl
+            : `${type}/${docUrl}`;
+
+        console.log("Deleting file:", fullPath); // Debug log
+
+        const { error: storageError } = await supabase.storage
+          .from("trucker-documents")
+          .remove([fullPath]);
+
+        if (storageError) {
+          console.error("Storage deletion error:", storageError); // Debug log
+          throw storageError;
+        }
+      }
+
+      // Remove document metadata from form data
+      const updatedFormData = { ...formData };
+      if (type === "licenses") {
+        const { [docName]: _, ...remainingLicenses } =
+          updatedFormData.licenses || {};
+        updatedFormData.licenses = remainingLicenses;
+        setLicenses(licenses.filter((license) => license.name !== docName));
+      } else {
+        const { [docName]: _, ...remainingCertifications } =
+          updatedFormData.certifications || {};
+        updatedFormData.certifications = remainingCertifications;
+        setCertifications(
+          certifications.filter((cert) => cert.name !== docName)
+        );
+      }
+
+      // Update the trucker_details table
+      await onSubmit(updatedFormData);
+    } catch (error) {
+      console.error("Error deleting document:", error);
+      alert("Failed to delete document. Please try again.");
+    }
+  };
+
   const renderDocumentUpload = (
     doc: Document,
     index: number,
     type: "licenses" | "certifications"
   ) => {
     const isExistingDocument = doc.url && doc.name;
-    console.log(doc);
+
     if (isExistingDocument) {
       return (
         <Accordion
@@ -231,18 +286,56 @@ export default function TruckerProfileForm({
         >
           <AccordionItem
             value={`${type}-${index}`}
-            className="border border-[#4895d0]/30 bg-[#111a2e] rounded-lg"
+            className=" bg-[#111a2e]/60 border-r-2 border-b-2 border-[#4895d0]/30 rounded-lg shadow-inner shadow-black/20"
           >
-            <AccordionTrigger className="hover:no-underline ">
-              <div className="flex justify-between items-center w-full px-6   ">
+            <AccordionTrigger className="">
+              <div className="flex justify-between items-center w-full px-6">
                 <span className="font-medium text-[#4895d0]">{doc.name}</span>
-                <span className="text-sm text-[#f1f0f3]/70 px-2 py-1 rounded">
-                  {doc.verification_status}
+                <span
+                  className={`text-sm ${
+                    doc.verification_status === "verified"
+                      ? "text-[#00ff00]/60"
+                      : "text-[#f1f0f3]/70"
+                  } ${
+                    doc.verification_status === "pending"
+                      ? "text-[#f1f0f3]/70"
+                      : "text-[#f1f0f3]/70"
+                  } ${
+                    doc.verification_status === "rejected" ? "text-red-500" : ""
+                  }
+                   bg-[#203152] px-2 py-1 rounded`}
+                >
+                  {doc.verification_status || "pending"}
                 </span>
               </div>
             </AccordionTrigger>
-            <AccordionContent className="bg-[#111a2e]/50">
+            <AccordionContent className="bg-[#1a2b47]/50">
               <div className="space-y-4 p-4">
+                <div className="flex items-center justify-end gap-4">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      handleDocumentDelete(type, doc.name, doc.url)
+                    }
+                    className="flex items-center gap-2 text-sm bg-[#203152] px-2 py-1 rounded"
+                  >
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                      />
+                    </svg>
+                    Delete
+                  </button>
+                </div>
+
                 <div className="border-t border-[#4895d0]/20 pt-4">
                   <DocumentUpload
                     uid={user?.id || trucker?.id || ""}
@@ -253,6 +346,7 @@ export default function TruckerProfileForm({
                     acceptedFileTypes="application/pdf,image/*"
                     previewSize={{ width: 200, height: 200 }}
                     isExisting={isExistingDocument}
+                    verification_status={doc.verification_status}
                   />
                 </div>
               </div>
@@ -301,8 +395,8 @@ export default function TruckerProfileForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 p-6">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-6 bg-[#111a2e]">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 bg-[#1a2b47] p-6 rounded-lg border border-black">
         {/* Certifications */}
         <div className="space-y-4">
           <label className="block text-sm font-medium text-[#4895d0]">
@@ -343,12 +437,15 @@ export default function TruckerProfileForm({
       </div>
 
       {/* Contact Details */}
-      <div>
-        <label className="block text-sm font-medium text-[#4895d0]">
-          Contact Details
-        </label>
-        <div className="space-y-4">
-          <div>
+      <div className="bg-[#1a2b47] p-6 rounded-lg border border-black">
+        <h3 className="text-lg font-medium text-[#f1f0f3] mb-4">
+          Contact Information
+        </h3>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div
+            className="bg-[#111a2e]/60 px-4 py-3  border-r-2 border-b-2
+           border-[#4895d0]/30 rounded-lg shadow-inner shadow-black/20"
+          >
             <label className="block text-sm text-[#f1f0f3]">Work Phone</label>
             <input
               type="tel"
@@ -357,7 +454,10 @@ export default function TruckerProfileForm({
               className="mt-1 block w-full rounded-md bg-[#203152] border-[#4895d0]/30 text-[#f1f0f3] px-3 py-2"
             />
           </div>
-          <div>
+          <div
+            className="bg-[#111a2e]/60 px-4 py-3  border-r-2 border-b-2
+           border-[#4895d0]/30 rounded-lg shadow-inner shadow-black/20"
+          >
             <label className="block text-sm text-[#f1f0f3]">
               Personal Phone
             </label>
@@ -368,7 +468,10 @@ export default function TruckerProfileForm({
               className="mt-1 block w-full rounded-md bg-[#203152] border-[#4895d0]/30 text-[#f1f0f3] px-3 py-2"
             />
           </div>
-          <div>
+          <div
+            className="bg-[#111a2e]/60 px-4 py-3  border-r-2 border-b-2
+           border-[#4895d0]/30 rounded-lg shadow-inner shadow-black/20"
+          >
             <label className="block text-sm text-[#f1f0f3]">Email</label>
             <input
               type="email"

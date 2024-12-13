@@ -79,7 +79,7 @@ const TruckerProfile = memo(function TruckerProfile({ user }: { user: User }) {
         {activeTab === "edit" ? (
           <div>
             <h1 className="text-2xl font-bold mb-6">Edit Profile</h1>
-            <div className="bg-[#1a2b47] border border-[#4895d0]/30 rounded-lg">
+            <div className="">
               <TruckerProfileForm
                 initialData={initialData}
                 trucker={trucker}

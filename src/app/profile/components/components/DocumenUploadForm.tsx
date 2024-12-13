@@ -69,6 +69,7 @@ export default function DocumentUpload({
   name,
   acceptedFileTypes = "application/pdf,image/*",
   isExisting,
+  verification_status,
 }: {
   uid: string | null;
   url: string | null;
@@ -79,6 +80,7 @@ export default function DocumentUpload({
   acceptedFileTypes?: string;
   previewSize?: { width: number; height: number };
   isExisting?: string | null;
+  verification_status?: string;
 }) {
   const { user } = useAuth();
   const [documentUrl, setDocumentUrl] = useState<string | null>(url);
