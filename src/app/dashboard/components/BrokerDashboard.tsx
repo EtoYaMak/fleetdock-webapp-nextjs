@@ -15,23 +15,21 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
-import { User } from "@/types/auth";
+import { useUserData } from "@/context/UserDataContext";
 
 const BrokerDashboard = ({
-  user,
   loads,
   isLoading,
   error,
   deleteLoad,
 }: {
-  user: User | null;
   loads: Load[];
   isLoading: boolean;
   error: string;
   deleteLoad: (loadId: string) => Promise<void>;
 }) => {
   const router = useRouter();
-
+  const user = useUserData();
   // Filter loads for current broker
   const brokerLoads = loads.filter((load) => load.broker_id === user?.id);
 

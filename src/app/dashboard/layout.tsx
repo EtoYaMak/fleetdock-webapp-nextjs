@@ -4,15 +4,15 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { useEffect, memo } from "react";
 import LoadingSpinner from "@/app/components/ui/LoadingSpinner";
-
+import { useUserData } from "@/context/UserDataContext";
 const DashboardLayout = memo(function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { user, loading } = useAuth();
   const router = useRouter();
-
+  const user = useUserData();
+  const { loading } = useAuth();
   useEffect(() => {
     if (!loading && !user) {
       router.push("/");

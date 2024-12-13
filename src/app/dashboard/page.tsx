@@ -1,13 +1,13 @@
 "use client";
 
 import { memo } from "react";
-import { useAuth } from "@/context/AuthContext";
 import LoadingSpinner from "@/app/components/ui/LoadingSpinner";
 import BrokerDashboard from "./components/BrokerDashboard";
 import TruckerDashboard from "./components/TruckerDashboard";
 import { useLoads } from "@/hooks/useLoads";
 import { User } from "@/types/auth";
 import { Load } from "@/types/load";
+import { useUserData } from "@/context/UserDataContext";
 
 const InvalidRole = memo(function InvalidRole() {
   return (
@@ -27,9 +27,9 @@ const InvalidRole = memo(function InvalidRole() {
 });
 
 const Dashboard = memo(function Dashboard() {
-  const { user, loading } = useAuth();
   const { loads, isLoading, error, deleteLoad } = useLoads();
-  if (loading) {
+  const user = useUserData();
+  if (isLoading) {
     return (
       <div className="flex justify-center items-center h-screen">
         <LoadingSpinner size="lg" color="border-blue-500" />
@@ -42,7 +42,6 @@ const Dashboard = memo(function Dashboard() {
   const roleComponents = {
     broker: (
       <BrokerDashboard
-        user={user as User}
         loads={loads as Load[]}
         isLoading={isLoading as boolean}
         error={error as string}

@@ -6,6 +6,7 @@ import { memo } from "react";
 import { Metadata } from "next";
 import { Suspense } from "react";
 import LoadingSpinner from "@/app/components/ui/LoadingSpinner";
+import { UserDataProvider } from "@/context/UserDataContext";
 // Define metadata outside component for better performance
 export const metadata: Metadata = {
   title: "FleetDock",
@@ -29,7 +30,9 @@ const RootLayout = memo(function RootLayout({
         <UserProvider>
           <Suspense fallback={<LoadingSpinner />}>
             <MemoizedNavbar />
-            <main className="flex-grow">{children}</main>
+            <UserDataProvider>
+              <main className="flex-grow">{children}</main>
+            </UserDataProvider>
             <MemoizedFooter />
           </Suspense>
         </UserProvider>
