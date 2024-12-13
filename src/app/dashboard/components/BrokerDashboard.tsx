@@ -2,12 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import { FiPlus, FiTrash2, FiEdit2, FiEye } from "react-icons/fi";
-import { useLoads } from "@/hooks/useLoads";
-import { useAuth } from "@/context/AuthContext";
-import { memo } from "react";
 import LoadingSpinner from "@/app/components/ui/LoadingSpinner";
 import { Button } from "@/components/ui/button";
-import { LoadStatus } from "@/types/load";
+import { Load, LoadStatus } from "@/types/load";
 import {
   Table,
   TableBody,
@@ -18,11 +15,22 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
+import { User } from "@/types/auth";
 
-const BrokerDashboard = memo(() => {
+const BrokerDashboard = ({
+  user,
+  loads,
+  isLoading,
+  error,
+  deleteLoad,
+}: {
+  user: User | null;
+  loads: Load[];
+  isLoading: boolean;
+  error: string;
+  deleteLoad: (loadId: string) => Promise<void>;
+}) => {
   const router = useRouter();
-  const { user } = useAuth();
-  const { loads, isLoading, error, deleteLoad } = useLoads();
 
   // Filter loads for current broker
   const brokerLoads = loads.filter((load) => load.broker_id === user?.id);
@@ -184,7 +192,7 @@ const BrokerDashboard = memo(() => {
       </div>
     </div>
   );
-});
+};
 
 BrokerDashboard.displayName = "BrokerDashboard";
 

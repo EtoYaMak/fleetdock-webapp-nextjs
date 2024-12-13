@@ -19,7 +19,7 @@ const ProfileLayout = memo(function ProfileLayout({
     }
   }, [user, loading, router]);
 
-  if (loading && !user) {
+  if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
         <LoadingSpinner size="lg" color="border-blue-500" />

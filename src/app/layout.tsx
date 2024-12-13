@@ -4,7 +4,8 @@ import Footer from "@/app/components/common/Footer";
 import UserProvider from "@/context/AuthContext";
 import { memo } from "react";
 import { Metadata } from "next";
-
+import { Suspense } from "react";
+import LoadingSpinner from "@/app/components/ui/LoadingSpinner";
 // Define metadata outside component for better performance
 export const metadata: Metadata = {
   title: "FleetDock",
@@ -23,12 +24,14 @@ const RootLayout = memo(function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en">
       <body className="min-h-screen flex flex-col bg-[#111a2e]">
         <UserProvider>
-          <MemoizedNavbar />
-          <main className="flex-grow">{children}</main>
-          <MemoizedFooter />
+          <Suspense fallback={<LoadingSpinner />}>
+            <MemoizedNavbar />
+            <main className="flex-grow">{children}</main>
+            <MemoizedFooter />
+          </Suspense>
         </UserProvider>
       </body>
     </html>

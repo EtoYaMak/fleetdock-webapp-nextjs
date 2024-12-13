@@ -1,7 +1,7 @@
 import React from "react";
-
-const TruckerDashboard = () => {
-  return <div>TruckerDashboard</div>;
+import { User } from "@/types/auth";
+const TruckerDashboard = ({ user }: { user: User }) => {
+  return <div>{user.full_name} Dashboard</div>;
 };
 
 export default TruckerDashboard;

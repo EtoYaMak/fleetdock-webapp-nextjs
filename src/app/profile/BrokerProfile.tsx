@@ -1,15 +1,28 @@
 "use client";
-import { useBroker } from "@/hooks/useBroker";
 import { useState } from "react";
 import BrokerProfileForm from "./components/BrokerProfileForm";
 import ViewBrokerProfileData from "./components/ViewBrokerProfileData";
-import { BrokerFormData } from "@/types/broker";
+import { BrokerBusiness, BrokerFormData } from "@/types/broker";
 import { useAuth } from "@/context/AuthContext";
 import { User } from "@/types/auth";
 type TabType = "edit" | "view";
 
-export default function BrokerProfile({ user }: { user: User }) {
-  const { broker, isLoading, error, createBroker, updateBroker } = useBroker();
+export default function BrokerProfile({
+  user,
+  broker,
+  isLoading,
+  error,
+  createBroker,
+  updateBroker,
+}: {
+  user: User;
+  broker: BrokerBusiness;
+  isLoading: boolean;
+  error: string;
+  createBroker: (data: BrokerFormData) => Promise<void>;
+  updateBroker: (data: BrokerFormData) => Promise<void>;
+}) {
+  // const { broker, isLoading, error, createBroker, updateBroker } = useBroker();
   const { signOut } = useAuth();
   const [activeTab, setActiveTab] = useState<TabType>("view");
 

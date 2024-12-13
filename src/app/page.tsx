@@ -1,33 +1,33 @@
 "use client";
 import { useAuth } from "@/context/AuthContext";
 import Link from "next/link";
-import { memo, useMemo } from "react";
+import { memo, useMemo, useState, useEffect } from "react";
 import { motion } from "framer-motion";
 
-// Memoize animation variants
+// Keep your existing animation variants
 const containerVariants = {
   hidden: { opacity: 0, y: 20 },
-  visible: { 
-    opacity: 1, 
+  visible: {
+    opacity: 1,
     y: 0,
     transition: {
       duration: 0.6,
       when: "beforeChildren",
-      staggerChildren: 0.2
-    }
-  }
+      staggerChildren: 0.2,
+    },
+  },
 };
 
 const childVariants = {
   hidden: { opacity: 0, y: 20 },
-  visible: { 
-    opacity: 1, 
+  visible: {
+    opacity: 1,
     y: 0,
-    transition: { duration: 0.5 }
-  }
+    transition: { duration: 0.5 },
+  },
 };
 
-// Create separate memoized components for better performance
+// Memoized components remain the same
 const LoadingSpinner = memo(function LoadingSpinner() {
   return (
     <div className="flex justify-center items-center h-64">
@@ -38,29 +38,26 @@ const LoadingSpinner = memo(function LoadingSpinner() {
 
 const HeroContent = memo(function HeroContent() {
   return (
-    <motion.div 
+    <motion.div
       className="max-w-3xl mx-auto"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
     >
-      <motion.h1 
+      <motion.h1
         className="text-4xl md:text-6xl font-bold text-[#f1f0f3] leading-tight"
         variants={childVariants}
       >
         Revolutionize Your Logistics
       </motion.h1>
-      <motion.p 
+      <motion.p
         className="mt-4 text-lg text-[#f1f0f3]"
         variants={childVariants}
       >
         Simplify freight management with cutting-edge technology. Whether
         you&apos;re a trucker or a broker, we&apos;ve got you covered.
       </motion.p>
-      <motion.div 
-        className="mt-6"
-        variants={childVariants}
-      >
+      <motion.div className="mt-6" variants={childVariants}>
         <Link
           href="/signup"
           className="inline-block px-6 py-3 bg-[#4895d0] text-[#f1f0f3] text-lg font-medium rounded-3xl 
@@ -75,20 +72,25 @@ const HeroContent = memo(function HeroContent() {
 
 function HomePage() {
   const { loading } = useAuth();
+  const [isClient, setIsClient] = useState(false);
+
+  // Ensure component only renders on client-side
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   // Memoize the main content to prevent unnecessary re-renders
   const content = useMemo(() => {
-    if (loading) {
+    // Only render content if we're on the client and loading state is resolved
+    if (!isClient || loading) {
       return <LoadingSpinner />;
     }
     return <HeroContent />;
-  }, [loading]);
+  }, [isClient, loading]);
 
   return (
     <main className="min-h-screen flex items-center justify-center">
-      <div className="container mx-auto px-6 text-center">
-        {content}
-      </div>
+      <div className="container mx-auto px-6 text-center">{content}</div>
     </main>
   );
 }

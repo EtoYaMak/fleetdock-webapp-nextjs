@@ -12,34 +12,55 @@ const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const [error, setError] = useState<UseContextType["error"]>(null);
 
   useEffect(() => {
+    let isMounted = true;
+
     const getUserProfile = async () => {
-      setLoading(true);
-      const sessionUser = await supabase.auth.getUser();
-      if (sessionUser.data.user) {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", sessionUser.data.user.id)
-          .single();
-        //test
-        setUser({ ...sessionUser.data.user, ...profile });
+      try {
+        const sessionUser = await supabase.auth.getUser();
+
+        if (isMounted && sessionUser.data.user) {
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("*")
+            .eq("id", sessionUser.data.user.id)
+            .single();
+
+          if (isMounted) {
+            setUser({ ...sessionUser.data.user, ...profile });
+            setLoading(false);
+          }
+        } else if (isMounted) {
+          setLoading(false);
+        }
+      } catch (error) {
+        if (isMounted) {
+          setError(
+            error instanceof Error
+              ? error.message
+              : "Failed to get user profile"
+          );
+          setLoading(false);
+        }
       }
-      setLoading(false);
     };
 
     getUserProfile();
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_, session) => {
-      if (session) {
-        getUserProfile();
-      } else {
-        setUser(null);
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (isMounted) {
+        if (session) {
+          getUserProfile();
+        } else {
+          setUser(null);
+          setLoading(false);
+        }
       }
     });
 
     return () => {
+      isMounted = false;
       subscription?.unsubscribe();
     };
   }, []);

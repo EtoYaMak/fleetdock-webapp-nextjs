@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { supabase } from "@/lib/supabase";
-import { useAuth } from "@/context/AuthContext";
+import { User } from "@/types/auth";
 
 interface DocumentViewerModalProps {
   url: string | null;
@@ -62,6 +62,7 @@ const getFileTypeFromUrl = (url: string): "pdf" | "image" => {
 };
 
 export default function DocumentUpload({
+  user,
   uid,
   url,
   type,
@@ -69,8 +70,8 @@ export default function DocumentUpload({
   name,
   acceptedFileTypes = "application/pdf,image/*",
   isExisting,
-  verification_status,
 }: {
+  user: User | null;
   uid: string | null;
   url: string | null;
   size: number;
@@ -80,9 +81,7 @@ export default function DocumentUpload({
   acceptedFileTypes?: string;
   previewSize?: { width: number; height: number };
   isExisting?: string | null;
-  verification_status?: string;
 }) {
-  const { user } = useAuth();
   const [documentUrl, setDocumentUrl] = useState<string | null>(url);
   const [uploading, setUploading] = useState(false);
   const [fileType, setFileType] = useState<"image" | "pdf" | null>(null);

@@ -5,26 +5,44 @@ import { useEffect, useState } from "react";
 import BrokerProfile from "@/app/profile/BrokerProfile";
 import TruckerProfile from "@/app/profile/TruckerProfile";
 import { User } from "@/types/auth";
+import { BrokerBusiness } from "@/types/broker";
+import { useBroker } from "@/hooks/useBroker";
+import { useTrucker } from "@/hooks/useTrucker";
+import { TruckerDetails } from "@/types/trucker";
+import LoadingSpinner from "@/app/components/ui/LoadingSpinner";
 export default function ProfilePage() {
   const { user } = useAuth();
-  const [role, setRole] = useState<string | null>(null);
+  // Conditionally fetch broker or trucker data based on user role
+  const brokerData = user?.role === "broker" ? useBroker() : null;
 
-  useEffect(() => {
-    if (user) {
-      setRole(user.role); // Set the role based on the authenticated user
-    }
-  }, [user]);
+  const truckerData = user?.role === "trucker" ? useTrucker() : null;
 
-  if (!role) {
-    return <div>Loading...</div>; // Show loading state while determining role
+  if (!user) {
+    return null;
   }
 
   return (
     <div className="profile-page">
-      {role === "broker" ? (
-        <BrokerProfile user={user as User} />
-      ) : (
-        <TruckerProfile user={user as User} />
+      {user?.role === "broker" && brokerData && (
+        <BrokerProfile
+          user={user as User}
+          broker={brokerData.broker as BrokerBusiness}
+          isLoading={brokerData.isLoading}
+          error={brokerData.error as string}
+          createBroker={brokerData.createBroker}
+          updateBroker={brokerData.updateBroker}
+        />
+      )}
+
+      {user?.role === "trucker" && truckerData && (
+        <TruckerProfile
+          user={user as User}
+          trucker={truckerData.trucker as TruckerDetails}
+          isLoading={truckerData.isLoading}
+          error={truckerData.error as string}
+          createTrucker={truckerData.createTrucker}
+          updateTrucker={truckerData.updateTrucker}
+        />
       )}
     </div>
   );

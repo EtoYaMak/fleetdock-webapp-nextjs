@@ -1,10 +1,14 @@
 "use client";
 
-import { memo, useState, useEffect } from "react";
+import { memo } from "react";
 import { useAuth } from "@/context/AuthContext";
 import LoadingSpinner from "@/app/components/ui/LoadingSpinner";
 import BrokerDashboard from "./components/BrokerDashboard";
 import TruckerDashboard from "./components/TruckerDashboard";
+import { useLoads } from "@/hooks/useLoads";
+import { User } from "@/types/auth";
+import { Load } from "@/types/load";
+
 const InvalidRole = memo(function InvalidRole() {
   return (
     <div className="min-h-screen bg-[#203152] flex flex-col justify-center py-12 sm:px-6 lg:px-8">
@@ -24,7 +28,7 @@ const InvalidRole = memo(function InvalidRole() {
 
 const Dashboard = memo(function Dashboard() {
   const { user, loading } = useAuth();
-
+  const { loads, isLoading, error, deleteLoad } = useLoads();
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -36,8 +40,16 @@ const Dashboard = memo(function Dashboard() {
   if (!user) return null;
 
   const roleComponents = {
-    broker: <BrokerDashboard />,
-    trucker: <TruckerDashboard />,
+    broker: (
+      <BrokerDashboard
+        user={user as User}
+        loads={loads as Load[]}
+        isLoading={isLoading as boolean}
+        error={error as string}
+        deleteLoad={deleteLoad as (loadId: string) => Promise<void>}
+      />
+    ),
+    trucker: <TruckerDashboard user={user as User} />,
   };
 
   return (

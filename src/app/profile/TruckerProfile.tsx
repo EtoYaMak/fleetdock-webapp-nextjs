@@ -4,13 +4,28 @@ import { TruckerFormData } from "@/types/trucker";
 import { useAuth } from "@/context/AuthContext";
 import TruckerProfileForm from "./components/TruckerProfileForm";
 import ViewTruckerProfileData from "./components/ViewTruckerProfileData";
-import { useTrucker } from "@/hooks/useTrucker";
 import { User } from "@/types/auth";
+
+import { TruckerDetails } from "@/types/trucker";
 type TabType = "edit" | "view";
 
-const TruckerProfile = memo(function TruckerProfile({ user }: { user: User }) {
-  const { trucker, isLoading, error, createTrucker, updateTrucker } =
-    useTrucker();
+const TruckerProfile = memo(function TruckerProfile({
+  user,
+  trucker,
+  isLoading,
+  error,
+  createTrucker,
+  updateTrucker,
+}: {
+  user: User;
+  trucker: TruckerDetails;
+  isLoading: boolean;
+  error: string;
+  createTrucker: (data: TruckerFormData) => Promise<void>;
+  updateTrucker: (data: TruckerFormData) => Promise<void>;
+}) {
+  //  const { trucker, isLoading, error, createTrucker, updateTrucker } =
+  //    useTrucker();
   const { signOut } = useAuth();
   const [activeTab, setActiveTab] = useState<TabType>("view");
 
@@ -83,6 +98,7 @@ const TruckerProfile = memo(function TruckerProfile({ user }: { user: User }) {
               <TruckerProfileForm
                 initialData={initialData}
                 trucker={trucker}
+                user={user as User}
                 onSubmit={handleSubmit}
                 isLoading={isLoading}
               />

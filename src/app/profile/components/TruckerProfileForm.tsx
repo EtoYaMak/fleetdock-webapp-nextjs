@@ -6,8 +6,7 @@ import {
   ContactDetails,
 } from "@/types/trucker";
 import DocumentUpload from "@/app/profile/components/components/DocumenUploadForm";
-import { Plus } from "lucide-react"; // or whatever icon library you're using
-import { useAuth } from "@/context/AuthContext";
+import { Plus } from "lucide-react";
 import {
   Accordion,
   AccordionItem,
@@ -15,7 +14,7 @@ import {
   AccordionContent,
 } from "@/components/ui/accordion";
 import { supabase } from "@/lib/supabase";
-
+import { User } from "@/types/auth";
 interface Document {
   id?: string;
   uid?: string;
@@ -30,6 +29,7 @@ interface TruckerProfileFormProps {
   onSubmit: (data: TruckerFormData) => Promise<void>;
   isLoading: boolean;
   trucker: TruckerDetails | null;
+  user: User | null;
 }
 
 export default function TruckerProfileForm({
@@ -37,8 +37,8 @@ export default function TruckerProfileForm({
   onSubmit,
   isLoading,
   trucker,
+  user,
 }: TruckerProfileFormProps) {
-  const { user } = useAuth();
   const [formData, setFormData] = useState<TruckerFormData>(initialData || {});
   const [errors, setErrors] = useState<
     Partial<Record<keyof TruckerFormData, string>>
@@ -338,6 +338,7 @@ export default function TruckerProfileForm({
 
                 <div className="border-t border-[#4895d0]/20 pt-4">
                   <DocumentUpload
+                    user={user}
                     uid={user?.id || trucker?.id || ""}
                     url={doc.url}
                     size={doc.size}
@@ -346,7 +347,6 @@ export default function TruckerProfileForm({
                     acceptedFileTypes="application/pdf,image/*"
                     previewSize={{ width: 200, height: 200 }}
                     isExisting={isExistingDocument}
-                    verification_status={doc.verification_status}
                   />
                 </div>
               </div>
@@ -388,6 +388,7 @@ export default function TruckerProfileForm({
             acceptedFileTypes="application/pdf,image/*"
             previewSize={{ width: 200, height: 200 }}
             isExisting={isExistingDocument ? doc.name : null}
+            user={user}
           />
         </div>
       </div>
