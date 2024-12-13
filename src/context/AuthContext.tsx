@@ -44,15 +44,19 @@ const UserProvider = ({ children }: { children: React.ReactNode }) => {
       }
     };
 
-    getUserProfile();
+    if (!user) {
+      getUserProfile();
+    } else {
+      setLoading(false);
+    }
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
+    } = supabase.auth.onAuthStateChange((session) => {
       if (isMounted) {
-        if (session) {
+        if (session && !user) {
           getUserProfile();
-        } else {
+        } else if (!session) {
           setUser(null);
           setLoading(false);
         }
@@ -63,7 +67,7 @@ const UserProvider = ({ children }: { children: React.ReactNode }) => {
       isMounted = false;
       subscription?.unsubscribe();
     };
-  }, []);
+  }, [user]);
 
   const signIn = async (data: SignInType) => {
     try {
