@@ -9,7 +9,7 @@ import { BrokerBusiness } from "@/types/broker";
 import { useBroker } from "@/hooks/useBroker";
 import { useTrucker } from "@/hooks/useTrucker";
 import { TruckerDetails } from "@/types/trucker";
-import LoadingSpinner from "@/app/components/ui/LoadingSpinner";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 export default function ProfilePage() {
   const { user } = useAuth();
   // Conditionally fetch broker or trucker data based on user role

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo, memo } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { FiUser, FiMail } from "react-icons/fi";
@@ -10,7 +10,7 @@ import FormStages from "./SignUpForm/FormStages";
 import ProgressBar from "./SignUpForm/ProgressBar";
 import { FormData, SignUpStep, FormStage } from "./SignUpForm/types";
 
-const SignUpForm = memo(function SignUpForm() {
+const SignUpForm = function SignUpForm() {
   const [currentStep, setCurrentStep] = useState<SignUpStep>("role-selection");
   const [currentStageIndex, setCurrentStageIndex] = useState(0);
   const [formData, setFormData] = useState<FormData>({
@@ -197,8 +197,6 @@ const SignUpForm = memo(function SignUpForm() {
       </motion.div>
     </div>
   );
-});
-
-SignUpForm.displayName = "SignUpForm";
+};
 
 export default SignUpForm;

@@ -3,16 +3,14 @@
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { useEffect, memo } from "react";
-import LoadingSpinner from "@/app/components/ui/LoadingSpinner";
-import { useUserData } from "@/context/UserDataContext";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 const DashboardLayout = memo(function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const user = useUserData();
-  const { loading } = useAuth();
+  const { user, loading } = useAuth();
   useEffect(() => {
     if (!loading && !user) {
       router.push("/");

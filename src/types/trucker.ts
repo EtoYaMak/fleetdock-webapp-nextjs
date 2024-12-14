@@ -1,3 +1,14 @@
+import { Bid } from "@/types/bid";
+import { User } from "@/types/auth";
+
+export type Trucker = {
+  trucker: User;
+};
+
+export type TruckerWithBid = Trucker & {
+  bids: Bid[];
+};
+
 export interface ContactDetails {
   work_phone: string;
   personal_phone: string;

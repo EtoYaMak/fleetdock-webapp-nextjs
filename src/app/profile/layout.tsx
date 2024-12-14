@@ -3,7 +3,7 @@
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { memo, useEffect } from "react";
-import LoadingSpinner from "@/app/components/ui/LoadingSpinner";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
 const ProfileLayout = memo(function ProfileLayout({
   children,

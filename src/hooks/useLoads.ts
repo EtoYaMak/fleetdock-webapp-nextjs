@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Load } from "@/types/load";
 import { supabase } from "@/lib/supabase";
 
@@ -10,11 +10,8 @@ export const useLoads = () => {
   // Fetch loads from Supabase
   const fetchLoads = useCallback(async () => {
     setLoading(true);
-
     try {
-      // Add logging to see the current user
       const { data: userData } = await supabase.auth.getUser();
-
       const { data, error: loadError } = await supabase.from("loads").select(`
           *,
           load_types (
@@ -41,58 +38,68 @@ export const useLoads = () => {
   }, []);
 
   // Create a new load
-  const createLoad = async (newLoad: Load) => {
+  const createLoad = useCallback(async (newLoad: Load) => {
     setLoading(true);
-    const { data, error } = await supabase.from("loads").insert([newLoad]);
-    if (error) {
-      setError(error.message);
-    } else {
+    try {
+      const { data, error } = await supabase.from("loads").insert([newLoad]);
+      if (error) throw error;
       setLoads((prevLoads) => [...prevLoads, ...(data || [])]);
+    } catch (error: any) {
+      setError(error.message);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
-  };
+  }, []);
 
   // Update an existing load
-  const updateLoad = async (updatedLoad: Load) => {
+  const updateLoad = useCallback(async (updatedLoad: Load) => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("loads")
-      .update(updatedLoad)
-      .eq("id", updatedLoad.id);
-    if (error) {
-      setError(error.message);
-    } else {
+    try {
+      const { data, error } = await supabase
+        .from("loads")
+        .update(updatedLoad)
+        .eq("id", updatedLoad.id);
+      if (error) throw error;
       setLoads((prevLoads) =>
         prevLoads.map((load) =>
           load.id === updatedLoad.id ? (data ? data[0] : load) : load
         )
       );
+    } catch (error: any) {
+      setError(error.message);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
-  };
+  }, []);
 
   // Delete a load
-  const deleteLoad = async (loadId: string) => {
+  const deleteLoad = useCallback(async (loadId: string) => {
     setLoading(true);
-    const { error } = await supabase.from("loads").delete().eq("id", loadId);
-    if (error) {
-      setError(error.message);
-    } else {
+    try {
+      const { error } = await supabase.from("loads").delete().eq("id", loadId);
+      if (error) throw error;
       setLoads((prevLoads) => prevLoads.filter((load) => load.id !== loadId));
+    } catch (error: any) {
+      setError(error.message);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
-  };
+  }, []);
 
   useEffect(() => {
     fetchLoads();
-  }, []);
+  }, [fetchLoads]);
 
-  return {
-    loads,
-    isLoading,
-    error,
-    createLoad,
-    updateLoad,
-    deleteLoad,
-  };
+  // Memoize the return object
+  return useMemo(
+    () => ({
+      loads,
+      isLoading,
+      error,
+      createLoad,
+      updateLoad,
+      deleteLoad,
+    }),
+    [loads, isLoading, error, createLoad, updateLoad, deleteLoad]
+  );
 };

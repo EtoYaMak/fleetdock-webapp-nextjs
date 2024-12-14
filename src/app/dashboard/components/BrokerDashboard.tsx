@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { FiPlus, FiTrash2, FiEdit2, FiEye } from "react-icons/fi";
-import LoadingSpinner from "@/app/components/ui/LoadingSpinner";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { Button } from "@/components/ui/button";
 import { Load, LoadStatus } from "@/types/load";
 import {
@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
-import { useUserData } from "@/context/UserDataContext";
+import { useAuth } from "@/context/AuthContext";
 
 const BrokerDashboard = ({
   loads,
@@ -29,7 +29,7 @@ const BrokerDashboard = ({
   deleteLoad: (loadId: string) => Promise<void>;
 }) => {
   const router = useRouter();
-  const user = useUserData();
+  const { user } = useAuth();
   // Filter loads for current broker
   const brokerLoads = loads.filter((load) => load.broker_id === user?.id);
 

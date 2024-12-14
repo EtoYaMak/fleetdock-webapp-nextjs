@@ -89,7 +89,7 @@ function HomePage() {
   }, [isClient, loading]);
 
   return (
-    <main className="min-h-screen flex items-center justify-center">
+    <main className="min-h-screen flex items-center justify-center bg-[#111a2e]">
       <div className="container mx-auto px-6 text-center">{content}</div>
     </main>
   );

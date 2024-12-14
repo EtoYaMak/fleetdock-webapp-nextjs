@@ -1,13 +1,11 @@
 "use client";
-
-import { useAuth } from "@/context/AuthContext";
 import Link from "next/link";
 import { FiUser, FiLogOut, FiPackage } from "react-icons/fi";
-import { memo, useMemo } from "react";
+import { useMemo } from "react";
 import { TbLayoutDashboard } from "react-icons/tb";
+import { useAuth } from "@/context/AuthContext";
 
-// Memoize static components
-const NavLink = memo(function NavLink({
+const NavLink = function NavLink({
   href,
   children,
   className,
@@ -21,9 +19,9 @@ const NavLink = memo(function NavLink({
       {children}
     </Link>
   );
-});
+};
 
-const NavIcon = memo(function NavIcon({
+const NavIcon = function NavIcon({
   icon: Icon,
   className,
 }: {
@@ -31,10 +29,11 @@ const NavIcon = memo(function NavIcon({
   className?: string;
 }) {
   return <Icon className={className} />;
-});
+};
 
-const Navbar = memo(function Navbar() {
-  const { user, loading, signOut } = useAuth();
+const Navbar = function Navbar() {
+  const { user, loading } = useAuth();
+  const { signOut } = useAuth();
 
   // Memoize navigation items based on user state
   const navigationItems = useMemo(() => {
@@ -114,7 +113,10 @@ const Navbar = memo(function Navbar() {
               href={user?.role ? "/dashboard" : "/"}
               className="flex items-center px-2 text-[#f1f0f3] font-bold text-xl"
             >
-              FleetDock
+              FleetDock{" "}
+              <span className="text-[#4895d0]/90 brightness-150 text-[0.65em] mt-[0.40em] ml-1">
+                {user?.role === "admin" ? "Admin" : "Broker"}
+              </span>
             </NavLink>
           </div>
 
@@ -123,6 +125,6 @@ const Navbar = memo(function Navbar() {
       </div>
     </nav>
   );
-});
+};
 
 export default Navbar;

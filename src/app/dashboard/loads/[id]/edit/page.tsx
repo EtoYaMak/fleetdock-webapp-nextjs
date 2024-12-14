@@ -6,7 +6,7 @@ import LoadForm from "../../../components/broker/components/LoadForm";
 import { Load } from "@/types/load";
 import { FiArrowLeft } from "react-icons/fi";
 import Link from "next/link";
-import LoadingSpinner from "@/app/components/ui/LoadingSpinner";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { useAuth } from "@/context/AuthContext";
 
 export default function EditLoad({

@@ -1,0 +1,68 @@
+import React, { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
+
+interface Activity {
+  id: string;
+  type: string;
+  message: string;
+  created_at: string;
+}
+
+const RecentActivity = () => {
+  const [activities, setActivities] = useState<Activity[]>([]);
+  const [isLoading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchActivities = async () => {
+      setLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from("activities")
+          .select("*")
+          .order("created_at", { ascending: false })
+          .limit(10);
+
+        if (error) throw error;
+        setActivities(data as Activity[]);
+      } catch (error: any) {
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchActivities();
+  }, []);
+
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
+
+  if (error) {
+    return <div className="text-red-500">Error: {error}</div>;
+  }
+
+  return (
+    <section className="mt-8">
+      <h2 className="text-2xl font-semibold mb-4">Recent Activity</h2>
+      <div className="space-y-2">
+        {activities.length > 0 ? (
+          activities.map((activity) => (
+            <div key={activity.id} className="p-4 bg-[#1a2b47] rounded-lg">
+              <p className="text-[#f1f0f3]">{activity.message}</p>
+              <span className="text-sm text-gray-400">
+                {new Date(activity.created_at).toLocaleString()}
+              </span>
+            </div>
+          ))
+        ) : (
+          <p>No recent activities.</p>
+        )}
+      </div>
+    </section>
+  );
+};
+
+export default RecentActivity; 

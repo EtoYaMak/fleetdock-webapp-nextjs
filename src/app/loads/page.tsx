@@ -1,16 +1,18 @@
 "use client";
 //hello
 import { useLoads } from "@/hooks/useLoads";
-import { columns } from "@/app/loads/columns";
+import { getColumns } from "@/app/loads/columns";
 import { DataTable } from "@/app/loads/data-table";
 import { LoadCombined } from "@/types/load";
+import { memo } from "react";
 
-export default function LoadsPage() {
+export default memo(function LoadsPage() {
   const { loads, isLoading, error } = useLoads();
 
+  const columns = getColumns();
   if (isLoading)
     return (
-      <div className="flex justify-center items-center h-screen">
+      <div className="flex justify-center items-center h-screen bg-[#111a2e]">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
       </div>
     );
@@ -21,4 +23,4 @@ export default function LoadsPage() {
       <DataTable columns={columns} data={loads as LoadCombined[]} />
     </div>
   );
-}
+});

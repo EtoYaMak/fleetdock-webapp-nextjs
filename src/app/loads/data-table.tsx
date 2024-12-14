@@ -1,5 +1,5 @@
 "use client";
-
+import Link from "next/link";
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -10,6 +10,7 @@ import {
   getSortedRowModel,
   SortingState,
   getFilteredRowModel,
+  VisibilityState,
 } from "@tanstack/react-table";
 import {
   Table,
@@ -21,6 +22,7 @@ import {
 } from "@/components/ui/table";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Pagination,
   PaginationContent,
@@ -41,7 +43,7 @@ import {
 } from "@/components/ui/select";
 import { RangeSlider } from "@/components/ui/range-slider";
 import { Location } from "@/types/load";
-
+import { useRouter } from "next/navigation";
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
@@ -158,6 +160,26 @@ const FilterPanel = ({
               }
               className="bg-[#1a2b47] border-[#4895d0]/30 text-[#f1f0f3]"
             />
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="bid-enabled"
+                checked={
+                  table.getColumn("bid_enabled")?.getFilterValue() ?? false
+                }
+                onCheckedChange={(checked: boolean) =>
+                  table.getColumn("bid_enabled")?.setFilterValue(checked)
+                }
+                className={cn(
+                  "peer h-4 w-4 shrink-0 rounded-sm border border-[#f1f0f3] shadow focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-[#f1f0f3] data-[state=checked]:text-[#1a2b47]"
+                )}
+              />
+              <label
+                htmlFor="bid-enabled"
+                className="text-sm font-medium leading-none text-[#f1f0f3] peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                Bidding Enabled
+              </label>
+            </div>
           </div>
         </div>
 
@@ -269,7 +291,8 @@ const FilterPanel = ({
           <div className="space-y-3">
             <Select
               value={
-                (table.getColumn("load_status")?.getFilterValue() as string) || "all"
+                (table.getColumn("load_status")?.getFilterValue() as string) ||
+                "all"
               }
               onValueChange={(value) =>
                 table
@@ -370,7 +393,9 @@ export function DataTable<TData, TValue>({
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [showFilters, setShowFilters] = useState(false);
-
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
+    bid_enabled: false,
+  });
   const table = useReactTable({
     data,
     columns,
@@ -381,9 +406,11 @@ export function DataTable<TData, TValue>({
     state: {
       sorting,
       columnFilters,
+      columnVisibility,
     },
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
+    onColumnVisibilityChange: setColumnVisibility,
     filterFns: {
       custom: (row, id, filterValue) => {
         const value = row.getValue(id);
@@ -438,8 +465,8 @@ export function DataTable<TData, TValue>({
         </div>
       </div>
 
-      <Table className="w-full ">
-        <TableHeader className="bg-[#4895d0]/50 backdrop-blur-sm">
+      <Table>
+        <TableHeader className="bg-[#4895d0]/50 backdrop-blur-sm w-fit">
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow
               key={headerGroup.id}
@@ -448,7 +475,8 @@ export function DataTable<TData, TValue>({
               {headerGroup.headers.map((header) => (
                 <TableHead
                   key={header.id}
-                  className="text-[#f1f0f3] h-12 font-semibold hover:text-white transition-colors duration-100"
+                  className="text-[#f1f0f3] h-12 font-semibold
+                   hover:text-white transition-colors duration-100 w-fit"
                 >
                   {header.isPlaceholder
                     ? null
@@ -461,15 +489,15 @@ export function DataTable<TData, TValue>({
             </TableRow>
           ))}
         </TableHeader>
-        <TableBody className="bg-[hsl(217,46%,10%)]">
+        <TableBody className="bg-[#1a2b47]">
           {table.getRowModel().rows?.length ? (
             table.getRowModel().rows.map((row) => (
               <TableRow
                 key={row.id}
-                className="border-b border-[#4895d0]/20 hover:bg-[#4895d0]/10 transition-colors"
+                className="w-fit border-b border-[#4895d0]/20 hover:bg-[#4895d0]/10 transition-colors"
               >
                 {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id} className="text-[#f1f0f3] py-4">
+                  <TableCell key={cell.id} className="text-[#f1f0f3] p2-4">
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </TableCell>
                 ))}
@@ -487,7 +515,6 @@ export function DataTable<TData, TValue>({
           )}
         </TableBody>
       </Table>
-
       <div className="flex items-center justify-between py-4 max-w-7xl mx-auto">
         <ResultsCounter table={table} totalRows={data.length} />
         <Pagination className="text-[#f1f0f3]">

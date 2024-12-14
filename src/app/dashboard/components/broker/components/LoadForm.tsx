@@ -17,7 +17,7 @@ import { FiSave, FiX } from "react-icons/fi";
 import { useRouter } from "next/navigation";
 import { useLoadTypes } from "@/hooks/useLoadTypes";
 import { useVehiclesTypes } from "@/hooks/useVehicleTypes";
-import { useUserData } from "@/context/UserDataContext";
+import { useAuth } from "@/context/AuthContext";
 interface LoadFormProps {
   initialData?: Partial<Load>;
   onSubmit: (data: Load) => Promise<void>;
@@ -30,7 +30,7 @@ export default function LoadForm({
   isEdit = false,
 }: LoadFormProps) {
   const router = useRouter();
-  const user = useUserData();
+  const { user } = useAuth();
   const { loadTypes, isLoading: loadTypesLoading } = useLoadTypes();
   const { vehiclesTypes, isLoading: vehiclesTypesLoading } = useVehiclesTypes();
   const [isSubmitting, setIsSubmitting] = useState(false);

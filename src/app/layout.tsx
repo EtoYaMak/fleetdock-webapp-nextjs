@@ -1,12 +1,12 @@
 import "./globals.css";
-import Navbar from "@/app/components/common/Navbar";
-import Footer from "@/app/components/common/Footer";
+import Navbar from "@/components/common/Navbar";
+import Footer from "@/components/common/Footer";
 import UserProvider from "@/context/AuthContext";
 import { memo } from "react";
 import { Metadata } from "next";
 import { Suspense } from "react";
-import LoadingSpinner from "@/app/components/ui/LoadingSpinner";
-import { UserDataProvider } from "@/context/UserDataContext";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import { Toaster } from "@/components/ui/toaster";
 // Define metadata outside component for better performance
 export const metadata: Metadata = {
   title: "FleetDock",
@@ -30,9 +30,8 @@ const RootLayout = memo(function RootLayout({
         <UserProvider>
           <Suspense fallback={<LoadingSpinner />}>
             <MemoizedNavbar />
-            <UserDataProvider>
-              <main className="flex-grow">{children}</main>
-            </UserDataProvider>
+            <main className="flex-grow">{children}</main>
+            <Toaster />
             <MemoizedFooter />
           </Suspense>
         </UserProvider>

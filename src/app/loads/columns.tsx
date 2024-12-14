@@ -2,171 +2,238 @@
 
 import { ColumnDef } from "@tanstack/react-table";
 import { formatDistanceToNow } from "date-fns";
-import { ArrowUpDown } from "lucide-react";
+import { ArrowUpDown, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Load, Location } from "@/types/load";
+import { FiEye } from "react-icons/fi";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 
 // Format location object to string
 const formatLocation = (location: Location): string => {
   return `${location.city}`;
 };
 
-export const columns: ColumnDef<Load>[] = [
-  {
-    accessorKey: "created_at",
-    header: ({ column }) => (
-      <Button
-        variant="ghost"
-        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-      >
-        Age
-        <ArrowUpDown className="ml-2 h-4 w-4" />
-      </Button>
-    ),
-    cell: ({ row }) => {
-      const created_at = new Date(row.original.created_at || "");
-      return formatDistanceToNow(created_at, { addSuffix: false })
-        .replace("about ", "")
-        .replace("less than ", "");
+export const getColumns = () => {
+  const { user } = useAuth();
+  const router = useRouter();
+
+  const baseColumns: ColumnDef<Load>[] = [
+    {
+      accessorKey: "load_id",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          className="flex w-fit"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          ID
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
+      cell: ({ row }) => row.original.id.slice(0, 8),
     },
-  },
-  {
-    accessorKey: "pickup_location",
-    header: ({ column }) => (
-      <Button
-        variant="ghost"
-        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-      >
-        Pickup Location
-        <ArrowUpDown className="ml-2 h-4 w-4" />
-      </Button>
-    ),
-    cell: ({ row }) => formatLocation(row.original.pickup_location),
-    filterFn: (row, id, value) => {
-      const location = row.getValue(id) as Location;
-      const searchStr = value.toLowerCase();
-      return (
-        location.city.toLowerCase().includes(searchStr) ||
-        location.state.toLowerCase().includes(searchStr) ||
-        location.zip.toLowerCase().includes(searchStr)
-      );
+    {
+      accessorKey: "created_at",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          className="flex w-fit"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          <Clock className="mr-2 h-4 w-4" />
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
+      cell: ({ row }) => {
+        const created_at = new Date(row.original.created_at || "");
+        return formatDistanceToNow(created_at, { addSuffix: false })
+          .replace("about ", "")
+          .replace("less than ", "");
+      },
     },
-  },
-  {
-    accessorKey: "delivery_location",
-    header: ({ column }) => (
-      <Button
-        variant="ghost"
-        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-      >
-        Delivery Location
-        <ArrowUpDown className="ml-2 h-4 w-4" />
-      </Button>
-    ),
-    cell: ({ row }) => formatLocation(row.original.delivery_location),
-    filterFn: (row, id, value) => {
-      const location = row.getValue(id) as Location;
-      const searchStr = value.toLowerCase();
-      return (
-        location.city.toLowerCase().includes(searchStr) ||
-        location.state.toLowerCase().includes(searchStr) ||
-        location.zip.toLowerCase().includes(searchStr)
-      );
+    {
+      accessorKey: "pickup_location",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          className="flex w-fit"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Pickup
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
+      cell: ({ row }) => formatLocation(row.original.pickup_location),
+      filterFn: (row, id, value) => {
+        const location = row.getValue(id) as Location;
+        const searchStr = value.toLowerCase();
+        return (
+          location.city.toLowerCase().includes(searchStr) ||
+          location.state.toLowerCase().includes(searchStr) ||
+          location.zip.toLowerCase().includes(searchStr)
+        );
+      },
     },
-  },
-  {
-    accessorKey: "load_type_name",
-    header: ({ column }) => (
-      <Button
-        variant="ghost"
-        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-      >
-        Load Type
-        <ArrowUpDown className="ml-2 h-4 w-4" />
-      </Button>
-    ),
-    cell: ({ row }) => (
-      <div className="flex items-center">
-        <span className="px-2 py-1 rounded-full text-xs font-medium bg-[#2d4169] text-[#f1f0f3]">
-          {row.getValue("load_type_name")}
+    {
+      accessorKey: "delivery_location",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          className="flex w-fit"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Delivery
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
+      cell: ({ row }) => formatLocation(row.original.delivery_location),
+      filterFn: (row, id, value) => {
+        const location = row.getValue(id) as Location;
+        const searchStr = value.toLowerCase();
+        return (
+          location.city.toLowerCase().includes(searchStr) ||
+          location.state.toLowerCase().includes(searchStr) ||
+          location.zip.toLowerCase().includes(searchStr)
+        );
+      },
+    },
+    {
+      accessorKey: "load_type_name",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          className="flex w-fit"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Type
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
+      cell: ({ row }) => (
+        <div className="flex items-center">
+          <span className="px-2 py-1 rounded-full text-xs font-medium bg-[#2d4169] text-[#f1f0f3]">
+            {row.getValue("load_type_name")}
+          </span>
+        </div>
+      ),
+      filterFn: "equals",
+    },
+    {
+      accessorKey: "weight_kg",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          className="flex w-fit"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Weight (kg)
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
+      cell: ({ row }) => row.getValue("weight_kg"),
+    },
+    {
+      accessorKey: "budget_amount",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          className="flex w-fit"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Budget
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
+      cell: ({ row }) => (
+        <div>
+          {row.original.budget_amount} {row.original.budget_currency}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "load_status",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          className="flex w-fit"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Status
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
+      cell: ({ row }) => (
+        <span className="px-2 py-1 rounded-full text-xs font-semibold bg-[#4895d0] text-[#f1f0f3]">
+          {row.getValue("load_status")}
         </span>
-      </div>
-    ),
-    filterFn: "equals",
-  },
-  {
-    accessorKey: "weight_kg",
-    header: ({ column }) => (
-      <Button
-        variant="ghost"
-        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-      >
-        Weight (kg)
-        <ArrowUpDown className="ml-2 h-4 w-4" />
-      </Button>
-    ),
-    cell: ({ row }) => row.getValue("weight_kg"),
-  },
-  {
-    accessorKey: "budget_amount",
-    header: ({ column }) => (
-      <Button
-        variant="ghost"
-        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-      >
-        Budget
-        <ArrowUpDown className="ml-2 h-4 w-4" />
-      </Button>
-    ),
-    cell: ({ row }) => (
-      <div>
-        {row.original.budget_amount} {row.original.budget_currency}
-      </div>
-    ),
-  },
-  {
-    accessorKey: "load_status",
-    header: ({ column }) => (
-      <Button
-        variant="ghost"
-        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-      >
-        Status
-        <ArrowUpDown className="ml-2 h-4 w-4" />
-      </Button>
-    ),
-    cell: ({ row }) => (
-      <span className="px-2 py-1 rounded-full text-xs font-semibold bg-[#4895d0] text-[#f1f0f3]">
-        {row.getValue("load_status")}
-      </span>
-    ),
-  },
-  {
-    accessorKey: "pickup_date",
-    header: ({ column }) => (
-      <Button
-        variant="ghost"
-        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-      >
-        Pickup Date
-        <ArrowUpDown className="ml-2 h-4 w-4" />
-      </Button>
-    ),
-    cell: ({ row }) =>
-      new Date(row.getValue("pickup_date")).toLocaleDateString(),
-  },
-  {
-    accessorKey: "delivery_date",
-    header: ({ column }) => (
-      <Button
-        variant="ghost"
-        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-      >
-        Delivery Date
-        <ArrowUpDown className="ml-2 h-4 w-4" />
-      </Button>
-    ),
-    cell: ({ row }) =>
-      new Date(row.getValue("delivery_date")).toLocaleDateString(),
-  },
-];
+      ),
+    },
+    {
+      accessorKey: "pickup_date",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          className="flex w-fit"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Pickup <Clock className="h-4 w-4" />
+          <ArrowUpDown className="ml-1 h-4 w-4" />
+        </Button>
+      ),
+      cell: ({ row }) =>
+        new Date(row.getValue("pickup_date")).toLocaleDateString(),
+    },
+    {
+      accessorKey: "delivery_date",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          className="flex w-fit"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Delivery <Clock className="h-4 w-4" />
+          <ArrowUpDown className="ml-1 h-4 w-4" />
+        </Button>
+      ),
+      cell: ({ row }) =>
+        new Date(row.getValue("delivery_date")).toLocaleDateString(),
+    },
+  ];
+
+  // Hidden column for filtering
+  const hiddenColumns: ColumnDef<Load>[] = [
+    {
+      accessorKey: "bid_enabled",
+      enableColumnFilter: true,
+
+      enableHiding: true,
+      // Set column to be hidden by default
+      meta: {
+        hidden: true,
+      },
+    },
+  ];
+
+  const actionColumn: ColumnDef<Load> = {
+    id: "actions",
+    header: "Actions",
+    cell: ({ row }) => {
+      const load = row.original;
+      return (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => router.push(`/loads/${load.id}`)}
+          className="hover:bg-[#4895d0]/60 text-[#f1f0f3] hover:text-[#f1f0f3]"
+        >
+          <FiEye className="h-4 w-4" />
+        </Button>
+      );
+    },
+  };
+
+  return user?.role && user?.role !== null
+    ? [...baseColumns, ...hiddenColumns, actionColumn]
+    : [...baseColumns, ...hiddenColumns];
+};

@@ -1,3 +1,4 @@
+import { User } from "@/types/auth";
 export interface Load {
   id: string; // UUID
   broker_id: string; // UUID
@@ -71,4 +72,9 @@ export interface Location {
   city: string;
   state: string;
   zip: string;
+}
+
+export interface LoadActionsProps {
+  load: Load;
+  user: User;
 }

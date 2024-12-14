@@ -7,16 +7,12 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 
 // Memoize static components
-const FormIcon = memo(function FormIcon({
-  icon: Icon,
-}: {
-  icon: typeof FiMail;
-}) {
+const FormIcon = function FormIcon({ icon: Icon }: { icon: typeof FiMail }) {
   return <Icon className="text-gray-400" />;
-});
+};
 
 // Memoize form input component
-const FormInput = memo(function FormInput({
+const FormInput = function FormInput({
   id,
   type,
   name,
@@ -56,14 +52,10 @@ const FormInput = memo(function FormInput({
       />
     </div>
   );
-});
+};
 
 // Memoize error message component
-const ErrorMessage = memo(function ErrorMessage({
-  message,
-}: {
-  message: string;
-}) {
+const ErrorMessage = function ErrorMessage({ message }: { message: string }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -73,9 +65,9 @@ const ErrorMessage = memo(function ErrorMessage({
       {message}
     </motion.div>
   );
-});
+};
 
-const SignInForm = memo(function SignInForm() {
+const SignInForm = function SignInForm() {
   const { signIn } = useAuth();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
@@ -209,6 +201,6 @@ const SignInForm = memo(function SignInForm() {
       </motion.div>
     </div>
   );
-});
+};
 
 export default SignInForm;

@@ -1,14 +1,13 @@
 "use client";
 
 import { memo } from "react";
-import LoadingSpinner from "@/app/components/ui/LoadingSpinner";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import BrokerDashboard from "./components/BrokerDashboard";
 import TruckerDashboard from "./components/TruckerDashboard";
 import { useLoads } from "@/hooks/useLoads";
 import { User } from "@/types/auth";
 import { Load } from "@/types/load";
-import { useUserData } from "@/context/UserDataContext";
-
+import { useAuth } from "@/context/AuthContext";
 const InvalidRole = memo(function InvalidRole() {
   return (
     <div className="min-h-screen bg-[#203152] flex flex-col justify-center py-12 sm:px-6 lg:px-8">
@@ -28,7 +27,7 @@ const InvalidRole = memo(function InvalidRole() {
 
 const Dashboard = memo(function Dashboard() {
   const { loads, isLoading, error, deleteLoad } = useLoads();
-  const user = useUserData();
+  const { user } = useAuth();
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-screen">
