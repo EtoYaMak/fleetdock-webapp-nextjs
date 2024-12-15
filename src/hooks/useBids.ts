@@ -24,7 +24,6 @@ export const useBids = (loadId?: string) => {
   const { toast } = useToast();
 
   // Fetch bids for a specific load
-  // Fetch bids for a specific load
   const fetchBids = useCallback(async () => {
     if (!loadId) return;
 
@@ -61,12 +60,14 @@ export const useBids = (loadId?: string) => {
 
   // Create a new bid
   const createBid = useCallback(
-    async (newBid: NewBid) => {
+    async (newBid: Bid) => {
       setLoading(true);
       try {
+        //add bid_status to newBid and remove trucker object
+        const { trucker, ...bidData } = newBid;
         const { data, error } = await supabase
           .from("bids")
-          .insert([{ ...newBid, bid_status: "pending" }])
+          .insert([{ ...bidData, bid_status: "pending" }])
           .select()
           .single();
 

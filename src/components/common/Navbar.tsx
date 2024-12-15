@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { FiUser, FiLogOut, FiPackage } from "react-icons/fi";
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { TbLayoutDashboard } from "react-icons/tb";
 import { useAuth } from "@/context/AuthContext";
 
@@ -34,12 +34,17 @@ const NavIcon = function NavIcon({
 const Navbar = function Navbar() {
   const { user, loading } = useAuth();
   const { signOut } = useAuth();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Memoize navigation items based on user state
   const navigationItems = useMemo(() => {
-    if (loading) {
+    if (!mounted) return null;
+    if (loading)
       return <div className="animate-pulse h-8 w-20 bg-[#203152] rounded" />;
-    }
 
     if (user) {
       return (
@@ -102,7 +107,7 @@ const Navbar = function Navbar() {
         </NavLink>
       </div>
     );
-  }, [user, loading, signOut]);
+  }, [user, loading, signOut, mounted]);
 
   return (
     <nav className="bg-transparent">
@@ -113,10 +118,7 @@ const Navbar = function Navbar() {
               href={user?.role ? "/dashboard" : "/"}
               className="flex items-center px-2 text-[#f1f0f3] font-bold text-xl"
             >
-              FleetDock{" "}
-              <span className="text-[#4895d0]/90 brightness-150 text-[0.65em] mt-[0.40em] ml-1">
-                {user?.role === "admin" ? "Admin" : "Broker"}
-              </span>
+              FleetDock
             </NavLink>
           </div>
 

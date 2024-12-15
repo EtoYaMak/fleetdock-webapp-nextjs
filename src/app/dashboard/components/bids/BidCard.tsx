@@ -8,7 +8,7 @@ const BidCard = ({ bid }: { bid: Bid }) => {
 
   const handleDelete = () => {
     if (confirm("Are you sure you want to delete this bid?")) {
-      deleteBid(bid.id);
+      deleteBid(bid.id as string);
     }
   };
 

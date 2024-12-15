@@ -3,7 +3,7 @@ import { User } from "@/types/auth";
 export type BidStatus = "pending" | "accepted" | "rejected";
 
 export type Bid = {
-  id: string;
+  id?: string;
   load_id: string;
   trucker_id: string;
   trucker: User;

@@ -2,11 +2,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/context/AuthContext";
-import {
-  TruckerDetails,
-  TruckerFormData,
-  TruckerActivityFormData,
-} from "@/types/trucker";
+import { TruckerDetails, TruckerFormData } from "@/types/trucker";
 
 export const useTrucker = () => {
   const { user } = useAuth();

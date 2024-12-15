@@ -7,7 +7,8 @@ import ViewTruckerProfileData from "./components/ViewTruckerProfileData";
 import { User } from "@/types/auth";
 
 import { TruckerDetails } from "@/types/trucker";
-type TabType = "edit" | "view";
+import ViewTruckerVehicles from "./components/ViewTruckerVehicles";
+type TabType = "edit" | "view" | "vehicles";
 
 const TruckerProfile = memo(function TruckerProfile({
   user,
@@ -81,6 +82,16 @@ const TruckerProfile = memo(function TruckerProfile({
             Edit Profile
           </button>
           <button
+            onClick={() => setActiveTab("vehicles")}
+            className={`w-full px-4 mt-2 py-2 text-left rounded-lg transition-transform duration-300 ease-in-out ${
+              activeTab === "vehicles"
+                ? "bg-[#111a2e] text-[#f1f0f3] border-r-2 border-b-2 border-[#4895d0]/50 scale-105"
+                : "text-[#f1f0f3] hover:bg-[#4895d0]/10"
+            }`}
+          >
+            Vehicles
+          </button>
+          <button
             onClick={() => signOut()}
             className="w-full px-4 py-2 mt-2 text-left text-red-400 hover:bg-red-500/10 rounded-lg "
           >
@@ -91,28 +102,22 @@ const TruckerProfile = memo(function TruckerProfile({
 
       {/* Main Content */}
       <div className="flex-1 p-8 overflow-auto">
-        {activeTab === "edit" ? (
-          <div>
-            <h1 className="text-2xl font-bold mb-6">Edit Profile</h1>
-            <div className="">
-              <TruckerProfileForm
-                initialData={initialData}
-                trucker={trucker}
-                user={user as User}
-                onSubmit={handleSubmit}
-                isLoading={isLoading}
-              />
-            </div>
-          </div>
+        {activeTab === "view" ? (
+          <ViewTruckerProfileData trucker={trucker} user={user as User} />
+        ) : activeTab === "edit" ? (
+          <TruckerProfileForm
+            initialData={initialData}
+            trucker={trucker}
+            user={user as User}
+            onSubmit={handleSubmit}
+            isLoading={isLoading}
+          />
         ) : (
-          <div>
-            <h1 className="text-2xl font-bold mb-6">Profile Details</h1>
-            {trucker ? (
-              <ViewTruckerProfileData trucker={trucker} user={user as User} />
-            ) : (
-              <div className="text-[#4895d0]">No profile data available</div>
-            )}
-          </div>
+          <ViewTruckerVehicles
+            trucker={trucker}
+            isLoading={isLoading}
+            error={error}
+          />
         )}
       </div>
     </div>

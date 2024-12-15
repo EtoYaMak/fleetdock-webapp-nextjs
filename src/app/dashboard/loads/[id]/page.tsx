@@ -8,8 +8,7 @@ import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { FiArrowLeft, FiEdit2, FiTruck } from "react-icons/fi";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
-import BidComponent from "@/components/bids/bidComponent";
-import { Bid } from "@/types/bid";
+import BidsContainer from "@/components/bids/bidsContainer";
 import { useBids } from "@/hooks/useBids";
 import { User } from "@/types/auth";
 export default function ViewLoad({
@@ -281,29 +280,13 @@ export default function ViewLoad({
             <LoadingSpinner />
           ) : (
             <div className="space-y-2">
-              {bids?.map((bid: Bid) => (
-                <BidComponent
-                  key={bid.id}
-                  bid={bid}
-                  loadId={load.id}
-                  load={load}
-                  isLoadOwner={user?.id === load.broker_id}
-                  currentUserId={user?.id || ""}
-                  currentUser={user as User}
-                />
-              ))}
-
-              {/* Only show new bid form for truckers and if no bid exists */}
-              {user?.role === "trucker" &&
-                !bids.some((bid) => bid.trucker_id === user?.id) && (
-                  <BidComponent
-                    loadId={load.id}
-                    load={load}
-                    isLoadOwner={user?.id === load.broker_id}
-                    currentUserId={user?.id || ""}
-                    currentUser={user as User}
-                  />
-                )}
+              <BidsContainer
+                bids={bids}
+                loadId={load.id}
+                isLoadOwner={user?.id === load.broker_id}
+                currentUserId={user?.id || ""}
+                currentUser={user as User}
+              />
             </div>
           )}
         </section>

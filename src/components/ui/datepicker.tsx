@@ -18,6 +18,7 @@ interface DatePickerProps {
   onChange?: (date: Date | undefined) => void;
   placeholder?: string;
   className?: string;
+  popoverContentClassName?: string;
 }
 
 export default function DatePicker({
@@ -25,6 +26,7 @@ export default function DatePicker({
   onChange,
   placeholder = "Pick a date",
   className,
+  popoverContentClassName,
 }: DatePickerProps) {
   return (
     <Popover>
@@ -41,7 +43,7 @@ export default function DatePicker({
           {value ? format(value, "PPP") : <span>{placeholder}</span>}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0">
+      <PopoverContent className={cn("w-auto p-0", popoverContentClassName)}>
         <Calendar
           mode="single"
           selected={value}
