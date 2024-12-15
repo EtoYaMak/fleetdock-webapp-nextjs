@@ -1,11 +1,17 @@
 import React from "react";
-import { useRejectedBids } from "@/hooks/useTruckerDash";
+import { Bid } from "@/types/bid";
 import BidCard from "../bids/BidCard";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
-const RejectedBids = () => {
-  const { rejectedBids, isLoading, error } = useRejectedBids();
-
+const RejectedBids = ({
+  rejectedBids,
+  isLoading,
+  error,
+}: {
+  rejectedBids: Bid[];
+  isLoading: boolean;
+  error: string | null;
+}) => {
   if (isLoading) {
     return <LoadingSpinner />;
   }

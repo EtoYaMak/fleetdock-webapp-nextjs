@@ -3,6 +3,7 @@ import { Load } from "@/types/load";
 import { supabase } from "@/lib/supabase";
 import { toast, useToast } from "@/hooks/use-toast";
 import { Bid } from "@/types/bid";
+import { useAuth } from "@/context/AuthContext";
 
 export const useTruckerDash = (filters?: Partial<Load>) => {
   const [loads, setLoads] = useState<Load[]>([]);
@@ -66,8 +67,11 @@ export const useAcceptedBids = () => {
   const [acceptedBids, setAcceptedBids] = useState<Bid[]>([]);
   const [isLoading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const { user } = useAuth();
 
   const fetchAcceptedBids = useCallback(async () => {
+    if (!user?.id) return;
+
     setLoading(true);
     try {
       const { data, error } = await supabase
@@ -82,7 +86,8 @@ export const useAcceptedBids = () => {
           )
         `
         )
-        .eq("bid_status", "accepted");
+        .eq("bid_status", "accepted")
+        .eq("trucker_id", user.id);
       if (error) throw error;
       setAcceptedBids(data as Bid[]);
     } catch (error: any) {
@@ -95,7 +100,7 @@ export const useAcceptedBids = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user?.id]);
 
   useEffect(() => {
     fetchAcceptedBids();
@@ -108,8 +113,11 @@ export const usePendingBids = () => {
   const [pendingBids, setPendingBids] = useState<Bid[]>([]);
   const [isLoading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const { user } = useAuth();
 
   const fetchPendingBids = useCallback(async () => {
+    if (!user?.id) return;
+
     setLoading(true);
     try {
       const { data, error } = await supabase
@@ -124,7 +132,8 @@ export const usePendingBids = () => {
           )
         `
         )
-        .eq("bid_status", "pending");
+        .eq("bid_status", "pending")
+        .eq("trucker_id", user.id);
       if (error) throw error;
       setPendingBids(data as Bid[]);
     } catch (error: any) {
@@ -132,7 +141,7 @@ export const usePendingBids = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user?.id]);
 
   useEffect(() => {
     fetchPendingBids();
@@ -145,8 +154,11 @@ export const useRejectedBids = () => {
   const [rejectedBids, setRejectedBids] = useState<Bid[]>([]);
   const [isLoading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const { user } = useAuth();
 
   const fetchRejectedBids = useCallback(async () => {
+    if (!user?.id) return;
+
     setLoading(true);
     try {
       const { data, error } = await supabase
@@ -161,7 +173,8 @@ export const useRejectedBids = () => {
           )
         `
         )
-        .eq("bid_status", "rejected");
+        .eq("bid_status", "rejected")
+        .eq("trucker_id", user.id);
       if (error) throw error;
       setRejectedBids(data as Bid[]);
     } catch (error: any) {
@@ -169,7 +182,7 @@ export const useRejectedBids = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user?.id]);
 
   useEffect(() => {
     fetchRejectedBids();

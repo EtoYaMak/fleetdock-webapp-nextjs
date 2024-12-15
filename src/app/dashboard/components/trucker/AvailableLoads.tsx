@@ -30,4 +30,4 @@ const AvailableLoads = () => {
   );
 };
 
-export default memo(AvailableLoads);
+export default AvailableLoads;

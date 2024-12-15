@@ -53,7 +53,7 @@ export default function ProfilePage() {
         />
       )}
 
-      {user?.role === "trucker" && profileData && (
+      {user?.role === "trucker" && (
         <TruckerProfile
           user={user as User}
           trucker={trucker as TruckerDetails}

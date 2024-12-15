@@ -2,9 +2,17 @@ import React, { memo } from "react";
 import { usePendingBids } from "@/hooks/useTruckerDash";
 import BidCard from "../bids/BidCard";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
-const PendingBids = memo(() => {
-  const { pendingBids, isLoading, error } = usePendingBids();
+import { Bid } from "@/types/bid";
 
+const PendingBids = ({
+  pendingBids,
+  isLoading,
+  error,
+}: {
+  pendingBids: Bid[];
+  isLoading: boolean;
+  error: string | null;
+}) => {
   if (isLoading) {
     return <LoadingSpinner />;
   }
@@ -23,7 +31,7 @@ const PendingBids = memo(() => {
       )}
     </div>
   );
-});
+};
 
 PendingBids.displayName = "PendingBids";
-export default memo(PendingBids);
+export default PendingBids;
