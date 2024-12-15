@@ -26,8 +26,8 @@ const InvalidRole = memo(function InvalidRole() {
 });
 
 const Dashboard = memo(function Dashboard() {
-  const { loads, isLoading, error, deleteLoad } = useLoads();
   const { user } = useAuth();
+  const { loads, isLoading, error, deleteLoad } = useLoads();
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-screen">

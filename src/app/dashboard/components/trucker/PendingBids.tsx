@@ -25,4 +25,5 @@ const PendingBids = memo(() => {
   );
 });
 
+PendingBids.displayName = "PendingBids";
 export default memo(PendingBids);

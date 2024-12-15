@@ -373,9 +373,11 @@ export default function TruckerProfileForm({
               const newDocs =
                 type === "licenses" ? [...licenses] : [...certifications];
               newDocs[index] = { ...newDocs[index], name: e.target.value };
-              type === "licenses"
-                ? setLicenses(newDocs)
-                : setCertifications(newDocs);
+              if (type === "licenses") {
+                setLicenses(newDocs);
+              } else {
+                setCertifications(newDocs);
+              }
             }}
             className="w-full rounded-md bg-[#203152] border-[#4895d0]/30 text-[#f1f0f3] px-3 py-2"
           />
@@ -387,7 +389,7 @@ export default function TruckerProfileForm({
             onUpload={handleDocumentUpload(type, index)}
             acceptedFileTypes="application/pdf,image/*"
             previewSize={{ width: 200, height: 200 }}
-            isExisting={isExistingDocument ? doc.name : null}
+            isExisting={isExistingDocument}
             user={user}
           />
         </div>

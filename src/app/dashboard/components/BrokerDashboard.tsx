@@ -126,7 +126,7 @@ const BrokerDashboard = ({
                 <TableCell className="font-medium">
                   {load.id.slice(0, 8)}
                 </TableCell>
-                <TableCell>{load.load_type_id}</TableCell>
+                <TableCell>{load.load_type_name}</TableCell>
                 <TableCell>{load.weight_kg}</TableCell>
                 <TableCell>
                   {format(new Date(load.pickup_date), "MMM dd, yyyy")}

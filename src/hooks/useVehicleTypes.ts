@@ -23,7 +23,7 @@ export const useVehiclesTypes = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [supabase]);
+  }, []);
 
   useEffect(() => {
     fetchVehiclesTypes();

@@ -16,4 +16,5 @@ const MyBids = memo(() => {
   );
 });
 
+MyBids.displayName = "MyBids";
 export default memo(MyBids);

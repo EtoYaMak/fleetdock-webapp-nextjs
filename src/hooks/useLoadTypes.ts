@@ -23,7 +23,7 @@ export const useLoadTypes = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [supabase]);
+  }, []);
 
   useEffect(() => {
     fetchLoadTypes();

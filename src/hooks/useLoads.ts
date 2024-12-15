@@ -11,7 +11,6 @@ export const useLoads = () => {
   const fetchLoads = useCallback(async () => {
     setLoading(true);
     try {
-      const { data: userData } = await supabase.auth.getUser();
       const { data, error: loadError } = await supabase.from("loads").select(`
           *,
           load_types (

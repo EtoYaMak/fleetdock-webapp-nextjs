@@ -6,18 +6,14 @@ import { ArrowUpDown, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Load, Location } from "@/types/load";
 import { FiEye } from "react-icons/fi";
-import { useRouter } from "next/navigation";
-import { useAuth } from "@/context/AuthContext";
+import { User } from "@/types/auth";
 
 // Format location object to string
 const formatLocation = (location: Location): string => {
   return `${location.city}`;
 };
 
-export const getColumns = () => {
-  const { user } = useAuth();
-  const router = useRouter();
-
+export const getColumns = (user: User, router: any) => {
   const baseColumns: ColumnDef<Load>[] = [
     {
       accessorKey: "load_id",

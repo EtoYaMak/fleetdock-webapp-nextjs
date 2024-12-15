@@ -12,10 +12,29 @@ import { TruckerDetails } from "@/types/trucker";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 export default function ProfilePage() {
   const { user } = useAuth();
+  // Call hooks unconditionally at the top level
+  const {
+    broker,
+    isLoading: brokerLoading,
+    error: brokerError,
+    createBroker,
+    updateBroker,
+  } = useBroker();
+  const {
+    trucker,
+    isLoading: truckerLoading,
+    error: truckerError,
+    createTrucker,
+    updateTrucker,
+  } = useTrucker();
   // Conditionally fetch broker or trucker data based on user role
-  const brokerData = user?.role === "broker" ? useBroker() : null;
-
-  const truckerData = user?.role === "trucker" ? useTrucker() : null;
+  // Then use the data conditionally
+  const profileData =
+    user?.role === "broker"
+      ? broker
+      : user?.role === "trucker"
+      ? trucker
+      : null;
 
   if (!user) {
     return null;
@@ -23,25 +42,25 @@ export default function ProfilePage() {
 
   return (
     <div className="profile-page">
-      {user?.role === "broker" && brokerData && (
+      {user?.role === "broker" && profileData && (
         <BrokerProfile
           user={user as User}
-          broker={brokerData.broker as BrokerBusiness}
-          isLoading={brokerData.isLoading}
-          error={brokerData.error as string}
-          createBroker={brokerData.createBroker}
-          updateBroker={brokerData.updateBroker}
+          broker={broker as BrokerBusiness}
+          isLoading={brokerLoading}
+          error={brokerError as string}
+          createBroker={createBroker}
+          updateBroker={updateBroker}
         />
       )}
 
-      {user?.role === "trucker" && truckerData && (
+      {user?.role === "trucker" && profileData && (
         <TruckerProfile
           user={user as User}
-          trucker={truckerData.trucker as TruckerDetails}
-          isLoading={truckerData.isLoading}
-          error={truckerData.error as string}
-          createTrucker={truckerData.createTrucker}
-          updateTrucker={truckerData.updateTrucker}
+          trucker={trucker as TruckerDetails}
+          isLoading={truckerLoading}
+          error={truckerError as string}
+          createTrucker={createTrucker}
+          updateTrucker={updateTrucker}
         />
       )}
     </div>
