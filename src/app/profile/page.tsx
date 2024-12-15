@@ -42,7 +42,7 @@ export default function ProfilePage() {
 
   return (
     <div className="profile-page">
-      {user?.role === "broker" && profileData && (
+      {user?.role === "broker" && (
         <BrokerProfile
           user={user as User}
           broker={broker as BrokerBusiness}
