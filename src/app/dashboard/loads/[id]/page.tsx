@@ -8,9 +8,9 @@ import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { FiArrowLeft, FiEdit2, FiTruck } from "react-icons/fi";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
-import BidsContainer from "@/components/bids/bidsContainer";
 import { useBids } from "@/hooks/useBids";
 import { User } from "@/types/auth";
+import BidsContainer from "@/components/bids/bidsContainer";
 export default function ViewLoad({
   params,
 }: {
@@ -21,7 +21,14 @@ export default function ViewLoad({
   const [load, setLoad] = useState<Load | null>(null);
   const [id, setId] = useState<string | null>(null);
   const router = useRouter();
-  const { bids, isLoading: bidsLoading } = useBids(load?.id);
+  const {
+    bids,
+    isLoading: bidsLoading,
+    acceptBid,
+    rejectBid,
+    deleteBid,
+    undoBidStatus,
+  } = useBids(load?.id);
   useEffect(() => {
     const fetchParams = async () => {
       const resolvedParams = await params;
@@ -53,7 +60,7 @@ export default function ViewLoad({
       <div className="flex justify-between items-center mb-8 bg-transparent">
         <Button
           variant="secondary"
-          onClick={() => router.push("/loads")}
+          onClick={() => router.push("/dashboard")}
           className="flex items-center text-sm text-[#111a2e] hover:text-[#f1f0f3]/80 hover:bg-[#111a2e] transition-all duration-100 border-r-2 border-b-2 border-[#4895d0] hover:scale-105"
         >
           <FiArrowLeft className="mr-2" /> Back to Dashboard
@@ -274,7 +281,7 @@ export default function ViewLoad({
         </div>
       </section>
       {load?.bid_enabled && (
-        <section className="bg-[#1a2b47] border border-[#4895d0]/30 px-4 py-5 sm:p-6 rounded-lg">
+        <section className="bg-[#1a2b47] border border-[#4895d0]/30 px-4 py-5 sm:p-6 rounded-lg relative">
           <h2 className="text-lg font-semibold mb-4 text-[#f1f0f3]">Bids</h2>
           {bidsLoading ? (
             <LoadingSpinner />
@@ -286,6 +293,7 @@ export default function ViewLoad({
                 isLoadOwner={user?.id === load.broker_id}
                 currentUserId={user?.id || ""}
                 currentUser={user as User}
+                bidActions={{ acceptBid, rejectBid, deleteBid, undoBidStatus }}
               />
             </div>
           )}

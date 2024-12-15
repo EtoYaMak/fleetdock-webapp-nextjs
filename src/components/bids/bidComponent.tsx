@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Bid, NewBid } from "@/types/bid";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +8,17 @@ import { useBids } from "@/hooks/useBids";
 import { User } from "@/types/auth";
 import { FiDollarSign, FiCheck, FiX, FiEdit2, FiTrash2 } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 interface BidComponentProps {
   bid?: Bid;
   bids: Bid[];
@@ -16,6 +26,12 @@ interface BidComponentProps {
   isLoadOwner: boolean;
   currentUserId: string;
   currentUser: User;
+  bidActions: {
+    acceptBid: (id: string) => Promise<void>;
+    rejectBid: (id: string) => Promise<void>;
+    deleteBid: (id: string) => Promise<void>;
+    undoBidStatus: (id: string) => Promise<void>;
+  };
 }
 
 export default function BidComponent({
@@ -25,19 +41,13 @@ export default function BidComponent({
   isLoadOwner,
   currentUserId,
   currentUser,
+  bidActions,
 }: BidComponentProps) {
   const [showBidCard, setShowBidCard] = useState(!!bid);
   const [bidAmount, setBidAmount] = useState<number>(bid?.bid_amount || 0);
   const [isEditing, setIsEditing] = useState<boolean>(!bid);
   const { toast } = useToast();
-  const {
-    createBid,
-    updateBid,
-    acceptBid,
-    rejectBid,
-    deleteBid,
-    undoBidStatus,
-  } = useBids();
+  const { createBid, updateBid } = useBids();
 
   useEffect(() => {
     if (showBidCard) {
@@ -90,7 +100,7 @@ export default function BidComponent({
   const handleAcceptBid = async () => {
     try {
       // API call to accept bid
-      await acceptBid(bid?.id || "");
+      await bidActions.acceptBid(bid?.id || "");
       toast({
         title: "Bid Accepted",
         description: `You've accepted the bid of $${bid?.bid_amount}.`,
@@ -108,7 +118,7 @@ export default function BidComponent({
   const handleRejectBid = async () => {
     try {
       // API call to reject bid
-      await rejectBid(bid?.id || "");
+      await bidActions.rejectBid(bid?.id || "");
       toast({
         title: "Bid Rejected",
         description: `You've rejected the bid of $${bid?.bid_amount}.`,
@@ -124,7 +134,7 @@ export default function BidComponent({
 
   const handleUndoBidStatus = async () => {
     try {
-      await undoBidStatus(bid?.id || "");
+      await bidActions.undoBidStatus(bid?.id || "");
       toast({
         title: "Bid Status Reset",
         description: "The bid status has been reset to pending.",
@@ -141,14 +151,12 @@ export default function BidComponent({
   const handleDeleteBid = async () => {
     if (!bid?.id) return;
 
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this bid?"
-    );
-    if (!confirmed) return;
-
     try {
-      await deleteBid(bid.id);
-      // No need for page reload - the useBids hook will handle the state update
+      await bidActions.deleteBid(bid.id);
+      toast({
+        title: "Success",
+        description: "Bid deleted successfully",
+      });
     } catch (error) {
       toast({
         title: "Error",
@@ -193,10 +201,13 @@ export default function BidComponent({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
+        className="absolute bottom-0 top-4 right-10"
       >
         <Button
           onClick={() => setShowBidCard(true)}
-          className="w-full bg-gradient-to-r from-[#4895d0] to-[#2d5f8b] hover:from-[#3784c0] hover:to-[#1d4f7b] text-white font-medium py-3 rounded-lg shadow-lg transform hover:scale-[1.02] transition-all duration-200"
+          variant="default"
+          size="lg"
+          className="bg-[#00af26] text-white hover:bg-black hover:text-white transition-colors duration-300"
         >
           Place Bid
         </Button>
@@ -315,12 +326,35 @@ export default function BidComponent({
                           >
                             <FiEdit2 className="mr-1" /> Edit
                           </Button>
-                          <Button
-                            variant="destructive"
-                            onClick={handleDeleteBid}
-                          >
-                            <FiTrash2 className="mr-1" /> Delete
-                          </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="destructive">
+                                <FiTrash2 className="mr-1" /> Delete
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent className="bg-[#1a2b47] border border-[#4895d0]/30">
+                              <AlertDialogHeader>
+                                <AlertDialogTitle className="text-[#f1f0f3]">
+                                  Delete Bid
+                                </AlertDialogTitle>
+                                <AlertDialogDescription className="text-[#4895d0]">
+                                  Are you sure you want to delete this bid? This
+                                  action cannot be undone.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel className="bg-gray-600 text-white hover:bg-gray-700">
+                                  Cancel
+                                </AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={handleDeleteBid}
+                                  className="bg-red-600 text-white hover:bg-red-700"
+                                >
+                                  Delete
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         </>
                       )
                     )}
