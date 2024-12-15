@@ -29,7 +29,7 @@ export default function BidsContainer({
   return (
     <div className="space-y-4">
       {/* Show "Place Bid" button only for truckers who haven't bid yet */}
-      {!isLoadOwner && !userHasPlacedBid && (
+      {!isLoadOwner && !userHasPlacedBid && currentUser.role === "trucker" && (
         <BidComponent
           loadId={loadId}
           bids={bids as Bid[]}
