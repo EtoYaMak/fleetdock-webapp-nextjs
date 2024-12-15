@@ -306,6 +306,7 @@ export default function BidComponent({
                         </Button>
                       </>
                     ) : (
+                      bid?.trucker_id === currentUserId &&
                       bid?.bid_status === "pending" && (
                         <>
                           <Button

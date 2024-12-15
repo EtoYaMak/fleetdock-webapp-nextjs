@@ -4,16 +4,19 @@ import { useLoads } from "@/hooks/useLoads";
 import { getColumns } from "@/app/loads/columns";
 import { DataTable } from "@/app/loads/data-table";
 import { LoadCombined } from "@/types/load";
-import { memo } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { User } from "@/types/auth";
 import { useRouter } from "next/navigation";
-export default memo(function LoadsPage() {
+import { useMemo } from "react";
+export default function LoadsPage() {
   const { user } = useAuth();
   const { loads, isLoading, error } = useLoads();
   const router = useRouter();
 
-  const columns = getColumns(user as User, router);
+  const MemoizedColumns = useMemo(
+    () => getColumns(user as User, router),
+    [user, router]
+  );
   if (isLoading)
     return (
       <div className="flex justify-center items-center h-screen bg-[#111a2e]">
@@ -24,7 +27,7 @@ export default memo(function LoadsPage() {
 
   return (
     <div className="container mx-auto py-10 w-full">
-      <DataTable columns={columns} data={loads as LoadCombined[]} />
+      <DataTable columns={MemoizedColumns} data={loads as LoadCombined[]} />
     </div>
   );
-});
+}

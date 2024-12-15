@@ -2,10 +2,10 @@
 
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { useEffect, memo } from "react";
+import { useEffect } from "react";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
-const LoadsLayout = memo(function LoadsLayout({
+export default function LoadsLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -30,8 +30,4 @@ const LoadsLayout = memo(function LoadsLayout({
   if (!user) return null;
 
   return <>{children}</>;
-});
-
-LoadsLayout.displayName = "LoadsLayout";
-
-export default LoadsLayout;
+}
