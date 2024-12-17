@@ -1,5 +1,3 @@
-import { memo } from "react";
-
 interface LoadingSpinnerProps {
   size?: "sm" | "md" | "lg";
   color?: string;
@@ -11,7 +9,7 @@ const sizeMap = {
   lg: "h-12 w-12",
 };
 
-const LoadingSpinner = memo(function LoadingSpinner({
+const LoadingSpinner = function LoadingSpinner({
   size = "md",
   color = "border-blue-600",
 }: LoadingSpinnerProps) {
@@ -24,8 +22,6 @@ const LoadingSpinner = memo(function LoadingSpinner({
       />
     </div>
   );
-});
-
-LoadingSpinner.displayName = "LoadingSpinner";
+};
 
 export default LoadingSpinner;

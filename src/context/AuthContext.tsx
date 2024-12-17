@@ -1,6 +1,6 @@
 "use client";
 import { supabase } from "@/lib/supabase";
-import { createContext, memo, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { SignInType, SignUpType, UseContextType } from "@/types/auth";
 import { useRouter } from "next/navigation";
 export const UserContext = createContext<UseContextType>({} as UseContextType);
@@ -159,4 +159,4 @@ const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
 export const useAuth = () => useContext(UserContext);
 
-export default memo(UserProvider);
+export default UserProvider;

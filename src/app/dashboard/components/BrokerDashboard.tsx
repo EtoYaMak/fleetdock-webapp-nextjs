@@ -1,5 +1,5 @@
 "use client";
-
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FiPlus, FiTrash2, FiEdit2, FiEye } from "react-icons/fi";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
@@ -32,7 +32,6 @@ const BrokerDashboard = ({
   const { user } = useAuth();
   // Filter loads for current broker
   const brokerLoads = loads.filter((load) => load.broker_id === user?.id);
-
   // Stats calculation
   const stats = {
     totalLoads: brokerLoads.length,
@@ -59,7 +58,25 @@ const BrokerDashboard = ({
       await deleteLoad(loadId);
     }
   };
+  const [formattedDates, setFormattedDates] = useState<{
+    [key: string]: string;
+  }>({});
+  useEffect(() => {
+    const newFormattedDates: { [key: string]: string } = {};
 
+    brokerLoads.forEach((load) => {
+      newFormattedDates[`pickup_${load.id}`] = format(
+        new Date(load.pickup_date),
+        "MMM dd, yyyy"
+      );
+      newFormattedDates[`delivery_${load.id}`] = format(
+        new Date(load.delivery_date),
+        "MMM dd, yyyy"
+      );
+    });
+
+    setFormattedDates(newFormattedDates);
+  }, [brokerLoads]);
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen bg-[#203152]">
@@ -129,10 +146,10 @@ const BrokerDashboard = ({
                 <TableCell>{load.load_type_name}</TableCell>
                 <TableCell>{load.weight_kg}</TableCell>
                 <TableCell>
-                  {format(new Date(load.pickup_date), "MMM dd, yyyy")}
+                  {formattedDates[`pickup_${load.id}`] || "Loading..."}
                 </TableCell>
                 <TableCell>
-                  {format(new Date(load.delivery_date), "MMM dd, yyyy")}
+                  {formattedDates[`delivery_${load.id}`] || "Loading..."}
                 </TableCell>
                 <TableCell>
                   <Badge

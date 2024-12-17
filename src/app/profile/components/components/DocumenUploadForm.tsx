@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { supabase } from "@/lib/supabase";
 import { User } from "@/types/auth";
@@ -89,7 +89,14 @@ export default function DocumentUpload({
     isOpen: false,
     url: null as string | null,
   });
-
+  //date.now hydration fix
+  const [timeNow, setTimeNow] = useState(new Date());
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTimeNow(new Date());
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
   useEffect(() => {
     async function downloadDocument(path: string) {
       try {
@@ -141,7 +148,7 @@ export default function DocumentUpload({
 
       const fileName = `${type}/${
         name ? `${name}-` : ""
-      }${uid}-${Date.now()}.${fileExt}`;
+      }${uid}-${timeNow.getTime()}.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
         .from("trucker-documents")

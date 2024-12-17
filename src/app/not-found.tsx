@@ -1,13 +1,12 @@
 "use client";
 
-import { memo } from 'react';
-import Link from 'next/link';
-import { motion } from 'framer-motion';
+import Link from "next/link";
+import { motion } from "framer-motion";
 
-const NotFound = memo(function NotFound() {
+const NotFound = function NotFound() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b to-[#283d67] from-[#203152] px-4">
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="text-center"
@@ -29,8 +28,8 @@ const NotFound = memo(function NotFound() {
       </motion.div>
     </div>
   );
-});
+};
 
-NotFound.displayName = 'NotFound';
+NotFound.displayName = "NotFound";
 
 export default NotFound;

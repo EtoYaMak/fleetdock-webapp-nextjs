@@ -2,11 +2,17 @@ import "./globals.css";
 import Navbar from "@/components/common/Navbar";
 import Footer from "@/components/common/Footer";
 import UserProvider from "@/context/AuthContext";
-import { memo } from "react";
 import { Metadata } from "next";
 import { Suspense } from "react";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { Toaster } from "@/components/ui/toaster";
+import { ThemeProvider } from "@/context/theme-provider";
+
+import { Inter, Montserrat } from "next/font/google";
+
+const inter = Inter({ subsets: ["latin"] });
+const montserrat = Montserrat({ subsets: ["latin"] });
+
 // Define metadata outside component for better performance
 export const metadata: Metadata = {
   title: "FleetDock",
@@ -14,30 +20,33 @@ export const metadata: Metadata = {
   keywords: "logistics, freight, trucking, shipping",
 };
 
-// Memoize static components
-const MemoizedNavbar = memo(Navbar);
-const MemoizedFooter = memo(Footer);
-
 // Memoize the layout component itself
-const RootLayout = memo(function RootLayout({
+const RootLayout = function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className="min-h-screen flex flex-col bg-[#111a2e]">
-        <UserProvider>
+    <html lang="en" suppressHydrationWarning>
+      <body className={`min-h-screen flex flex-col ${montserrat.className}`}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem
+          disableTransitionOnChange
+        >
           <Suspense fallback={<LoadingSpinner />}>
-            <MemoizedNavbar />
-            <main className="flex-grow">{children}</main>
-            <Toaster />
-            <MemoizedFooter />
+            <UserProvider>
+              <Navbar />
+              <main className="flex-grow">{children}</main>
+              <Toaster />
+              <Footer />
+            </UserProvider>
           </Suspense>
-        </UserProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
-});
+};
 
 export default RootLayout;

@@ -1,8 +1,7 @@
 "use client";
-import { useAuth } from "@/context/AuthContext";
 import Link from "next/link";
-import { memo, useMemo, useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
 
 // Keep your existing animation variants
 const containerVariants = {
@@ -27,16 +26,7 @@ const childVariants = {
   },
 };
 
-// Memoized components remain the same
-const LoadingSpinner = memo(function LoadingSpinner() {
-  return (
-    <div className="flex justify-center items-center h-64">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500" />
-    </div>
-  );
-});
-
-const HeroContent = memo(function HeroContent() {
+const HeroContent = function HeroContent() {
   return (
     <motion.div
       className="max-w-3xl mx-auto"
@@ -45,7 +35,7 @@ const HeroContent = memo(function HeroContent() {
       animate="visible"
     >
       <motion.h1
-        className="text-4xl md:text-6xl font-bold text-[#f1f0f3] leading-tight"
+        className="text-4xl md:text-6xl font-bold leading-tight"
         variants={childVariants}
       >
         Revolutionize Your Logistics
@@ -68,31 +58,20 @@ const HeroContent = memo(function HeroContent() {
       </motion.div>
     </motion.div>
   );
-});
+};
 
-function HomePage() {
-  const { loading } = useAuth();
+export default function Home() {
   const [isClient, setIsClient] = useState(false);
 
-  // Ensure component only renders on client-side
   useEffect(() => {
     setIsClient(true);
   }, []);
-
-  // Memoize the main content to prevent unnecessary re-renders
-  const content = useMemo(() => {
-    // Only render content if we're on the client and loading state is resolved
-    if (!isClient || loading) {
-      return <LoadingSpinner />;
-    }
-    return <HeroContent />;
-  }, [isClient, loading]);
-
   return (
-    <main className="min-h-screen flex items-center justify-center bg-[#111a2e]">
-      <div className="container mx-auto px-6 text-center">{content}</div>
+    <main className="min-h-screen flex items-center justify-center ">
+      <section className="container mx-auto px-6 text-center">
+        <h1>{isClient ? "This is never prerendered" : "Prerendered"}</h1>
+        <HeroContent />
+      </section>
     </main>
   );
 }
-
-export default memo(HomePage);

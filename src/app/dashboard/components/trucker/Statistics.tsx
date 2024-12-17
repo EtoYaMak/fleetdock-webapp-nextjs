@@ -1,56 +1,44 @@
-import React from "react";
-import {
-  useAcceptedBids,
-  usePendingBids,
-  useRejectedBids,
-} from "@/hooks/useTruckerDash";
-import { Bar } from "react-chartjs-2";
-import {
-  Chart,
-  BarElement,
-  CategoryScale,
-  LineElement,
-  LinearScale,
-  Title,
-  Tooltip,
-  Legend,
-} from "chart.js";
+import { Component as BarChartWithLegends } from "@/components/ui/barChartwithLegends"; 
 
-Chart.register(
-  BarElement,
-  CategoryScale,
-  LineElement,
-  LinearScale,
-  Title,
-  Tooltip,
-  Legend
-);
+const Statistics = ({
+  acceptedBids,
+  pendingBids,
+  rejectedBids,
+}: {
+  acceptedBids: any[];
+  pendingBids: any[];
+  rejectedBids: any[];
+}) => {
+  const chartData = [
+    {
+      month: "Current Period",
+      accepted: acceptedBids.length,
+      pending: pendingBids.length,
+      rejected: rejectedBids.length,
+    },
+  ];
 
-const Statistics = () => {
-  const { acceptedBids } = useAcceptedBids();
-  const { pendingBids } = usePendingBids();
-  const { rejectedBids } = useRejectedBids();
-
-  const acceptedBidsCount = acceptedBids.length;
-  const pendingBidsCount = pendingBids.length;
-  const rejectedBidsCount = rejectedBids.length;
-
-  const data = {
-    labels: ["Accepted", "Pending", "Rejected"],
-    datasets: [
-      {
-        label: "# of Bids",
-        data: [acceptedBidsCount, pendingBidsCount, rejectedBidsCount],
-        backgroundColor: ["#4ade80", "#facc15", "#f87171"],
-      },
-    ],
+  const chartConfig = {
+    accepted: {
+      label: "Accepted",
+      color: "hsl(142, 76%, 36%)", // Green
+    },
+    pending: {
+      label: "Pending",
+      color: "hsl(48, 96%, 53%)", // Yellow
+    },
+    rejected: {
+      label: "Rejected",
+      color: "hsl(0, 84%, 60%)", // Red
+    },
   };
 
   return (
-    <div className="bg-[#1a2b47] p-6 rounded-lg">
-      <h2 className="text-xl font-semibold mb-4">Your Bids Statistics</h2>
-      <Bar data={data} />
-    </div>
+    <BarChartWithLegends
+      data={chartData}
+      config={chartConfig}
+      title="Your Bids Statistics"
+    />
   );
 };
 

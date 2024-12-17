@@ -3,7 +3,7 @@
 import * as React from "react";
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
-
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -28,6 +28,12 @@ export default function DatePicker({
   className,
   popoverContentClassName,
 }: DatePickerProps) {
+  const [formattedDate, setFormattedDate] = useState<string>("");
+  useEffect(() => {
+    if (value) {
+      setFormattedDate(format(value, "PPP"));
+    }
+  }, [value]);
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -40,7 +46,7 @@ export default function DatePicker({
           )}
         >
           <CalendarIcon />
-          {value ? format(value, "PPP") : <span>{placeholder}</span>}
+          {value ? formattedDate : <span>{placeholder}</span>}
         </Button>
       </PopoverTrigger>
       <PopoverContent className={cn("w-auto p-0", popoverContentClassName)}>

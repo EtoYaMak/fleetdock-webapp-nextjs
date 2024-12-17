@@ -1,4 +1,6 @@
-import React, { memo, useState } from "react";
+"use client";
+
+import { memo, useState } from "react";
 import { TruckerDetails } from "@/types/trucker";
 import { DocumentMetadata } from "@/types/trucker";
 import { supabase } from "@/lib/supabase";

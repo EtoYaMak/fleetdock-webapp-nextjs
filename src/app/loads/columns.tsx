@@ -1,7 +1,7 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { formatDistanceToNow } from "date-fns";
+import { format, formatDistanceToNow } from "date-fns";
 import { ArrowUpDown, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Load, Location } from "@/types/load";
@@ -42,10 +42,15 @@ export const getColumns = (user: User, router: any) => {
         </Button>
       ),
       cell: ({ row }) => {
-        const created_at = new Date(row.original.created_at || "");
-        return formatDistanceToNow(created_at, { addSuffix: false })
-          .replace("about ", "")
-          .replace("less than ", "");
+        const date = row.original.created_at;
+        if (!date) return "N/A";
+        try {
+          return formatDistanceToNow(new Date(date), { addSuffix: false })
+            .replace("about ", "")
+            .replace("less than ", "");
+        } catch (e) {
+          return "Invalid date";
+        }
       },
     },
     {
@@ -177,8 +182,10 @@ export const getColumns = (user: User, router: any) => {
           <ArrowUpDown className="ml-1 h-4 w-4" />
         </Button>
       ),
-      cell: ({ row }) =>
-        new Date(row.getValue("pickup_date")).toLocaleDateString(),
+      cell: ({ row }) => {
+        const date = row.getValue("pickup_date");
+        return date ? format(new Date(date as string), "MMM dd, yyyy") : "N/A";
+      },
     },
     {
       accessorKey: "delivery_date",
@@ -192,8 +199,10 @@ export const getColumns = (user: User, router: any) => {
           <ArrowUpDown className="ml-1 h-4 w-4" />
         </Button>
       ),
-      cell: ({ row }) =>
-        new Date(row.getValue("delivery_date")).toLocaleDateString(),
+      cell: ({ row }) => {
+        const date = row.getValue("delivery_date");
+        return date ? format(new Date(date as string), "MMM dd, yyyy") : "N/A";
+      },
     },
   ];
 
