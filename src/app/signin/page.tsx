@@ -3,7 +3,7 @@ import SignInForm from "@/components/auth/SignInForm";
 import { useAuth } from "@/context/AuthContext";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-
+import Loading from "./loading";
 export default function SigninPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
@@ -15,11 +15,7 @@ export default function SigninPage() {
   }, [user, loading, router]);
 
   if (loading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-      </div>
-    );
+    return <Loading />;
   }
 
   if (user) {
@@ -27,7 +23,7 @@ export default function SigninPage() {
   }
 
   return (
-    <main className="bg-[#111a2e] min-h-screen flex items-center justify-center">
+    <main className="min-h-screen flex items-center justify-center">
       <SignInForm />
     </main>
   );

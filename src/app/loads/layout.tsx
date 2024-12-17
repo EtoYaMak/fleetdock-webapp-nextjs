@@ -3,8 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { useEffect } from "react";
-import LoadingSpinner from "@/components/ui/LoadingSpinner";
-
+import Loading from "./loading";
 export default function LoadsLayout({
   children,
 }: {
@@ -20,11 +19,7 @@ export default function LoadsLayout({
   }, [user, loading, router]);
 
   if (loading && !user) {
-    return (
-      <div className="flex justify-center items-center h-screen bg-[#111a2e]">
-        <LoadingSpinner size="lg" color="border-blue-500" />
-      </div>
-    );
+    return <Loading />;
   }
 
   if (!user) return null;

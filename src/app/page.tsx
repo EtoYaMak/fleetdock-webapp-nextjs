@@ -2,7 +2,8 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
-
+import Loading from "./loading";
+import { Suspense } from "react";
 // Keep your existing animation variants
 const containerVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -29,7 +30,7 @@ const childVariants = {
 const HeroContent = function HeroContent() {
   return (
     <motion.div
-      className="max-w-3xl mx-auto"
+      className="max-w-3xl mx-auto  select-none"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
@@ -41,7 +42,7 @@ const HeroContent = function HeroContent() {
         Revolutionize Your Logistics
       </motion.h1>
       <motion.p
-        className="mt-4 text-lg text-[#f1f0f3]"
+        className="mt-4 text-lg text-muted-foreground"
         variants={childVariants}
       >
         Simplify freight management with cutting-edge technology. Whether
@@ -50,8 +51,8 @@ const HeroContent = function HeroContent() {
       <motion.div className="mt-6" variants={childVariants}>
         <Link
           href="/signup"
-          className="inline-block px-6 py-3 bg-[#4895d0] text-[#f1f0f3] text-lg font-medium rounded-3xl 
-            hover:bg-[#4895d0]/80 transition-colors duration-300"
+          className="inline-block px-6 py-3 bg-gradient-to-r from-primary to-primary/70 text-lg font-medium rounded-3xl text-white
+            "
         >
           Get Started
         </Link>
@@ -68,9 +69,8 @@ export default function Home() {
   }, []);
   return (
     <main className="min-h-screen flex items-center justify-center ">
-      <section className="container mx-auto px-6 text-center">
-        <h1>{isClient ? "This is never prerendered" : "Prerendered"}</h1>
-        <HeroContent />
+      <section className="container mx-auto px-6 text-center ">
+        <h1>{isClient ? <HeroContent /> : <Loading />}</h1>
       </section>
     </main>
   );

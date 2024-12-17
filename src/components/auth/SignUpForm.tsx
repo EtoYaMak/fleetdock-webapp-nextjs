@@ -9,7 +9,7 @@ import RoleSelection from "./SignUpForm/RoleSelection";
 import FormStages from "./SignUpForm/FormStages";
 import ProgressBar from "./SignUpForm/ProgressBar";
 import { FormData, SignUpStep, FormStage } from "./SignUpForm/types";
-
+import { Button } from "@/components/ui/button";
 const SignUpForm = function SignUpForm() {
   const [currentStep, setCurrentStep] = useState<SignUpStep>("role-selection");
   const [currentStageIndex, setCurrentStageIndex] = useState(0);
@@ -145,22 +145,20 @@ const SignUpForm = function SignUpForm() {
   const progress = ((currentStageIndex + 1) / stages.length) * 100;
 
   return (
-    <div className="min-h-screen w-full min-w-full bg-gradient-to-b to-[#283d67] from-[#203152] flex items-center justify-center p-4">
+    <div className="min-h-screen w-full min-w-full flex items-center justify-center p-4">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="bg-[#4895d0]/10 rounded-2xl shadow-xl w-full max-w-md p-8"
+        className="bg-card ring-1 ring-ring/50 rounded-2xl w-full max-w-md p-8"
       >
         <ProgressBar progress={progress} />
 
         <div className="mb-8">
-          <div className="flex items-center mb-1 text-[#f1f0f3]">
+          <div className="flex items-center mb-1 text-primary">
             {currentStage.icon}
-            <h2 className="text-2xl font-bold ml-2 text-[#f1f0f3]">
-              {currentStage.title}
-            </h2>
+            <h2 className="text-2xl font-bold ml-2">{currentStage.title}</h2>
           </div>
-          <p className="text-[#f1f0f3]">{currentStage.subtitle}</p>
+          <p className="">{currentStage.subtitle}</p>
         </div>
 
         <FormStages
@@ -177,22 +175,12 @@ const SignUpForm = function SignUpForm() {
         )}
 
         <div className="flex justify-between mt-8">
-          <button
-            type="button"
-            onClick={handleBack}
-            className="px-6 py-2 text-[#f1f0f3] hover:text-[#f1f0f3]/80"
-          >
+          <Button type="button" onClick={handleBack} variant="ghost" size="lg">
             Back
-          </button>
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={handleNext}
-            className="px-6 py-2 bg-[#f1f0f3] text-[#4895d0] rounded-lg hover:bg-white 
-              focus:outline-none focus:ring-2 focus:ring-[#4895d0]/100 focus:ring-offset-2"
-          >
+          </Button>
+          <Button onClick={handleNext} size="lg">
             {currentStageIndex === stages.length - 1 ? "Complete" : "Next"}
-          </motion.button>
+          </Button>
         </div>
       </motion.div>
     </div>

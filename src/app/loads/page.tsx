@@ -8,6 +8,7 @@ import { useAuth } from "@/context/AuthContext";
 import { User } from "@/types/auth";
 import { useRouter } from "next/navigation";
 import { useMemo } from "react";
+import Loading from "./loading";
 export default function LoadsPage() {
   const { user } = useAuth();
   const { loads, isLoading, error } = useLoads();
@@ -17,12 +18,7 @@ export default function LoadsPage() {
     () => getColumns(user as User, router),
     [user, router]
   );
-  if (isLoading)
-    return (
-      <div className="flex justify-center items-center h-screen bg-[#111a2e]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-      </div>
-    );
+  if (isLoading) return <Loading />;
   if (error) return <div className="text-red-500">Error: {error}</div>;
 
   return (

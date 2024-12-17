@@ -1,9 +1,20 @@
+"use client";
 import SignUpForm from "@/components/auth/SignUpForm";
-
+import Loading from "./loading";
+import { Suspense } from "react";
+import { useState, useEffect } from "react";
 export default function SignupPage() {
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   return (
-    <main className="bg-gray-50 dark:bg-gray-900 min-h-screen flex items-center justify-center">
-      <SignUpForm />
-    </main>
+    <Suspense fallback={<Loading />}>
+      <main className="min-h-screen flex items-center justify-center relative">
+        {isClient ? <SignUpForm /> : <Loading />}
+      </main>
+    </Suspense>
   );
 }

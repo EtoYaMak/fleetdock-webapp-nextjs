@@ -2,7 +2,7 @@
 
 import { ColumnDef } from "@tanstack/react-table";
 import { format, formatDistanceToNow } from "date-fns";
-import { ArrowUpDown, Clock } from "lucide-react";
+import { ArrowUpDown, Clock, Weight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Load, Location } from "@/types/load";
 import { FiEye } from "react-icons/fi";
@@ -27,7 +27,7 @@ export const getColumns = (user: User, router: any) => {
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ),
-      cell: ({ row }) => row.original.id.slice(0, 8),
+      cell: ({ row }) => row.original.id.slice(0, 4),
     },
     {
       accessorKey: "created_at",
@@ -85,7 +85,7 @@ export const getColumns = (user: User, router: any) => {
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Delivery
-          <ArrowUpDown className="ml-2 h-4 w-4" />
+          <ArrowUpDown className="ml-0 h-4 w-4" />
         </Button>
       ),
       cell: ({ row }) => formatLocation(row.original.delivery_location),
@@ -104,7 +104,7 @@ export const getColumns = (user: User, router: any) => {
       header: ({ column }) => (
         <Button
           variant="ghost"
-          className="flex w-fit"
+          className="flex w-fit "
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Type
@@ -112,11 +112,11 @@ export const getColumns = (user: User, router: any) => {
         </Button>
       ),
       cell: ({ row }) => (
-        <div className="flex items-center">
-          <span className="px-2 py-1 rounded-full text-xs font-medium bg-[#2d4169] text-[#f1f0f3]">
+        <span className="w-full flex items-center justify-center text-white">
+          <p className="px-2 py-1 rounded-full text-xs font-medium bg-primary w-full text-center uppercase ">
             {row.getValue("load_type_name")}
-          </span>
-        </div>
+          </p>
+        </span>
       ),
       filterFn: "equals",
     },
@@ -128,7 +128,8 @@ export const getColumns = (user: User, router: any) => {
           className="flex w-fit"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Weight (kg)
+          <Weight className="h-4 w-4" />
+          (kg)
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ),
@@ -143,7 +144,7 @@ export const getColumns = (user: User, router: any) => {
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Budget
-          <ArrowUpDown className="ml-2 h-4 w-4" />
+          <ArrowUpDown className="ml-0 h-4 w-4" />
         </Button>
       ),
       cell: ({ row }) => (
@@ -161,12 +162,14 @@ export const getColumns = (user: User, router: any) => {
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Status
-          <ArrowUpDown className="ml-2 h-4 w-4" />
+          <ArrowUpDown className="ml-0 h-4 w-4" />
         </Button>
       ),
       cell: ({ row }) => (
-        <span className="px-2 py-1 rounded-full text-xs font-semibold bg-[#4895d0] text-[#f1f0f3]">
-          {row.getValue("load_status")}
+        <span className="w-full flex items-center justify-center text-white">
+          <p className="px-2 py-1 rounded-full text-xs font-medium bg-primary w-full text-center uppercase">
+            {row.getValue("load_status")}
+          </p>
         </span>
       ),
     },
@@ -230,7 +233,7 @@ export const getColumns = (user: User, router: any) => {
           variant="ghost"
           size="sm"
           onClick={() => router.push(`/loads/${load.id}`)}
-          className="hover:bg-[#4895d0]/60 text-[#f1f0f3] hover:text-[#f1f0f3]"
+          className="hover:bg-primary  hover:text-white"
         >
           <FiEye className="h-4 w-4" />
         </Button>

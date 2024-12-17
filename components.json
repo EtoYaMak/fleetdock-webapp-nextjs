@@ -16,12 +16,7 @@
     "ui": "@/components/ui",
     "lib": "@/lib",
     "hooks": "@/hooks",
-    "app": "@/app",
-    "types": "@/types",
-    "context": "@/context",
-    "dashboard": "@/app/dashboard",
-    "profile": "@/app/profile",
-    "loads": "@/app/loads"
+    "context": "@/context"
   },
   "iconLibrary": "lucide"
 }

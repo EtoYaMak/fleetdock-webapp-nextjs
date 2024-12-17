@@ -7,6 +7,7 @@ import { TbLayoutDashboard } from "react-icons/tb";
 import { useAuth } from "@/context/AuthContext";
 import { ModeToggle } from "@/components/common/themeToggle";
 import { Button } from "@/components/ui/button";
+import NavLoadingSkeleton from "@/components/common/navloadingskeleton";
 const NavLink = function NavLink({
   href,
   children,
@@ -45,7 +46,6 @@ const Navbar = function Navbar() {
   // Memoize navigation items based on user state
   const navigationItems = useMemo(() => {
     if (!mounted) return null;
-    if (loading) return <div className="animate-pulse h-8 w-20rounded" />;
 
     if (user) {
       return (
@@ -114,17 +114,20 @@ const Navbar = function Navbar() {
         <div className="flex justify-between h-16">
           <div className="flex">
             <NavLink
-              href={user?.role ? "/dashboard" : "/"}
+              href={user && user?.role ? "/dashboard" : "/"}
               className="flex items-center px-2 text-primary font-bold text-xl"
             >
               FleetDock
             </NavLink>
           </div>
-
-          <div className="flex items-center space-x-4">
-            {navigationItems}
-            <ModeToggle />
-          </div>
+          {!loading ? (
+            <div className="flex items-center space-x-4">
+              {navigationItems}
+              <ModeToggle />
+            </div>
+          ) : (
+            <NavLoadingSkeleton />
+          )}
         </div>
       </div>
     </nav>

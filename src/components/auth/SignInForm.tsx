@@ -1,14 +1,14 @@
 "use client";
 
-import { useState, useCallback, memo, useMemo } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiMail, FiLock } from "react-icons/fi";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
-
+import { Button } from "@/components/ui/button";
 // Memoize static components
 const FormIcon = function FormIcon({ icon: Icon }: { icon: typeof FiMail }) {
-  return <Icon className="text-gray-400" />;
+  return <Icon className="text-primary" />;
 };
 
 // Memoize form input component
@@ -35,7 +35,7 @@ const FormInput = function FormInput({
     <div className="space-y-1">
       <div className="flex items-center space-x-2">
         <FormIcon icon={Icon} />
-        <label htmlFor={id} className="text-sm font-medium text-[#f1f0f3]">
+        <label htmlFor={id} className="text-sm font-medium">
           {name.charAt(0).toUpperCase() + name.slice(1)}
         </label>
       </div>
@@ -46,7 +46,7 @@ const FormInput = function FormInput({
         placeholder={placeholder}
         value={value}
         onChange={onChange}
-        className="bg-[#203152] w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        className="bg-input w-full px-4 py-3 rounded-lg "
         required
         disabled={disabled}
       />
@@ -128,22 +128,21 @@ const SignInForm = function SignInForm() {
   );
 
   return (
-    <div className="min-h-screen w-full min-w-full bg-gradient-to-t to-[#111a2e] from-[#17233e]/60 flex items-center justify-center p-4">
+    <div className="min-h-screen w-full min-w-full flex items-center justify-center p-4">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="bg-[#4895d0]/10 backdrop-blur-sm rounded-2xl p-8 
-        text-[#f1f0f3] border-2 border-[#f1f0f3]/20 hover:border-[#f1f0f3]/40 transition-all w-full max-w-md"
+        className="w-full max-w-md"
       >
         <div className="text-center mb-8">
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-3xl font-bold text-[#f1f0f3]"
+            className="text-3xl font-bold text-primary "
           >
             Welcome Back
           </motion.h1>
-          <p className="text-[#f1f0f3] mt-2">Sign in to your account</p>
+          <p className="mt-2">Sign in to your account</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -170,29 +169,22 @@ const SignInForm = function SignInForm() {
           <div className="flex items-center justify-between">
             <a
               href="/forgot-password"
-              className="text-sm text-[#f1f0f3]/90 hover:text-white"
+              className="text-sm hover:text-secondary-foreground text-muted-foreground"
             >
               Forgot password?
             </a>
           </div>
+          <span className="flex items-center justify-center">
+            <Button type="submit" size="lg" disabled={isLoading}>
+              {isLoading ? "Signing in..." : "Sign In"}
+            </Button>
+          </span>
 
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            type="submit"
-            className="w-full px-6 py-3 bg-[#203152]/80 text-[#f1f0f3]/90 hover:text-white rounded-lg 
-              hover:bg-[#203152] focus:outline-none focus:ring-2 focus:ring-[#4895d0]/100 
-              focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={isLoading}
-          >
-            {isLoading ? "Signing in..." : "Sign In"}
-          </motion.button>
-
-          <div className="text-center text-sm text-[#f1f0f3]">
+          <div className="text-center text-sm">
             Don&apos;t have an account?{" "}
             <a
               href="/signup"
-              className="text-[#f1f0f3]/90 font-bold hover:text-white"
+              className="hover:text-primary transition-colors duration-200 underline decoration-2 underline-offset-2 decoration-primary/50"
             >
               Sign up
             </a>

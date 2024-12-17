@@ -43,6 +43,8 @@ import {
 } from "@/components/ui/select";
 import { RangeSlider } from "@/components/ui/range-slider";
 import { Location } from "@/types/load";
+import { cva, type VariantProps } from "class-variance-authority";
+
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
@@ -75,12 +77,12 @@ const ResultsCounter = ({
 
   return (
     <div className="flex items-center space-x-2 text-sm">
-      <span className="text-[#4895d0] font-medium">
+      <span className="text-primary font-medium">
         {start}-{end}
       </span>
-      <span className="text-[#f1f0f3]">of</span>
-      <span className="text-[#4895d0] font-medium">{totalRows}</span>
-      <span className="text-[#f1f0f3]">results</span>
+      <span className="text-muted-foreground">of</span>
+      <span className="text-primary font-medium">{totalRows}</span>
+      <span className="text-muted-foreground">results</span>
     </div>
   );
 };
@@ -126,10 +128,10 @@ const FilterPanel = ({
         showFilters ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
       )}
     >
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full p-6 bg-[#1a2b47] rounded-lg border border-[#4895d0]/30">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full p-6 bg-secondary rounded-lg border border-primary/50">
         {/* Locations Section */}
         <div className="space-y-4">
-          <h3 className="text-sm font-medium text-[#f1f0f3]">Locations</h3>
+          <h3 className="text-md font-semibold ">Locations</h3>
           <div className="space-y-3">
             <Input
               placeholder="Pickup location..."
@@ -143,7 +145,7 @@ const FilterPanel = ({
                   .getColumn("pickup_location")
                   ?.setFilterValue(event.target.value)
               }
-              className="bg-[#1a2b47] border-[#4895d0]/30 text-[#f1f0f3]"
+              className="bg-input border border-ring/80"
             />
             <Input
               placeholder="Delivery location..."
@@ -157,9 +159,9 @@ const FilterPanel = ({
                   .getColumn("delivery_location")
                   ?.setFilterValue(event.target.value)
               }
-              className="bg-[#1a2b47] border-[#4895d0]/30 text-[#f1f0f3]"
+              className="bg-input border border-ring/80"
             />
-            <div className="flex items-center space-x-2">
+            <div className="flex items-end space-x-2">
               <Checkbox
                 id="bid-enabled"
                 checked={
@@ -169,12 +171,12 @@ const FilterPanel = ({
                   table.getColumn("bid_enabled")?.setFilterValue(checked)
                 }
                 className={cn(
-                  "peer h-4 w-4 shrink-0 rounded-sm border border-[#f1f0f3] shadow focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-[#f1f0f3] data-[state=checked]:text-[#1a2b47]"
+                  "peer h-4 w-4 shrink-0 rounded-sm border border-primary shadow focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-accent"
                 )}
               />
               <label
                 htmlFor="bid-enabled"
-                className="text-sm font-medium leading-none text-[#f1f0f3] peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
               >
                 Bidding Enabled
               </label>
@@ -184,7 +186,7 @@ const FilterPanel = ({
 
         {/* Load Details Section */}
         <div className="space-y-4">
-          <h3 className="text-sm font-medium text-[#f1f0f3]">Load Details</h3>
+          <h3 className="text-md font-semibold ">Load Details</h3>
           <div className="space-y-3">
             <Select
               value={
@@ -198,7 +200,7 @@ const FilterPanel = ({
                   ?.setFilterValue(value === "all" ? undefined : value)
               }
             >
-              <SelectTrigger className="bg-[#1a2b47] border-[#4895d0]/30 text-[#f1f0f3]">
+              <SelectTrigger className="bg-input border border-ring/80">
                 <SelectValue placeholder="Load Type" />
               </SelectTrigger>
               <SelectContent>
@@ -215,15 +217,11 @@ const FilterPanel = ({
             </Select>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-[#f1f0f3]">
-                Weight Range
-              </label>
+              <label className="text-md font-semibold ">Weight Range</label>
               <div className="space-y-4">
                 <div className="flex items-center gap-4">
                   <div className="flex-1">
-                    <label className="text-xs text-[#f1f0f3] mb-1.5 block">
-                      Min (kg)
-                    </label>
+                    <label className="text-xs  mb-1.5 block">Min (kg)</label>
                     <input
                       type="number"
                       value={currentWeightRange[0]}
@@ -235,13 +233,11 @@ const FilterPanel = ({
                             currentWeightRange[1],
                           ])
                       }
-                      className="flex h-9 w-full rounded-md border border-[#4895d0]/30 bg-[#1a2b47] px-3 py-1 text-sm text-[#f1f0f3] shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#4895d0]"
+                      className="flex h-9 w-full rounded-md bg-input border border-ring px-3 py-1 text-sm shadow-sm "
                     />
                   </div>
                   <div className="flex-1">
-                    <label className="text-xs text-[#f1f0f3] mb-1.5 block">
-                      Max (kg)
-                    </label>
+                    <label className="text-xs  mb-1.5 block">Max (kg)</label>
                     <input
                       type="number"
                       value={currentWeightRange[1]}
@@ -253,12 +249,12 @@ const FilterPanel = ({
                             Number(e.target.value),
                           ])
                       }
-                      className="flex h-9 w-full rounded-md border border-[#4895d0]/30 bg-[#1a2b47] px-3 py-1 text-sm text-[#f1f0f3] shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#4895d0]"
+                      className="flex h-9 w-full rounded-md bg-input border border-ring px-3 py-1 text-sm shadow-sm "
                     />
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="min-w-[60px] text-xs text-[#f1f0f3]">
+                  <span className="min-w-[60px] text-xs ">
                     {currentWeightRange[0].toLocaleString()} kg
                   </span>
                   <RangeSlider
@@ -271,9 +267,9 @@ const FilterPanel = ({
                     onValueChange={(value) =>
                       table.getColumn("weight_kg")?.setFilterValue(value)
                     }
-                    className="flex-1"
+                    className="flex-1 "
                   />
-                  <span className="min-w-[60px] text-right text-xs text-[#f1f0f3]">
+                  <span className="min-w-[60px] text-right text-xs">
                     {currentWeightRange[1].toLocaleString()} kg
                   </span>
                 </div>
@@ -284,9 +280,7 @@ const FilterPanel = ({
 
         {/* Payment & Status Section */}
         <div className="space-y-4">
-          <h3 className="text-sm font-medium text-[#f1f0f3]">
-            Payment & Status
-          </h3>
+          <h3 className="text-md font-semibold ">Payment & Status</h3>
           <div className="space-y-3">
             <Select
               value={
@@ -299,7 +293,7 @@ const FilterPanel = ({
                   ?.setFilterValue(value === "all" ? undefined : value)
               }
             >
-              <SelectTrigger className="bg-[#1a2b47] border-[#4895d0]/30 text-[#f1f0f3]">
+              <SelectTrigger className="bg-input border border-ring/80">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
@@ -314,15 +308,11 @@ const FilterPanel = ({
               </SelectContent>
             </Select>
             <div className="space-y-2">
-              <label className="text-sm font-medium text-[#f1f0f3]">
-                Budget Range
-              </label>
+              <label className="text-md font-semibold">Budget Range</label>
               <div className="space-y-4">
                 <div className="flex items-center gap-4">
                   <div className="flex-1">
-                    <label className="text-xs text-[#f1f0f3] mb-1.5 block">
-                      Min
-                    </label>
+                    <label className="text-xs mb-1.5 block">Min</label>
                     <input
                       type="number"
                       value={currentBudgetRange[0]}
@@ -334,13 +324,11 @@ const FilterPanel = ({
                             currentBudgetRange[1],
                           ])
                       }
-                      className="flex h-9 w-full rounded-md border border-[#4895d0]/30 bg-[#1a2b47] px-3 py-1 text-sm text-[#f1f0f3] shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#4895d0]"
+                      className="flex h-9 w-full rounded-md bg-input border border-ring px-3 py-1 text-sm shadow-sm"
                     />
                   </div>
                   <div className="flex-1">
-                    <label className="text-xs text-[#f1f0f3] mb-1.5 block">
-                      Max
-                    </label>
+                    <label className="text-xs  mb-1.5 block">Max</label>
                     <input
                       type="number"
                       value={currentBudgetRange[1]}
@@ -352,12 +340,12 @@ const FilterPanel = ({
                             Number(e.target.value),
                           ])
                       }
-                      className="flex h-9 w-full rounded-md border border-[#4895d0]/30 bg-[#1a2b47] px-3 py-1 text-sm text-[#f1f0f3] shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#4895d0]"
+                      className="flex h-9 w-full rounded-md bg-input border border-ring   px-3 py-1 text-sm shadow-sm "
                     />
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="min-w-[60px] text-xs text-[#f1f0f3]">
+                  <span className="min-w-[60px] text-xs ">
                     {formatCurrency(currentBudgetRange[0])}
                   </span>
                   <RangeSlider
@@ -372,7 +360,7 @@ const FilterPanel = ({
                     }
                     className="flex-1"
                   />
-                  <span className="min-w-[60px] text-right text-xs text-[#f1f0f3]">
+                  <span className="min-w-[60px] text-right text-xs ">
                     {formatCurrency(currentBudgetRange[1])}
                   </span>
                 </div>
@@ -449,11 +437,11 @@ export function DataTable<TData, TValue>({
         <div className="flex flex-col gap-4 max-w-7xl mx-auto">
           <div className="flex justify-end">
             <Button
-              variant="outline"
+              variant="outline1"
               onClick={() => setShowFilters(!showFilters)}
               className={cn(
                 "flex items-center gap-2 transition-colors",
-                showFilters && "bg-[#4895d0] text-white"
+                showFilters && "bg-primary text-white"
               )}
             >
               <Filter className="h-4 w-4" />
@@ -465,17 +453,17 @@ export function DataTable<TData, TValue>({
       </div>
 
       <Table>
-        <TableHeader className="bg-[#4895d0]/50 backdrop-blur-sm w-fit">
+        <TableHeader className="w-fit">
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow
               key={headerGroup.id}
-              className="bg-[#4895d0]/50 backdrop-blur-sm hover:bg-[#4895d0]/50 border-b-0"
+              className="border border-border bg-muted"
             >
               {headerGroup.headers.map((header) => (
                 <TableHead
                   key={header.id}
-                  className="text-[#f1f0f3] h-12 font-semibold
-                   hover:text-white transition-colors duration-100 w-fit"
+                  className="h-12 font-semibold
+                   transition-colors duration-100 w-fit border border-border"
                 >
                   {header.isPlaceholder
                     ? null
@@ -488,15 +476,15 @@ export function DataTable<TData, TValue>({
             </TableRow>
           ))}
         </TableHeader>
-        <TableBody className="bg-[#1a2b47]">
+        <TableBody className="bg-card border border-border">
           {table.getRowModel().rows?.length ? (
             table.getRowModel().rows.map((row) => (
               <TableRow
                 key={row.id}
-                className="w-fit border-b border-[#4895d0]/20 hover:bg-[#4895d0]/10 transition-colors"
+                className="w-fit border-b border-border transition-colors"
               >
                 {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id} className="text-[#f1f0f3] p2-4">
+                  <TableCell key={cell.id} className=" ">
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </TableCell>
                 ))}
@@ -504,10 +492,7 @@ export function DataTable<TData, TValue>({
             ))
           ) : (
             <TableRow>
-              <TableCell
-                colSpan={columns.length}
-                className="h-24 text-center text-[#f1f0f3]"
-              >
+              <TableCell colSpan={columns.length} className="h-24 text-center">
                 No results.
               </TableCell>
             </TableRow>
@@ -516,7 +501,7 @@ export function DataTable<TData, TValue>({
       </Table>
       <div className="flex items-center justify-between py-4 max-w-7xl mx-auto">
         <ResultsCounter table={table} totalRows={data.length} />
-        <Pagination className="text-[#f1f0f3]">
+        <Pagination className="">
           <PaginationContent>
             <PaginationItem>
               <PaginationPrevious
@@ -526,11 +511,11 @@ export function DataTable<TData, TValue>({
                   table.previousPage();
                 }}
                 className={`
-                  border border-[#4895d0]/30 
+                  border border-primary 
                   ${
                     !table.getCanPreviousPage()
                       ? "pointer-events-none opacity-50"
-                      : "hover:bg-[#4895d0] hover:text-white transition-colors"
+                      : "hover:bg-primary hover:text-white transition-colors"
                   }
                 `}
               />
@@ -548,11 +533,11 @@ export function DataTable<TData, TValue>({
                       table.getState().pagination.pageIndex === pageNumber - 1
                     }
                     className={`
-                    border border-[#4895d0]/30
+                    border border-primary
                     ${
                       table.getState().pagination.pageIndex === pageNumber - 1
-                        ? "bg-[#4895d0] text-white border-[#4895d0]"
-                        : "text-[#f1f0f3] hover:bg-[#4895d0]/10 hover:text-white transition-colors"
+                        ? "bg-primary text-white border-primary"
+                        : "text-primary hover:bg-primary hover:text-white transition-colors"
                     }
                   `}
                   >
@@ -569,11 +554,11 @@ export function DataTable<TData, TValue>({
                   table.nextPage();
                 }}
                 className={`
-                  border border-[#4895d0]/30
+                  border border-primary
                   ${
                     !table.getCanNextPage()
                       ? "pointer-events-none opacity-50"
-                      : "hover:bg-[#4895d0] hover:text-white transition-colors"
+                      : "hover:bg-primary hover:text-white transition-colors"
                   }
                 `}
               />

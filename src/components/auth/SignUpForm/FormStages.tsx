@@ -129,7 +129,7 @@ const FormInput = memo(function FormInput({
       placeholder={placeholder}
       value={value}
       onChange={onChange}
-      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+      className="w-full px-4 py-3 rounded-lg bg-input/70 placeholder:text-secondary-foreground/70"
       required
     />
   );

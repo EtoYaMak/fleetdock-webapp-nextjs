@@ -11,6 +11,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useBids } from "@/hooks/useBids";
 import { User } from "@/types/auth";
 import BidsContainer from "@/components/bids/bidsContainer";
+import Loading from "@/app/loads/loading";
 export default function ViewLoad({
   params,
 }: {
@@ -47,11 +48,7 @@ export default function ViewLoad({
     }
   }, [loads, id]);
   if (isLoading || !load) {
-    return (
-      <div className="flex justify-center items-center h-screen bg-[#203152]">
-        <LoadingSpinner />
-      </div>
-    );
+    return <Loading />;
   }
 
   return (

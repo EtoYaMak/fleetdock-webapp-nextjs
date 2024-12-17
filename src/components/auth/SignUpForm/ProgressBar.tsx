@@ -7,11 +7,11 @@ interface ProgressBarProps {
 
 const ProgressBar = memo(function ProgressBar({ progress }: ProgressBarProps) {
   return (
-    <div className="h-1 w-full bg-[#f1f0f3]/20 rounded-full mb-4">
+    <div className="h-1 w-full bg-muted-foreground/20 rounded-full mb-4">
       <motion.div
         initial={{ width: 0 }}
         animate={{ width: `${progress}%` }}
-        className="h-full bg-[#4895d0] rounded-full"
+        className="h-full bg-primary rounded-full"
         transition={{ duration: 0.3 }}
       />
     </div>
