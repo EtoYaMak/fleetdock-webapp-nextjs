@@ -1,7 +1,6 @@
 "use client";
 
 import { useAuth } from "@/context/AuthContext";
-import { useEffect, useState } from "react";
 import BrokerProfile from "@/app/profile/BrokerProfile";
 import TruckerProfile from "@/app/profile/TruckerProfile";
 import { User } from "@/types/auth";
@@ -9,32 +8,42 @@ import { BrokerBusiness } from "@/types/broker";
 import { useBroker } from "@/hooks/useBroker";
 import { useTrucker } from "@/hooks/useTrucker";
 import { TruckerDetails } from "@/types/trucker";
-import LoadingSpinner from "@/components/ui/LoadingSpinner";
+
 export default function ProfilePage() {
   const { user } = useAuth();
-  // Call hooks unconditionally at the top level
+
+  // Use a role-specific hook based on user role
   const {
     broker,
     isLoading: brokerLoading,
     error: brokerError,
     createBroker,
     updateBroker,
-  } = useBroker();
+  } = user?.role === "broker"
+    ? useBroker()
+    : {
+        broker: null,
+        isLoading: false,
+        error: null,
+        createBroker: null,
+        updateBroker: null,
+      };
+
   const {
     trucker,
     isLoading: truckerLoading,
     error: truckerError,
     createTrucker,
     updateTrucker,
-  } = useTrucker();
-  // Conditionally fetch broker or trucker data based on user role
-  // Then use the data conditionally
-  const profileData =
-    user?.role === "broker"
-      ? broker
-      : user?.role === "trucker"
-      ? trucker
-      : null;
+  } = user?.role === "trucker"
+    ? useTrucker()
+    : {
+        trucker: null,
+        isLoading: false,
+        error: null,
+        createTrucker: null,
+        updateTrucker: null,
+      };
 
   if (!user) {
     return null;
@@ -48,8 +57,8 @@ export default function ProfilePage() {
           broker={broker as BrokerBusiness}
           isLoading={brokerLoading}
           error={brokerError as string}
-          createBroker={createBroker}
-          updateBroker={updateBroker}
+          createBroker={createBroker!}
+          updateBroker={updateBroker!}
         />
       )}
 
@@ -59,8 +68,8 @@ export default function ProfilePage() {
           trucker={trucker as TruckerDetails}
           isLoading={truckerLoading}
           error={truckerError as string}
-          createTrucker={createTrucker}
-          updateTrucker={updateTrucker}
+          createTrucker={createTrucker!}
+          updateTrucker={updateTrucker!}
         />
       )}
     </div>

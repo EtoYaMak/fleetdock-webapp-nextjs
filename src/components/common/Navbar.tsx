@@ -106,7 +106,7 @@ const Navbar = function Navbar() {
         </NavLink>
       </div>
     );
-  }, [user, loading, signOut, mounted]);
+  }, [user, signOut, mounted]);
 
   return (
     <nav className="bg-transparent">

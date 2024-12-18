@@ -1,3 +1,4 @@
+
 import "./globals.css";
 import Navbar from "@/components/common/Navbar";
 import Footer from "@/components/common/Footer";
@@ -7,10 +8,7 @@ import { Suspense } from "react";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/context/theme-provider";
-
-import { Inter, Montserrat } from "next/font/google";
-
-const inter = Inter({ subsets: ["latin"] });
+import { Montserrat } from "next/font/google";
 const montserrat = Montserrat({ subsets: ["latin"] });
 
 // Define metadata outside component for better performance
@@ -26,6 +24,7 @@ const RootLayout = function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+ 
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`min-h-screen flex flex-col ${montserrat.className}`}>

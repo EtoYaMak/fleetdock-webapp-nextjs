@@ -3,7 +3,9 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import Loading from "./loading";
-import { Suspense } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
+
 // Keep your existing animation variants
 const containerVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -62,11 +64,20 @@ const HeroContent = function HeroContent() {
 };
 
 export default function Home() {
+  const { user } = useAuth();
+  const router = useRouter();
+
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    setIsClient(true);
-  }, []);
+    if (user) {
+      router.push("/loads");
+      setIsClient(true);
+    } else {
+      setIsClient(false);
+    }
+  }, [user, router]);
+
   return (
     <main className="min-h-screen flex items-center justify-center ">
       <section className="container mx-auto px-6 text-center ">

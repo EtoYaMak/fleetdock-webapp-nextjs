@@ -4,8 +4,12 @@ export interface User {
   role: string;
   full_name: string;
   phone: string;
+  avatar?: string | null;
   is_active: boolean;
-  company_name: string;
+  company_name: string | null;
+  created_at?: string | null;
+  last_sign_in_at?: string | null;
+  email_verified?: boolean | null;
 }
 
 export interface UseContextType {

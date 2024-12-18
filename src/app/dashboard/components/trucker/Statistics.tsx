@@ -1,4 +1,4 @@
-import { Component as BarChartWithLegends } from "@/components/ui/barChartwithLegends"; 
+import { Component as BarChartWithLegends } from "@/components/ui/barChartwithLegends";
 
 const Statistics = ({
   acceptedBids,

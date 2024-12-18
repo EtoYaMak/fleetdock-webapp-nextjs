@@ -23,7 +23,7 @@ const TruckerDashboard = ({ user }: { user: User }) => {
       </header>
 
       {/* Statistics Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8 px-8">
         <Statistics
           acceptedBids={acceptedBids}
           pendingBids={pendingBids}
