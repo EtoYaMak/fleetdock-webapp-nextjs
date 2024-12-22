@@ -92,24 +92,26 @@ export default function BrokerProfileForm({
     <form onSubmit={handleSubmit} className="max-w-[1200px] mx-auto h-full">
       <div className="grid gap-6">
         {/* Basic Information */}
-        <Card className="border-none shadow-md bg-black/40 backdrop-blur-sm">
+        <Card className="border-border shadow-md bg-card">
           <CardContent className="p-6">
             <div className="flex items-center gap-2 mb-6">
-              <div className="h-8 w-1 bg-[#4895d0] rounded-full" />
-              <h3 className="text-xl font-semibold text-[#f1f0f3]">
+              <div className="h-8 w-1 bg-primary rounded-full" />
+              <h3 className="text-xl font-semibold text-primary">
                 Basic Information
               </h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div>
-                <Label htmlFor="company_name">Company Name</Label>
+                <Label htmlFor="company_name" className="text-muted-foreground">
+                  Company Name
+                </Label>
                 <Input
                   id="company_name"
                   name="company_name"
                   value={formData.company_name || ""}
                   onChange={handleChange}
                   required
-                  className="mt-2 bg-white/5 border-white/10 focus:border-[#4895d0] text-[#f1f0f3]"
+                  className="mt-2 bg-input border-border focus:border-primary text-primary"
                 />
                 {errors.company_name && (
                   <p className="text-red-400 text-sm mt-1">
@@ -119,17 +121,22 @@ export default function BrokerProfileForm({
               </div>
 
               <div>
-                <Label htmlFor="business_type">Business Type</Label>
+                <Label
+                  htmlFor="business_type"
+                  className="text-muted-foreground"
+                >
+                  Business Type
+                </Label>
                 <Select
                   value={formData.business_type}
                   onValueChange={(value) =>
                     handleSelectChange("business_type", value)
                   }
                 >
-                  <SelectTrigger className="mt-2 bg-white/5 border-white/10 text-[#f1f0f3]">
+                  <SelectTrigger className="mt-2 bg-input border-border text-primary">
                     <SelectValue placeholder="Select business type" />
                   </SelectTrigger>
-                  <SelectContent className="text-[#f1f0f3] bg-black/40 backdrop-blur-sm">
+                  <SelectContent className="text-primary bg-card border-border">
                     <SelectItem value="corporation">Corporation</SelectItem>
                     <SelectItem value="llc">LLC</SelectItem>
                     <SelectItem value="partnership">Partnership</SelectItem>
@@ -141,25 +148,32 @@ export default function BrokerProfileForm({
               </div>
 
               <div>
-                <Label htmlFor="year_established">Year Established</Label>
+                <Label
+                  htmlFor="year_established"
+                  className="text-muted-foreground"
+                >
+                  Year Established
+                </Label>
                 <Input
                   id="year_established"
                   name="year_established"
                   type="number"
                   value={formData.year_established || ""}
                   onChange={handleChange}
-                  className="mt-2 bg-white/5 border-white/10 focus:border-[#4895d0] text-[#f1f0f3]"
+                  className="mt-2 bg-input border-border focus:border-primary text-primary"
                 />
               </div>
 
               <div>
-                <Label htmlFor="tax_id">Tax ID</Label>
+                <Label htmlFor="tax_id" className="text-muted-foreground">
+                  Tax ID
+                </Label>
                 <Input
                   id="tax_id"
                   name="tax_id"
                   value={formData.tax_id || ""}
                   onChange={handleChange}
-                  className="mt-2 bg-white/5 border-white/10 focus:border-[#4895d0] text-[#f1f0f3]"
+                  className="mt-2 bg-input border-border focus:border-primary text-primary"
                 />
               </div>
             </div>
@@ -167,24 +181,29 @@ export default function BrokerProfileForm({
         </Card>
 
         {/* Licensing Information */}
-        <Card className="border-none shadow-md bg-black/40 backdrop-blur-sm">
+        <Card className="border-border shadow-md bg-card">
           <CardContent className="p-6">
             <div className="flex items-center gap-2 mb-6">
-              <div className="h-8 w-1 bg-[#4895d0] rounded-full" />
-              <h3 className="text-xl font-semibold text-[#f1f0f3]">
+              <div className="h-8 w-1 bg-primary rounded-full" />
+              <h3 className="text-xl font-semibold text-primary">
                 Licensing Information
               </h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div>
-                <Label htmlFor="license_number">License Number</Label>
+                <Label
+                  htmlFor="license_number"
+                  className="text-muted-foreground"
+                >
+                  License Number
+                </Label>
                 <Input
                   id="license_number"
                   name="license_number"
                   value={formData.license_number || ""}
                   onChange={handleChange}
                   required
-                  className="mt-2 bg-white/5 border-white/10 focus:border-[#4895d0] text-[#f1f0f3]"
+                  className="mt-2 bg-input border-border focus:border-primary text-primary"
                 />
                 {errors.license_number && (
                   <p className="text-red-400 text-sm mt-1">
@@ -194,7 +213,10 @@ export default function BrokerProfileForm({
               </div>
 
               <div>
-                <Label htmlFor="business_license_number">
+                <Label
+                  htmlFor="business_license_number"
+                  className="text-muted-foreground"
+                >
                   Business License Number
                 </Label>
                 <Input
@@ -203,7 +225,7 @@ export default function BrokerProfileForm({
                   value={formData.business_license_number || ""}
                   onChange={handleChange}
                   required
-                  className="mt-2 bg-white/5 border-white/10 focus:border-[#4895d0] text-[#f1f0f3]"
+                  className="mt-2 bg-input border-border focus:border-primary text-primary"
                 />
                 {errors.business_license_number && (
                   <p className="text-red-400 text-sm mt-1">
@@ -213,14 +235,16 @@ export default function BrokerProfileForm({
               </div>
 
               <div className="flex flex-col gap-2">
-                <Label>Business License Expiry</Label>
+                <Label className="text-muted-foreground">
+                  Business License Expiry
+                </Label>
                 <DatePicker
                   value={formData.business_license_expiry}
                   onChange={(date) =>
                     handleDateChange("business_license_expiry", date)
                   }
-                  className="bg-[#111827] text-[#f1f0f3] border-2 border-[#4895d0]/70 outline-none rounded-md"
-                  popoverContentClassName="bg-[#111827] text-[#f1f0f3] border-2 border-[#4d5769]/20 outline-none rounded-md"
+                  className="bg-input border-border focus:border-primary text-primary"
+                  popoverContentClassName="bg-input border-border focus:border-primary text-primary"
                 />
                 {errors.business_license_expiry && (
                   <p className="text-red-400 text-sm mt-1">
@@ -233,17 +257,20 @@ export default function BrokerProfileForm({
         </Card>
 
         {/* Insurance Information */}
-        <Card className="border-none shadow-md bg-black/40 backdrop-blur-sm">
+        <Card className="border-border shadow-md bg-card">
           <CardContent className="p-6">
             <div className="flex items-center gap-2 mb-6">
-              <div className="h-8 w-1 bg-[#4895d0] rounded-full" />
-              <h3 className="text-xl font-semibold text-[#f1f0f3]">
+              <div className="h-8 w-1 bg-primary rounded-full" />
+              <h3 className="text-xl font-semibold text-primary">
                 Insurance Information
               </h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div>
-                <Label htmlFor="insurance_policy_number">
+                <Label
+                  htmlFor="insurance_policy_number"
+                  className="text-muted-foreground"
+                >
                   Insurance Policy Number
                 </Label>
                 <Input
@@ -251,19 +278,21 @@ export default function BrokerProfileForm({
                   name="insurance_policy_number"
                   value={formData.insurance_policy_number || ""}
                   onChange={handleChange}
-                  className="mt-2 bg-white/5 border-white/10 focus:border-[#4895d0] text-[#f1f0f3]"
+                  className="mt-2 bg-input border-border focus:border-primary text-primary"
                 />
               </div>
 
               <div className="flex flex-col gap-2">
-                <Label>Insurance Expiry</Label>
+                <Label className="text-muted-foreground">
+                  Insurance Expiry
+                </Label>
                 <DatePicker
                   value={formData.insurance_expiry}
                   onChange={(date) =>
                     handleDateChange("insurance_expiry", date)
                   }
-                  className="bg-[#111827] text-[#f1f0f3] border-2 border-[#4895d0]/70 outline-none rounded-md"
-                  popoverContentClassName="bg-[#111827] text-[#f1f0f3] border-2 border-[#4d5769]/20 outline-none rounded-md"
+                  className="bg-input border-border focus:border-primary text-primary"
+                  popoverContentClassName="bg-input border-border focus:border-primary text-primary"
                 />
               </div>
             </div>
@@ -271,15 +300,20 @@ export default function BrokerProfileForm({
         </Card>
 
         {/* Location Information */}
-        <Card className="border-none shadow-md bg-black/40 backdrop-blur-sm">
+        <Card className="border-border shadow-md bg-card">
           <CardContent className="p-6">
             <div className="flex items-center gap-2 mb-6">
-              <div className="h-8 w-1 bg-[#4895d0] rounded-full" />
-              <h3 className="text-xl font-semibold text-[#f1f0f3]">Location</h3>
+              <div className="h-8 w-1 bg-primary rounded-full" />
+              <h3 className="text-xl font-semibold text-primary">Location</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div>
-                <Label htmlFor="location.address">Address</Label>
+                <Label
+                  htmlFor="location.address"
+                  className="text-muted-foreground"
+                >
+                  Address
+                </Label>
                 <Input
                   id="location.address"
                   name="location.address"
@@ -290,12 +324,17 @@ export default function BrokerProfileForm({
                       location: { ...prev.location, address: e.target.value },
                     }))
                   }
-                  className="mt-2 bg-white/5 border-white/10 focus:border-[#4895d0] text-[#f1f0f3]"
+                  className="mt-2 bg-input border-border focus:border-primary text-primary"
                 />
               </div>
 
               <div>
-                <Label htmlFor="location.city">City</Label>
+                <Label
+                  htmlFor="location.city"
+                  className="text-muted-foreground"
+                >
+                  City
+                </Label>
                 <Input
                   id="location.city"
                   name="location.city"
@@ -306,12 +345,17 @@ export default function BrokerProfileForm({
                       location: { ...prev.location, city: e.target.value },
                     }))
                   }
-                  className="mt-2 bg-white/5 border-white/10 focus:border-[#4895d0] text-[#f1f0f3]"
+                  className="mt-2 bg-input border-border focus:border-primary text-primary"
                 />
               </div>
 
               <div>
-                <Label htmlFor="location.state">State</Label>
+                <Label
+                  htmlFor="location.state"
+                  className="text-muted-foreground"
+                >
+                  State
+                </Label>
                 <Input
                   id="location.state"
                   name="location.state"
@@ -322,7 +366,7 @@ export default function BrokerProfileForm({
                       location: { ...prev.location, state: e.target.value },
                     }))
                   }
-                  className="mt-2 bg-white/5 border-white/10 focus:border-[#4895d0] text-[#f1f0f3]"
+                  className="mt-2 bg-input border-border focus:border-primary text-primary"
                 />
               </div>
 
@@ -341,12 +385,17 @@ export default function BrokerProfileForm({
                       },
                     }))
                   }
-                  className="mt-2 bg-white/5 border-white/10 focus:border-[#4895d0] text-[#f1f0f3]"
+                  className="mt-2 bg-input border-border focus:border-primary text-primary"
                 />
               </div>
 
               <div>
-                <Label htmlFor="location.country">Country</Label>
+                <Label
+                  htmlFor="location.country"
+                  className="text-muted-foreground"
+                >
+                  Country
+                </Label>
                 <Input
                   id="location.country"
                   name="location.country"
@@ -357,7 +406,7 @@ export default function BrokerProfileForm({
                       location: { ...prev.location, country: e.target.value },
                     }))
                   }
-                  className="mt-2 bg-white/5 border-white/10 focus:border-[#4895d0] text-[#f1f0f3]"
+                  className="mt-2 bg-input border-border focus:border-primary text-primary"
                 />
               </div>
             </div>
@@ -365,17 +414,22 @@ export default function BrokerProfileForm({
         </Card>
 
         {/* Business Details */}
-        <Card className="border-none shadow-md bg-black/40 backdrop-blur-sm">
+        <Card className="border-border shadow-md bg-card">
           <CardContent className="p-6">
             <div className="flex items-center gap-2 mb-6">
-              <div className="h-8 w-1 bg-[#4895d0] rounded-full" />
-              <h3 className="text-xl font-semibold text-[#f1f0f3]">
+              <div className="h-8 w-1 bg-primary rounded-full" />
+              <h3 className="text-xl font-semibold text-primary">
                 Business Details
               </h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div>
-                <Label htmlFor="business_details.website">Website</Label>
+                <Label
+                  htmlFor="business_details.website"
+                  className="text-muted-foreground"
+                >
+                  Website
+                </Label>
                 <Input
                   id="business_details.website"
                   name="business_details.website"
@@ -389,12 +443,17 @@ export default function BrokerProfileForm({
                       },
                     }))
                   }
-                  className="mt-2 bg-white/5 border-white/10 focus:border-[#4895d0] text-[#f1f0f3]"
+                  className="mt-2 bg-input border-border focus:border-primary text-primary"
                 />
               </div>
 
               <div>
-                <Label htmlFor="business_details.phone">Phone</Label>
+                <Label
+                  htmlFor="business_details.phone"
+                  className="text-muted-foreground"
+                >
+                  Phone
+                </Label>
                 <Input
                   id="business_details.phone"
                   name="business_details.phone"
@@ -408,12 +467,17 @@ export default function BrokerProfileForm({
                       },
                     }))
                   }
-                  className="mt-2 bg-white/5 border-white/10 focus:border-[#4895d0] text-[#f1f0f3]"
+                  className="mt-2 bg-input border-border focus:border-primary text-primary"
                 />
               </div>
 
               <div>
-                <Label htmlFor="business_details.email">Email</Label>
+                <Label
+                  htmlFor="business_details.email"
+                  className="text-muted-foreground"
+                >
+                  Email
+                </Label>
                 <Input
                   id="business_details.email"
                   name="business_details.email"
@@ -428,12 +492,15 @@ export default function BrokerProfileForm({
                       },
                     }))
                   }
-                  className="mt-2 bg-white/5 border-white/10 focus:border-[#4895d0] text-[#f1f0f3]"
+                  className="mt-2 bg-input border-border focus:border-primary text-primary"
                 />
               </div>
 
               <div className="md:col-span-2">
-                <Label htmlFor="business_details.description">
+                <Label
+                  htmlFor="business_details.description"
+                  className="text-muted-foreground"
+                >
                   Description
                 </Label>
                 <Input
@@ -449,7 +516,7 @@ export default function BrokerProfileForm({
                       },
                     }))
                   }
-                  className="mt-2 bg-white/5 border-white/10 focus:border-[#4895d0] text-[#f1f0f3]"
+                  className="mt-2 bg-input border-border focus:border-primary text-primary"
                 />
               </div>
             </div>
@@ -457,11 +524,7 @@ export default function BrokerProfileForm({
         </Card>
 
         <div className="flex justify-end mt-8">
-          <Button
-            type="submit"
-            disabled={isLoading}
-            className="px-8 py-2 bg-[#4895d0] text-[#f1f0f3] hover:bg-[#4895d0]/90 disabled:opacity-50 rounded-lg"
-          >
+          <Button type="submit" disabled={isLoading} variant="default">
             {isLoading ? "Saving..." : "Save Changes"}
           </Button>
         </div>

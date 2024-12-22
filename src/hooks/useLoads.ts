@@ -16,7 +16,11 @@ export const useLoads = () => {
           load_types (
             name,
             id
-          )                
+          ),
+          vehicle_types (
+            name,
+            id
+          )
         `);
 
       if (loadError) throw loadError;
@@ -25,6 +29,8 @@ export const useLoads = () => {
         ...load,
         load_type_name: load.load_types?.name,
         load_types: load.load_types.id,
+        equipment_required_name: load.vehicle_types?.name,
+        equipment_required: load.vehicle_types?.id,
       }));
 
       setLoads(transformedLoads);

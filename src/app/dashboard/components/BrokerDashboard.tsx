@@ -58,28 +58,13 @@ const BrokerDashboard = ({
       await deleteLoad(loadId);
     }
   };
-  const [formattedDates, setFormattedDates] = useState<{
-    [key: string]: string;
-  }>({});
-  useEffect(() => {
-    const newFormattedDates: { [key: string]: string } = {};
 
-    brokerLoads.forEach((load) => {
-      newFormattedDates[`pickup_${load.id}`] = format(
-        new Date(load.pickup_date),
-        "MMM dd, yyyy"
-      );
-      newFormattedDates[`delivery_${load.id}`] = format(
-        new Date(load.delivery_date),
-        "MMM dd, yyyy"
-      );
-    });
-
-    setFormattedDates(newFormattedDates);
-  }, [brokerLoads]);
+  const formatDate = (date: string) => {
+    return format(new Date(date), "MMM dd, yyyy");
+  };
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-[#203152]">
+      <div className="flex justify-center items-center min-h-screen bg-background">
         <LoadingSpinner />
       </div>
     );
@@ -87,21 +72,18 @@ const BrokerDashboard = ({
 
   if (error) {
     return (
-      <div className="text-red-500 text-center p-4 bg-[#203152]">
+      <div className="text-red-500 text-center p-4 bg-background">
         Error loading data: {error}
       </div>
     );
   }
 
   return (
-    <div className="p-6 space-y-6 bg-[#203152] min-h-screen text-[#f1f0f3]">
+    <div className="p-6 space-y-6 bg-background min-h-screen ">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Loads Dashboard</h1>
-        <Button
-          onClick={handleCreate}
-          className="bg-[#4895d0] hover:bg-[#4895d0]/90 text-white"
-        >
+      <div className="flex justify-end items-center">
+        {/*  <h1 className="text-xl font-bold">Loads Dashboard</h1> */}
+        <Button onClick={handleCreate} variant="default" className="text-white">
           <FiPlus className="mr-2 h-5 w-5" />
           Create New Load
         </Button>
@@ -112,9 +94,9 @@ const BrokerDashboard = ({
         {Object.entries(stats).map(([key, value]) => (
           <div
             key={key}
-            className="bg-[#1a2b47] p-6 rounded-lg border border-[#4895d0]/30"
+            className="bg-card p-6 rounded-lg border border-border"
           >
-            <h3 className="text-sm font-medium text-[#4895d0] uppercase">
+            <h3 className="text-sm text-primary uppercase font-semibold">
               {key.replace(/([A-Z])/g, " $1").trim()}
             </h3>
             <p className="mt-2 text-3xl font-semibold">{value}</p>
@@ -123,10 +105,10 @@ const BrokerDashboard = ({
       </div>
 
       {/* Loads Table */}
-      <div className="bg-[#1a2b47] rounded-lg border border-[#4895d0]/30 overflow-hidden">
+      <div className="bg-card rounded-lg border border-border overflow-hidden">
         <Table>
           <TableHeader>
-            <TableRow className="border-b border-[#4895d0]/30">
+            <TableRow className="border-b border-border">
               <TableHead>ID</TableHead>
               <TableHead>Type</TableHead>
               <TableHead>Weight (kg)</TableHead>
@@ -139,17 +121,17 @@ const BrokerDashboard = ({
           </TableHeader>
           <TableBody>
             {brokerLoads.map((load) => (
-              <TableRow key={load.id} className="border-b border-[#4895d0]/30">
+              <TableRow key={load.id} className="border-b border-border">
                 <TableCell className="font-medium">
                   {load.id.slice(0, 8)}
                 </TableCell>
                 <TableCell>{load.load_type_name}</TableCell>
                 <TableCell>{load.weight_kg}</TableCell>
                 <TableCell>
-                  {formattedDates[`pickup_${load.id}`] || "Loading..."}
+                  {formatDate(load.pickup_date.toString()) || "Loading..."}
                 </TableCell>
                 <TableCell>
-                  {formattedDates[`delivery_${load.id}`] || "Loading..."}
+                  {formatDate(load.delivery_date.toString()) || "Loading..."}
                 </TableCell>
                 <TableCell>
                   <Badge
@@ -160,25 +142,22 @@ const BrokerDashboard = ({
                         ? "default"
                         : "outline"
                     }
-                    className="bg-[#4895d0]/20 text-[#f1f0f3]"
+                    className="bg-primary/20 text-primary font-semibold uppercase w-full flex justify-center items-center text-center"
                   >
                     {load.bid_enabled ? "Bidding" : load.load_status}
                   </Badge>
                 </TableCell>
                 <TableCell>
                   {load.budget_amount
-                    ? `${
-                        load.budget_currency || "$"
-                      }${load.budget_amount.toLocaleString()}`
+                    ? `${load.budget_amount.toLocaleString()}`
                     : "N/A"}
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-2">
                     <Button
-                      variant="outline"
+                      variant="default"
                       size="sm"
                       onClick={() => handleView(load.id)}
-                      className="bg-[#1a2b47] border-[#4895d0]/30 hover:bg-[#4895d0]/20"
                     >
                       <FiEye className="h-4 w-4" />
                     </Button>
@@ -186,7 +165,6 @@ const BrokerDashboard = ({
                       variant="outline"
                       size="sm"
                       onClick={() => handleEdit(load.id)}
-                      className="bg-[#1a2b47] border-[#4895d0]/30 hover:bg-[#4895d0]/20"
                     >
                       <FiEdit2 className="h-4 w-4" />
                     </Button>
@@ -194,7 +172,6 @@ const BrokerDashboard = ({
                       variant="destructive"
                       size="sm"
                       onClick={() => handleDelete(load.id)}
-                      className="bg-red-500/20 hover:bg-red-500/30"
                     >
                       <FiTrash2 className="h-4 w-4" />
                     </Button>

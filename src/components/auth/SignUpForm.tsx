@@ -10,6 +10,8 @@ import FormStages from "./SignUpForm/FormStages";
 import ProgressBar from "./SignUpForm/ProgressBar";
 import { FormData, SignUpStep, FormStage } from "./SignUpForm/types";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
+
 const SignUpForm = function SignUpForm() {
   const [currentStep, setCurrentStep] = useState<SignUpStep>("role-selection");
   const [currentStageIndex, setCurrentStageIndex] = useState(0);
@@ -23,7 +25,7 @@ const SignUpForm = function SignUpForm() {
   });
   const [stageErrors, setStageErrors] = useState<string[]>(["", ""]);
   const [error, setError] = useState<string | null>(null);
-
+  const { toast } = useToast();
   const router = useRouter();
   const { signUp } = useAuth();
 
@@ -94,10 +96,28 @@ const SignUpForm = function SignUpForm() {
     setError(null);
 
     try {
-      await signUp(formData);
-      router.push("/signin");
+      const result = await signUp(formData);
+      if (result?.success) {
+        toast({
+          title: "Sign Up Successful",
+          description: "You are now signed up. Please sign in.",
+          variant: "success",
+        });
+        router.push("/signin");
+      } else if (result?.error) {
+        toast({
+          title: "Sign Up Failed",
+          description: result.error,
+          variant: "destructive",
+        });
+        setError(result.error);
+      }
     } catch (error) {
-      setError("An unexpected error occurred. Please try again.");
+      toast({
+        title: "Sign Up Failed",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
     }
   }, [validateCurrentStage, formData, router, signUp]);
 

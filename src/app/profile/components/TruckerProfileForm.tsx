@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/accordion";
 import { supabase } from "@/lib/supabase";
 import { User } from "@/types/auth";
+import { useToast } from "@/hooks/use-toast";
 interface Document {
   id?: string;
   uid?: string;
@@ -73,7 +74,7 @@ export default function TruckerProfileForm({
     personal_phone: initialData?.contact_details?.personal_phone || "",
     email: initialData?.contact_details?.email || "",
   });
-
+  const toast = useToast();
   const handleContactChange =
     (field: keyof ContactDetails) =>
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -399,8 +400,8 @@ export default function TruckerProfileForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-6 bg-[#111a2e]">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 bg-[#1a2b47] p-6 rounded-lg border border-black">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-6 bg-background">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 bg-card p-6 rounded-lg border border-border">
         {/* Certifications */}
         <div className="space-y-4">
           <label className="block text-sm font-medium text-[#4895d0]">
@@ -441,16 +442,16 @@ export default function TruckerProfileForm({
       </div>
 
       {/* Contact Details */}
-      <div className="bg-[#1a2b47] p-6 rounded-lg border border-black">
-        <h3 className="text-lg font-medium text-[#f1f0f3] mb-4">
+      <div className="bg-card p-6 rounded-lg border border-border">
+        <h3 className="text-lg font-medium text-primary mb-4">
           Contact Information
         </h3>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div
-            className="bg-[#111a2e]/60 px-4 py-3  border-r-2 border-b-2
-           border-[#4895d0]/30 rounded-lg shadow-inner shadow-black/20"
+            className="bg-card px-4 py-3  border-r-2 border-b-2
+           border-border rounded-lg shadow-inner shadow-black/20"
           >
-            <label className="block text-sm text-[#f1f0f3]">Work Phone</label>
+            <label className="block text-sm text-primary">Work Phone</label>
             <input
               type="tel"
               value={contactDetails.work_phone}
@@ -459,12 +460,10 @@ export default function TruckerProfileForm({
             />
           </div>
           <div
-            className="bg-[#111a2e]/60 px-4 py-3  border-r-2 border-b-2
-           border-[#4895d0]/30 rounded-lg shadow-inner shadow-black/20"
+            className="bg-card px-4 py-3  border-r-2 border-b-2
+           border-border rounded-lg shadow-inner shadow-black/20"
           >
-            <label className="block text-sm text-[#f1f0f3]">
-              Personal Phone
-            </label>
+            <label className="block text-sm text-primary">Personal Phone</label>
             <input
               type="tel"
               value={contactDetails.personal_phone}
@@ -473,10 +472,10 @@ export default function TruckerProfileForm({
             />
           </div>
           <div
-            className="bg-[#111a2e]/60 px-4 py-3  border-r-2 border-b-2
-           border-[#4895d0]/30 rounded-lg shadow-inner shadow-black/20"
+            className="bg-card px-4 py-3  border-r-2 border-b-2
+           border-border rounded-lg shadow-inner shadow-black/20"
           >
-            <label className="block text-sm text-[#f1f0f3]">Email</label>
+            <label className="block text-sm text-primary">Email</label>
             <input
               type="email"
               value={contactDetails.email}

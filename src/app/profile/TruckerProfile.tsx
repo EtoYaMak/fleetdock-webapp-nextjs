@@ -57,7 +57,7 @@ const TruckerProfile = memo(function TruckerProfile({
     : undefined;
 
   return (
-    <div className="flex min-h-screen bg-[#111a2e] relative">
+    <div className="flex min-h-screen bg-background relative">
       {/* Sidebar */}
       <div className="w-64 sticky left-0 top-10 mt-10 h-screen p-6">
         <div className="bg-[#1a2b47] border-r-2 border-b-2 border-[#4895d0]/30 p-4 rounded-lg backdrop-blur-lg bg-opacity-90">
@@ -139,20 +139,21 @@ const TruckerProfile = memo(function TruckerProfile({
         ) : (
           <div className="flex flex-col items-center justify-center min-h-[80vh] max-w-[1200px] mx-auto">
             <div className="text-center space-y-4 mb-8">
-              <h2 className="text-2xl font-semibold text-[#f1f0f3]">
+              <h2 className="text-2xl font-semibold text-primary">
                 Welcome to FleetDock!
               </h2>
-              <p className="text-[#4895d0] text-lg max-w-md">
+              <p className="text-muted-foreground text-lg max-w-md">
                 Oops! Looks like we don't have your trucker profile set up yet.
                 Let's fix that!
               </p>
             </div>
             {!isEditing ? (
               <Button
+                variant="default"
+                size="lg"
                 onClick={() => setIsEditing(true)}
-                className="flex items-center gap-2 bg-[#4895d0] hover:bg-[#4895d0]/90 text-white px-8 py-6 text-lg"
               >
-                <UserPlus className="h-5 w-5" />
+                <UserPlus />
                 Create Your Profile
               </Button>
             ) : (

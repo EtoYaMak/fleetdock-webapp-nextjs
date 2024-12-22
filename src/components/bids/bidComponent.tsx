@@ -19,6 +19,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+
 interface BidComponentProps {
   bid?: Bid;
   bids: Bid[];
@@ -223,23 +224,23 @@ export default function BidComponent({
           initial="hidden"
           animate="visible"
           exit="exit"
-          className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100"
+          className="bg-primary/5 rounded-xl shadow-lg overflow-hidden border border-border "
         >
           <div className="p-6">
             {/* Status and DateTime Header */}
             <div className="flex items-center justify-between mb-4">
               <Badge
-                className={`px-3 py-1 rounded-full text-sm font-medium ${
+                className={`px-3 py-1 rounded-full text-sm font-medium border border-ring bg-background  hover:text-white ${
                   bid?.bid_status === "accepted"
-                    ? "bg-green-100 text-green-800"
+                    ? "text-green-600"
                     : bid?.bid_status === "rejected"
-                    ? "bg-red-100 text-red-800"
-                    : "bg-blue-100 text-blue-800"
+                    ? "text-red-600"
+                    : "text-primary"
                 }`}
               >
                 {!bid ? "NEW BID" : bid.bid_status.toUpperCase()}
               </Badge>
-              <span className="text-sm text-gray-500">
+              <span className="text-sm text-muted-foreground">
                 {bid?.created_at
                   ? new Date(bid.created_at).toLocaleString()
                   : new Date().toLocaleString()}
@@ -252,7 +253,7 @@ export default function BidComponent({
                 {isEditing ? (
                   <div className="flex items-center gap-2">
                     <div className="relative">
-                      <FiDollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                      <FiDollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
                       <Input
                         type="number"
                         value={bidAmount}
@@ -262,7 +263,7 @@ export default function BidComponent({
                     </div>
                   </div>
                 ) : (
-                  <div className="text-2xl font-bold text-gray-900">
+                  <div className="text-2xl font-bold text-primary saturate-[0.4]">
                     ${bidAmount.toLocaleString()}
                   </div>
                 )}
@@ -296,9 +297,8 @@ export default function BidComponent({
                           <Button
                             onClick={handleUndoBidStatus}
                             variant="outline"
-                            className="text-[#f1f0f3] bg-[#1a2b47] hover:bg-black hover:text-[#f1f0f3]"
                           >
-                            Undo {bid.bid_status}
+                            Undo {bid.bid_status.toUpperCase()}
                           </Button>
                         )}
                   </div>

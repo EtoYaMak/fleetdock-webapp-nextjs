@@ -3,9 +3,12 @@ import { supabase } from "@/lib/supabase";
 import { createContext, useContext, useEffect, useState } from "react";
 import { SignInType, SignUpType, UseContextType } from "@/types/auth";
 import { useRouter } from "next/navigation";
+
+import { useToast } from "@/hooks/use-toast";
 export const UserContext = createContext<UseContextType>({} as UseContextType);
 
 const UserProvider = ({ children }: { children: React.ReactNode }) => {
+  const { toast } = useToast();
   const router = useRouter();
   const [user, setUser] = useState<UseContextType["user"]>(null);
   const [loading, setLoading] = useState(true);
@@ -72,13 +75,17 @@ const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const signIn = async (data: SignInType) => {
     try {
       setLoading(true);
+      setError(null);
+
       const { data: authData, error: authError } =
         await supabase.auth.signInWithPassword({
           email: data.email,
           password: data.password,
         });
 
-      if (authError) throw authError;
+      if (authError) {
+        throw new Error(authError.message);
+      }
 
       if (authData.user) {
         const { data: profile } = await supabase
@@ -88,9 +95,15 @@ const UserProvider = ({ children }: { children: React.ReactNode }) => {
           .single();
 
         setUser({ ...authData.user, ...profile });
+        return { success: true };
       }
+
+      throw new Error("No user data returned");
     } catch (error) {
-      setError(error instanceof Error ? error.message : "Failed to sign in");
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to sign in";
+      setError(errorMessage);
+      return { success: false, error: errorMessage };
     } finally {
       setLoading(false);
     }
@@ -100,10 +113,20 @@ const UserProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       setLoading(true);
       await supabase.auth.signOut();
+      toast({
+        title: "Sign Out Successful",
+        description: "You are now signed out.",
+        variant: "success",
+      });
       setUser(null);
-      router.push("/");
+      router.replace("/");
     } catch (error) {
-      setError(error instanceof Error ? error.message : "Failed to sign out");
+      toast({
+        title: "Sign Out Failed",
+        description:
+          error instanceof Error ? error.message : "Failed to sign out",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }

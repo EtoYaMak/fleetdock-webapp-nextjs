@@ -20,7 +20,9 @@ export interface Load {
   bidding_deadline?: Date | null; // Timestamp
   fixed_rate?: number | null; // Numeric
   equipment_required: string; // UUID
+  equipment_required_name?: string; // Text
   truck_type_required: string; // UUID
+  truck_type_required_name?: string; // Text
   contact_name: string | null; // Text
   contact_phone: string | null; // Text
   contact_email: string | null; // Text

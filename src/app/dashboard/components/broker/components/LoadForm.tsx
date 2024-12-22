@@ -105,11 +105,15 @@ export default function LoadForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-8 text-[#f1f0f3]">
       {/* Basic Load Information Section */}
-      <section className="bg-[#1a2b47] border border-[#4895d0]/30 px-4 py-5 sm:p-6 rounded-lg">
-        <h2 className="text-lg font-semibold mb-4">Basic Load Information</h2>
+      <section className="bg-card border border-border px-4 py-5 sm:p-6 rounded-lg">
+        <h2 className="text-lg font-semibold mb-4 text-primary">
+          Basic Load Information
+        </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
-            <label className="block text-sm font-medium mb-1">Load Type</label>
+            <label className="block text-sm font-medium mb-1 text-muted-foreground">
+              Load Type
+            </label>
             <Select
               disabled={loadTypesLoading}
               value={formData.load_type_id}
@@ -141,9 +145,9 @@ export default function LoadForm({
                     temperature_controlled: !prev.temperature_controlled,
                   }));
                 }}
-                className="rounded border-[#4895d0]/30 bg-[#203152]"
+                className="rounded border-border bg-background"
               />
-              <label className="text-sm font-medium">
+              <label className="text-sm font-medium text-muted-foreground">
                 Temperature Controlled
               </label>
             </div>
@@ -152,11 +156,13 @@ export default function LoadForm({
       </section>
 
       {/* Cargo Details Section */}
-      <section className="bg-[#1a2b47] border border-[#4895d0]/30 px-4 py-5 sm:p-6 rounded-lg">
-        <h2 className="text-lg font-semibold mb-4">Cargo Details</h2>
+      <section className="bg-card border border-border px-4 py-5 sm:p-6 rounded-lg">
+        <h2 className="text-lg font-semibold mb-4 text-primary">
+          Cargo Details
+        </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
-            <label className="block text-sm font-medium">
+            <label className="block text-sm font-medium text-muted-foreground">
               Dimensions (meters)
             </label>
             <div className="grid grid-cols-3 gap-2">
@@ -169,14 +175,14 @@ export default function LoadForm({
                   onChange={(e) =>
                     handleDimensionChange(dim, parseFloat(e.target.value))
                   }
-                  className="bg-[#203152] border-[#4895d0]/30"
+                  className="bg-[#203152] border border-border placeholder:text-muted-foreground text-white "
                 />
               ))}
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1">
+            <label className="block text-sm font-medium mb-1 text-muted-foreground">
               Weight (kg)
             </label>
             <Input
@@ -195,12 +201,14 @@ export default function LoadForm({
       </section>
 
       {/* Location & Schedule Section */}
-      <section className="bg-[#1a2b47] border border-[#4895d0]/30 px-4 py-5 sm:p-6 rounded-lg">
-        <h2 className="text-lg font-semibold mb-4">Location & Schedule</h2>
+      <section className="bg-card border border-border px-4 py-5 sm:p-6 rounded-lg">
+        <h2 className="text-lg font-semibold mb-4 text-primary">
+          Location & Schedule
+        </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-1">
+              <label className="block text-sm font-medium mb-1 text-muted-foreground">
                 Pickup Location
               </label>
               <Input
@@ -284,7 +292,7 @@ export default function LoadForm({
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">
+              <label className="block text-sm font-medium mb-1 text-muted-foreground">
                 Delivery Location
               </label>
               <Input
@@ -370,7 +378,7 @@ export default function LoadForm({
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-1">
+              <label className="block text-sm font-medium mb-1 text-muted-foreground">
                 Pickup Date
               </label>
               <DatePicker
@@ -383,7 +391,7 @@ export default function LoadForm({
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">
+              <label className="block text-sm font-medium mb-1 text-muted-foreground">
                 Delivery Date
               </label>
               <DatePicker
@@ -396,7 +404,7 @@ export default function LoadForm({
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">
+              <label className="block text-sm font-medium mb-1 text-muted-foreground">
                 Distance (km)
               </label>
               <Input
@@ -416,11 +424,13 @@ export default function LoadForm({
       </section>
 
       {/* Pricing Section */}
-      <section className="bg-[#1a2b47] border border-[#4895d0]/30 px-4 py-5 sm:p-6 rounded-lg">
-        <h2 className="text-lg font-semibold mb-4">Pricing Details</h2>
+      <section className="bg-card border border-border px-4 py-5 sm:p-6 rounded-lg">
+        <h2 className="text-lg font-semibold mb-4 text-primary">
+          Pricing Details
+        </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-medium mb-1">
+            <label className="block text-sm font-medium mb-1 text-muted-foreground">
               Pricing Method
             </label>
             <Select
@@ -451,7 +461,7 @@ export default function LoadForm({
           {formData.bid_enabled ? (
             <>
               <div>
-                <label className="block text-sm font-medium mb-1">
+                <label className="block text-sm font-medium mb-1 text-muted-foreground">
                   Bidding Deadline
                 </label>
                 <DatePicker
@@ -466,7 +476,7 @@ export default function LoadForm({
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">
+                <label className="block text-sm font-medium mb-1 text-muted-foreground">
                   Budget Amount
                 </label>
                 <Input
@@ -484,7 +494,7 @@ export default function LoadForm({
             </>
           ) : (
             <div>
-              <label className="block text-sm font-medium mb-1">
+              <label className="block text-sm font-medium mb-1 text-muted-foreground">
                 Fixed Rate
               </label>
               <Input
@@ -504,11 +514,13 @@ export default function LoadForm({
       </section>
 
       {/* Equipment Requirements Section */}
-      <section className="bg-[#1a2b47] border border-[#4895d0]/30 px-4 py-5 sm:p-6 rounded-lg">
-        <h2 className="text-lg font-semibold mb-4">Equipment Requirements</h2>
+      <section className="bg-card border border-border px-4 py-5 sm:p-6 rounded-lg">
+        <h2 className="text-lg font-semibold mb-4 text-primary">
+          Equipment Requirements
+        </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-medium mb-1">
+            <label className="block text-sm font-medium mb-1 text-muted-foreground">
               Equipment Required
             </label>
             <Select
@@ -539,7 +551,7 @@ export default function LoadForm({
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1">
+            <label className="block text-sm font-medium mb-1 text-muted-foreground">
               Truck Type Required
             </label>
             <Select
@@ -572,11 +584,13 @@ export default function LoadForm({
       </section>
 
       {/* Contact Information Section */}
-      <section className="bg-[#1a2b47] border border-[#4895d0]/30 px-4 py-5 sm:p-6 rounded-lg">
-        <h2 className="text-lg font-semibold mb-4">Contact Information</h2>
+      <section className="bg-card border border-border px-4 py-5 sm:p-6 rounded-lg">
+        <h2 className="text-lg font-semibold mb-4 text-primary">
+          Contact Information
+        </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-medium mb-1">
+            <label className="block text-sm font-medium mb-1 text-muted-foreground">
               Contact Name
             </label>
             <Input
@@ -592,7 +606,7 @@ export default function LoadForm({
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1">
+            <label className="block text-sm font-medium mb-1 text-muted-foreground">
               Contact Phone
             </label>
             <Input
@@ -608,7 +622,7 @@ export default function LoadForm({
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1">
+            <label className="block text-sm font-medium mb-1 text-muted-foreground">
               Contact Email
             </label>
             <Input
@@ -627,10 +641,12 @@ export default function LoadForm({
       </section>
 
       {/* Additional Information Section */}
-      <section className="bg-[#1a2b47] border border-[#4895d0]/30 px-4 py-5 sm:p-6 rounded-lg">
-        <h2 className="text-lg font-semibold mb-4">Additional Information</h2>
+      <section className="bg-card border border-border px-4 py-5 sm:p-6 rounded-lg">
+        <h2 className="text-lg font-semibold mb-4 text-primary">
+          Additional Information
+        </h2>
         <div>
-          <label className="block text-sm font-medium mb-1">
+          <label className="block text-sm font-medium mb-1 text-muted-foreground">
             Special Instructions
           </label>
           <textarea
@@ -647,18 +663,14 @@ export default function LoadForm({
       </section>
 
       <div className="flex justify-end gap-4">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => router.back()}
-          className="bg-[#203152] border-[#4895d0]/30 text-[#f1f0f3] hover:bg-[#203152]/90"
-        >
+        <Button type="button" variant="secondary" onClick={() => router.back()}>
           <FiX className="mr-2" /> Cancel
         </Button>
         <Button
           type="submit"
           disabled={isSubmitting}
-          className="bg-[#4895d0] text-[#f1f0f3] hover:bg-[#4895d0]/90"
+          variant="default"
+          className="text-white"
         >
           <FiSave className="mr-2" />
           {isSubmitting ? "Saving..." : isEdit ? "Update Load" : "Create Load"}

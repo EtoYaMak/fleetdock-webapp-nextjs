@@ -6,6 +6,8 @@ import { FiMail, FiLock } from "react-icons/fi";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
+
 // Memoize static components
 const FormIcon = function FormIcon({ icon: Icon }: { icon: typeof FiMail }) {
   return <Icon className="text-primary" />;
@@ -70,6 +72,7 @@ const ErrorMessage = function ErrorMessage({ message }: { message: string }) {
 const SignInForm = function SignInForm() {
   const { signIn } = useAuth();
   const router = useRouter();
+  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
@@ -93,9 +96,29 @@ const SignInForm = function SignInForm() {
       setError(null);
 
       try {
-        await signIn(formData);
-        router.push(`/loads`);
+        const result = await signIn(formData);
+        if (result?.success) {
+          toast({
+            title: "Sign In Successful",
+            description: "You are now signed in.",
+            variant: "success",
+          });
+          router.push(`/loads`);
+        } else if (result?.error) {
+          toast({
+            title: "Sign In Failed",
+            description: result.error,
+            variant: "destructive",
+          });
+          setError(result.error);
+        }
       } catch (error) {
+        toast({
+          title: "Sign In Failed",
+          description:
+            error instanceof Error ? error.message : "Failed to sign in",
+          variant: "destructive",
+        });
         setError(error instanceof Error ? error.message : "Failed to sign in");
       } finally {
         setIsLoading(false);

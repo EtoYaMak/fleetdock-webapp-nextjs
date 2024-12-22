@@ -5,9 +5,10 @@ import { useLoads } from "@/hooks/useLoads";
 import LoadForm from "../../../components/broker/components/LoadForm";
 import { Load } from "@/types/load";
 import { FiArrowLeft } from "react-icons/fi";
-import Link from "next/link";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { useAuth } from "@/context/AuthContext";
+import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 
 export default function EditLoad({
   params,
@@ -18,7 +19,7 @@ export default function EditLoad({
   const { user } = useAuth();
   const [load, setLoad] = useState<Load | null>(null);
   const [id, setId] = useState<string | null>(null);
-
+  const router = useRouter();
   useEffect(() => {
     const fetchParams = async () => {
       const resolvedParams = await params;
@@ -51,26 +52,23 @@ export default function EditLoad({
 
   if (isLoading || !load) {
     return (
-      <div className="flex justify-center items-center h-screen bg-[#203152]">
+      <div className="flex justify-center items-center h-screen bg-background">
         <LoadingSpinner />
       </div>
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 bg-[#203152] min-h-screen">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 bg-background min-h-screen">
       <div className="mb-8">
-        <Link
-          href="/dashboard"
-          className="flex items-center text-sm text-[#4895d0] hover:text-[#4895d0]/80"
-        >
+        <Button variant="outline1" onClick={() => router.back()}>
           <FiArrowLeft className="mr-2" /> Back to Dashboard
-        </Link>
+        </Button>
       </div>
 
-      <div className="bg-[#1a2b47] shadow rounded-lg border border-[#4895d0]/30">
+      <div className="bg-card shadow rounded-lg border border-border">
         <div className="px-4 py-5 sm:p-6">
-          <h1 className="text-2xl font-bold text-[#f1f0f3] mb-6">Edit Load</h1>
+          <h1 className="text-2xl font-bold text-primary mb-6">Edit Load</h1>
           <LoadForm onSubmit={handleSubmit} initialData={load} isEdit />
         </div>
       </div>

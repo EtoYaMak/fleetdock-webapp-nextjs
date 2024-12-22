@@ -81,7 +81,7 @@ export default function Home() {
   return (
     <main className="min-h-screen flex items-center justify-center ">
       <section className="container mx-auto px-6 text-center ">
-        <h1>{isClient ? <HeroContent /> : <Loading />}</h1>
+        <h1>{!user && !isClient ? <HeroContent /> : <Loading />}</h1>
       </section>
     </main>
   );

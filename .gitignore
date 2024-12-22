@@ -26,7 +26,7 @@
 
 # folders
 # ignore src/app/me/documents
-src/app/me/
+/src/app/me/
 
 # debug
 npm-debug.log*

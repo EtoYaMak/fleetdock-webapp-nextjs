@@ -16,11 +16,14 @@ export interface UseContextType {
   user: User | null;
   loading: boolean;
   error: any;
-  signIn: (data: SignInType) => Promise<void>;
+  signIn: (data: SignInType) => Promise<{
+    success: boolean;
+    error?: string | null;
+  }>;
   signOut: () => Promise<void>;
   signUp: (data: SignUpType) => Promise<{
     success: boolean;
-    error?: string;
+    error?: string | null;
   }>;
 }
 
