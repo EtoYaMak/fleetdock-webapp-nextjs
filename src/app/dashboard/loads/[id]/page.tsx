@@ -5,12 +5,19 @@ import { useLoads } from "@/hooks/useLoads";
 import { Load } from "@/types/load";
 import { useRouter } from "next/navigation";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
-import { FiArrowLeft, FiEdit2, FiTruck } from "react-icons/fi";
+import { FiArrowLeft, FiEdit2, FiTruck, FiInfo } from "react-icons/fi";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 import { useBids } from "@/hooks/useBids";
 import { User } from "@/types/auth";
 import BidsContainer from "@/components/bids/bidsContainer";
+
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 export default function ViewLoad({
   params,
 }: {
@@ -296,7 +303,23 @@ export default function ViewLoad({
       </section>
       {load?.bid_enabled && (
         <section className="bg-card border border-border px-4 py-5 sm:p-6 rounded-lg relative">
-          <h2 className="text-lg font-semibold mb-4 text-primary">Bids</h2>
+          <span className="flex justify-between items-center  mb-4">
+            <h2 className="text-lg font-semibold text-primary">Bids</h2>
+            {user?.role === "admin" || user?.id === load?.broker_id ? (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <FiInfo className="text-primary" size={24} />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="text-white">
+                      Only one bid can be accepted at a time!
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            ) : null}
+          </span>
           {bidsLoading ? (
             <LoadingSpinner />
           ) : (

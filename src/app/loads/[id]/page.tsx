@@ -301,23 +301,24 @@ export default function ViewLoad({
           </section>
         </div>
       </section>
-      {load?.bid_enabled && bids.length > 0 && (
+      {load?.bid_enabled && (
         <section className="bg-card border border-border px-4 py-5 sm:p-6 rounded-lg relative">
           <span className="flex justify-between items-center  mb-4">
             <h2 className="text-lg font-semibold text-primary">Bids</h2>
-
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger>
-                  <FiInfo className="text-primary" size={24} />
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p className="text-white">
-                    Only one bid can be accepted at a time!
-                  </p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            {user?.role === "admin" || user?.id === load?.broker_id ? (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <FiInfo className="text-primary" size={24} />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="text-white">
+                      Only one bid can be accepted at a time!
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            ) : null}
           </span>
           {bidsLoading ? (
             <LoadingSpinner />
