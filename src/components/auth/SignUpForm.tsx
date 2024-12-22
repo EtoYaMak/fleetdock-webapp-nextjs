@@ -119,7 +119,7 @@ const SignUpForm = function SignUpForm() {
         variant: "destructive",
       });
     }
-  }, [validateCurrentStage, formData, router, signUp]);
+  }, [validateCurrentStage, formData, router, signUp, toast]);
 
   const handleNext = useCallback(() => {
     if (!validateCurrentStage()) return;

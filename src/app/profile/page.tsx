@@ -11,23 +11,13 @@ import { TruckerDetails } from "@/types/trucker";
 
 export default function ProfilePage() {
   const { user } = useAuth();
-
-  // Use a role-specific hook based on user role
   const {
     broker,
     isLoading: brokerLoading,
     error: brokerError,
     createBroker,
     updateBroker,
-  } = user?.role === "broker"
-    ? useBroker()
-    : {
-        broker: null,
-        isLoading: false,
-        error: null,
-        createBroker: null,
-        updateBroker: null,
-      };
+  } = useBroker();
 
   const {
     trucker,
@@ -35,15 +25,7 @@ export default function ProfilePage() {
     error: truckerError,
     createTrucker,
     updateTrucker,
-  } = user?.role === "trucker"
-    ? useTrucker()
-    : {
-        trucker: null,
-        isLoading: false,
-        error: null,
-        createTrucker: null,
-        updateTrucker: null,
-      };
+  } = useTrucker();
 
   if (!user) {
     return null;
@@ -57,8 +39,8 @@ export default function ProfilePage() {
           broker={broker as BrokerBusiness}
           isLoading={brokerLoading}
           error={brokerError as string}
-          createBroker={createBroker!}
-          updateBroker={updateBroker!}
+          createBroker={createBroker}
+          updateBroker={updateBroker}
         />
       )}
 
@@ -68,8 +50,8 @@ export default function ProfilePage() {
           trucker={trucker as TruckerDetails}
           isLoading={truckerLoading}
           error={truckerError as string}
-          createTrucker={createTrucker!}
-          updateTrucker={updateTrucker!}
+          createTrucker={createTrucker}
+          updateTrucker={updateTrucker}
         />
       )}
     </div>

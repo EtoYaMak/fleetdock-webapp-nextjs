@@ -124,7 +124,7 @@ const SignInForm = function SignInForm() {
         setIsLoading(false);
       }
     },
-    [formData, signIn, router]
+    [formData, signIn, router, toast]
   );
 
   // Memoize form inputs
