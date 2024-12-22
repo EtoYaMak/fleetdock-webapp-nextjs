@@ -24,6 +24,10 @@
 .DS_Store
 *.pem
 
+# folders
+# ignore src/app/me/documents
+src/app/me/documents/
+
 # debug
 npm-debug.log*
 yarn-debug.log*

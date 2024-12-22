@@ -1,3 +1,5 @@
+import { DocumentMetadata } from "./trucker";
+
 export interface BrokerBusiness {
   id: string;
   profile_id: string;
@@ -25,6 +27,8 @@ export interface BrokerBusiness {
   };
   verification_status: "pending" | "verified" | "rejected";
   verification_date?: Date;
+  insurance_documents: Record<string, DocumentMetadata>;
+  permits: Record<string, DocumentMetadata>;
   created_at: Date;
   updated_at: Date;
 }
