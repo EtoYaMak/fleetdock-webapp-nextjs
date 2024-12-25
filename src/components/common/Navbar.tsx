@@ -73,7 +73,7 @@ const Navbar = function Navbar() {
 
           <div className="relative ml-3 flex items-center space-x-4">
             <NavLink
-              href="/profile"
+              href="/me"
               className="flex items-center gap-1 px-3 py-2 text-sm font-medium rounded-lg
               hover:bg-muted transition-all duration-300"
             >
