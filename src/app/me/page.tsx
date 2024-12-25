@@ -63,39 +63,6 @@ export default function Me() {
 
           <Separator />
 
-          {/* Account Details */}
-          {/*  <div>
-            <h3 className="font-semibold mb-4">Account Details</h3>
-            <div className="grid gap-4">
-              <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-                <span>
-                  Joined: {new Date(user?.created_at || "").toLocaleDateString()}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Shield className="h-4 w-4 text-muted-foreground" />
-                <span>
-                  Last login:{" "}
-                  {new Date(user?.last_sign_in_at || "").toLocaleDateString()}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                {user.email_verified ? (
-                  <>
-                    <CheckCircle className="h-4 w-4 text-green-600" />
-                    <span>Email verified</span>
-                  </>
-                ) : (
-                  <>
-                    <XCircle className="h-4 w-4 text-destructive" />
-                    <span>Email not verified</span>
-                  </>
-                )}
-              </div>
-            </div>
-          </div> */}
-
           {/* Role-specific Information */}
           {auth.user.role === "trucker" && (
             <>

@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FiMail, FiLock } from "react-icons/fi";
+import { FiMail, FiLock, FiEye, FiEyeOff } from "react-icons/fi";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,8 @@ const FormInput = function FormInput({
   type,
   name,
   placeholder,
+  autoComplete,
+  autoFocus,
   value,
   onChange,
   icon: Icon,
@@ -28,6 +30,8 @@ const FormInput = function FormInput({
   type: string;
   name: string;
   placeholder: string;
+  autoComplete: string;
+  autoFocus: boolean;
   value: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   icon: typeof FiMail;
@@ -51,6 +55,8 @@ const FormInput = function FormInput({
         className="bg-input w-full px-4 py-3 rounded-lg "
         required
         disabled={disabled}
+        autoComplete={autoComplete}
+        autoFocus={autoFocus}
       />
     </div>
   );
@@ -79,6 +85,7 @@ const SignInForm = function SignInForm() {
     email: "",
     password: "",
   });
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
   const handleInputChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -127,6 +134,10 @@ const SignInForm = function SignInForm() {
     [formData, signIn, router, toast]
   );
 
+  const togglePasswordVisibility = useCallback(() => {
+    setIsPasswordVisible((prev) => !prev);
+  }, []);
+
   // Memoize form inputs
   const formInputs = useMemo(
     () => [
@@ -134,20 +145,24 @@ const SignInForm = function SignInForm() {
         id: "email",
         type: "email",
         name: "email",
+        autoComplete: "email",
+        autoFocus: true,
         placeholder: "Enter your email",
         icon: FiMail,
         value: formData.email,
       },
       {
         id: "password",
-        type: "password",
+        type: isPasswordVisible ? "text" : "password",
         name: "password",
+        autoComplete: "current-password",
+        autoFocus: false,
         placeholder: "Enter your password",
         icon: FiLock,
         value: formData.password,
       },
     ],
-    [formData.email, formData.password]
+    [formData.email, formData.password, isPasswordVisible]
   );
 
   return (
@@ -177,12 +192,26 @@ const SignInForm = function SignInForm() {
               className="space-y-6"
             >
               {formInputs.map((input) => (
-                <FormInput
-                  key={input.id}
-                  {...input}
-                  onChange={handleInputChange}
-                  disabled={isLoading}
-                />
+                <div key={input.id} className="relative">
+                  <FormInput
+                    {...input}
+                    onChange={handleInputChange}
+                    disabled={isLoading}
+                  />
+                  {input.name === "password" && (
+                    <button
+                      type="button"
+                      onClick={togglePasswordVisibility}
+                      className="absolute top-1/2 right-3 text-sm text-muted-foreground"
+                    >
+                      {isPasswordVisible ? (
+                        <FiEyeOff size={24} />
+                      ) : (
+                        <FiEye size={24} />
+                      )}
+                    </button>
+                  )}
+                </div>
               ))}
             </motion.div>
           </AnimatePresence>

@@ -1,7 +1,7 @@
 "use client";
 
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { TruckerSidebar } from "@/app/me/truckerSidebar";
+import { ProfileSidebar } from "@/app/me/ProfileSidebar";
 import { useAuth } from "@/context/AuthContext";
 import { useBroker } from "@/hooks/useBroker";
 import { useTrucker } from "@/hooks/useTrucker";
@@ -14,7 +14,7 @@ export type DashboardContextType = {
   trucker: ReturnType<typeof useTrucker>;
 };
 
-import { createContext, useContext } from 'react';
+import { createContext, useContext } from "react";
 
 const DashboardContext = createContext<DashboardContextType | null>(null);
 
@@ -30,12 +30,11 @@ export const useProfileSidebar = () => {
 
 export default function Layout({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(true);
-  
+
   // Initialize all your hooks
   const auth = useAuth();
   const broker = useBroker();
   const trucker = useTrucker();
-
   // Create the shared context value
   const dashboardValue = {
     auth,
@@ -47,7 +46,7 @@ export default function Layout({ children }: { children: ReactNode }) {
     <DashboardContext.Provider value={dashboardValue}>
       <div>
         <SidebarProvider open={open} onOpenChange={setOpen}>
-          <TruckerSidebar open={open} />
+          <ProfileSidebar open={open} />
           <main className="w-full h-screen flex flex-col gap-4 relative">
             {children}
           </main>
