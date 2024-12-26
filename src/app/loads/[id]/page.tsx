@@ -76,7 +76,7 @@ export default function ViewLoad({
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 min-h-screen rounded-lg my-4 bg-background">
       {/* Header Section */}
       <div className="flex justify-between items-center mb-8 bg-transparent">
-        <Button variant="outline1" onClick={() => router.push("/loads")}>
+        <Button variant="outline1" onClick={() => router.back()}>
           <FiArrowLeft className="mr-2" /> Back to Loads
         </Button>
         {user?.role === "admin" || user?.id === load?.broker_id ? (
@@ -314,11 +314,13 @@ export default function ViewLoad({
       </section>
       {load?.bid_enabled && (
         <section className="bg-card border border-border px-4 py-5 sm:p-6 rounded-lg relative">
-          <span className="flex justify-between items-center w-3/4  mb-4">
+          <span className="flex justify-between items-center w-full  mb-4">
             <h2 className="text-lg font-semibold text-primary">Bids</h2>
-            <div className="absolute bottom-0 top-4 right-44 h-fit">
-              <TripCalculatorRes />
-            </div>
+            {user?.role === "trucker" && (
+              <div className="absolute bottom-0 top-4 right-44 h-fit">
+                <TripCalculatorRes />
+              </div>
+            )}
             {user?.role === "admin" || user?.id === load?.broker_id ? (
               <TooltipProvider>
                 <Tooltip>

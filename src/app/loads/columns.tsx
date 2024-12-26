@@ -20,7 +20,7 @@ export const getColumns = (user: User, router: any) => {
       header: ({ column }) => (
         <Button
           variant="ghost"
-          className="flex w-fit"
+          className="flex w-fit hover:bg-black/20"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           ID
@@ -34,7 +34,7 @@ export const getColumns = (user: User, router: any) => {
       header: ({ column }) => (
         <Button
           variant="ghost"
-          className="flex w-fit"
+          className="flex w-fit  hover:bg-black/20"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           <Clock className="mr-2 h-4 w-4" />
@@ -58,7 +58,7 @@ export const getColumns = (user: User, router: any) => {
       header: ({ column }) => (
         <Button
           variant="ghost"
-          className="flex w-fit"
+          className="flex w-fit  hover:bg-black/20"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Pickup
@@ -81,7 +81,7 @@ export const getColumns = (user: User, router: any) => {
       header: ({ column }) => (
         <Button
           variant="ghost"
-          className="flex w-fit"
+          className="flex w-fit  hover:bg-black/20"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Delivery
@@ -104,7 +104,7 @@ export const getColumns = (user: User, router: any) => {
       header: ({ column }) => (
         <Button
           variant="ghost"
-          className="flex w-fit "
+          className="flex w-fit  hover:bg-black/20 "
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Type
@@ -125,7 +125,7 @@ export const getColumns = (user: User, router: any) => {
       header: ({ column }) => (
         <Button
           variant="ghost"
-          className="flex w-fit"
+          className="flex w-fit  hover:bg-black/20"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           <Weight className="h-4 w-4" />
@@ -140,7 +140,7 @@ export const getColumns = (user: User, router: any) => {
       header: ({ column }) => (
         <Button
           variant="ghost"
-          className="flex w-fit"
+          className="flex w-fit  hover:bg-black/20"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Budget
@@ -158,7 +158,7 @@ export const getColumns = (user: User, router: any) => {
       header: ({ column }) => (
         <Button
           variant="ghost"
-          className="flex w-fit"
+          className="flex w-fit  hover:bg-black/20"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Status
@@ -178,7 +178,7 @@ export const getColumns = (user: User, router: any) => {
       header: ({ column }) => (
         <Button
           variant="ghost"
-          className="flex w-fit"
+          className="flex w-fit  hover:bg-black/20"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Pickup <Clock className="h-4 w-4" />
@@ -195,7 +195,7 @@ export const getColumns = (user: User, router: any) => {
       header: ({ column }) => (
         <Button
           variant="ghost"
-          className="flex w-fit"
+          className="flex w-fit  hover:bg-black/20"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Delivery <Clock className="h-4 w-4" />

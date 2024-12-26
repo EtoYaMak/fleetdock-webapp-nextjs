@@ -80,6 +80,14 @@ const Navbar = function Navbar() {
               <User className="h-5 w-5 text-primary" />
               Profile
             </NavLink>
+            <NavLink
+              href="/profile"
+              className="flex items-center gap-1 px-3 py-2 text-sm font-medium rounded-lg
+              hover:bg-muted transition-all duration-300"
+            >
+              <User className="h-5 w-5 text-red-500" />
+              Old Profile
+            </NavLink>
 
             <Button onClick={signOut} variant="default" size="icon">
               <LogOutIcon className="h-5 w-5 transition-all duration-300" />

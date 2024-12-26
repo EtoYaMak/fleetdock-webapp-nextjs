@@ -272,7 +272,7 @@ const SidebarTrigger = React.forwardRef<
       variant="ghost"
       size="icon"
       className={cn(
-        "h-12 w-7 flex items-center justify-center   rounded-lg",
+        "h-12 w-7 sm:w-full flex items-center justify-center bg-transparent hover:bg-muted-foreground/20 rounded-lg",
         className
       )}
       onClick={(event) => {
@@ -283,9 +283,7 @@ const SidebarTrigger = React.forwardRef<
     >
       <PanelLeft />
       <span
-        className={cn(
-          state === "collapsed" ? "sr-only" : "inline-block ml-2 "
-        )}
+        className={cn(state === "collapsed" ? "sr-only" : "inline-block ml-2 ")}
       >
         Toggle Sidebar
       </span>
@@ -367,7 +365,7 @@ const SidebarHeader = React.forwardRef<
     <div
       ref={ref}
       data-sidebar="header"
-      className={cn("flex flex-col gap-2 p-2", className)}
+      className={cn("flex flex-col gap-2 bg-muted-foreground/20", className)}
       {...props}
     />
   );

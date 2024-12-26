@@ -32,7 +32,7 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { Button } from "@/components/ui/button";
-import { Filter } from "lucide-react";
+import { Filter, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   Select,
@@ -43,7 +43,7 @@ import {
 } from "@/components/ui/select";
 import { RangeSlider } from "@/components/ui/range-slider";
 import { Location } from "@/types/load";
-import { cva, type VariantProps } from "class-variance-authority";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -373,16 +373,120 @@ const FilterPanel = ({
   );
 };
 
+const ActiveFilterChips = ({
+  table,
+  resetFilters,
+}: {
+  table: any;
+  resetFilters: () => void;
+}) => {
+  const activeFilters = table.getState().columnFilters;
+
+  if (activeFilters.length === 0) return null;
+
+  const getFilterLabel = (filter: { id: string; value: any }) => {
+    switch (filter.id) {
+      case "pickup_location":
+        return `Pickup: ${filter.value}`;
+      case "delivery_location":
+        return `Delivery: ${filter.value}`;
+      case "load_type_name":
+        return `Type: ${filter.value}`;
+      case "load_status":
+        return `Status: ${filter.value}`;
+      case "weight_kg":
+        return `Weight: ${filter.value[0].toLocaleString()}kg - ${filter.value[1].toLocaleString()}kg`;
+      case "budget_amount":
+        return `Budget: ${formatCurrency(filter.value[0])} - ${formatCurrency(
+          filter.value[1]
+        )}`;
+      case "bid_enabled":
+        return "Bidding Enabled";
+      default:
+        return `${filter.id}: ${filter.value}`;
+    }
+  };
+
+  const removeFilter = (filterId: string) => {
+    table.getColumn(filterId)?.setFilterValue(undefined);
+  };
+
+  return (
+    <div className="flex flex-wrap gap-2 items-center w-full">
+      {activeFilters.map((filter: any) => (
+        <button
+          key={filter.id}
+          onClick={() => removeFilter(filter.id)}
+          className="flex items-center gap-1.5 text-sm bg-primary/10 text-primary hover:bg-primary/20 px-3 py-1.5 rounded-md transition-colors"
+        >
+          {getFilterLabel(filter)}
+          <X className="h-3 w-3" />
+        </button>
+      ))}
+      {activeFilters.length > 0 && (
+        <Button
+          variant="outline1"
+          onClick={resetFilters}
+          className={cn(
+            "flex items-center gap-2 transition-colors",
+            activeFilters.length > 0 &&
+              "bg-destructive text-white hover:text-white hover:bg-destructive/90"
+          )}
+        >
+          Clear All
+          <X className="h-3 w-3" />
+        </Button>
+      )}
+    </div>
+  );
+};
+
 export function DataTable<TData, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
-  const [sorting, setSorting] = useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  // Initialize state from URL params
+  const [sorting, setSorting] = useState<SortingState>(() => {
+    const sortParam = searchParams.get("sort");
+    return sortParam ? JSON.parse(decodeURIComponent(sortParam)) : [];
+  });
+
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>(() => {
+    const filtersParam = searchParams.get("filters");
+    return filtersParam ? JSON.parse(decodeURIComponent(filtersParam)) : [];
+  });
+
   const [showFilters, setShowFilters] = useState(false);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
     bid_enabled: false,
   });
+
+  // Update URL when filters change
+  const updateUrl = (
+    newSorting: SortingState,
+    newFilters: ColumnFiltersState
+  ) => {
+    const params = new URLSearchParams(searchParams.toString());
+
+    if (newSorting.length > 0) {
+      params.set("sort", encodeURIComponent(JSON.stringify(newSorting)));
+    } else {
+      params.delete("sort");
+    }
+
+    if (newFilters.length > 0) {
+      params.set("filters", encodeURIComponent(JSON.stringify(newFilters)));
+    } else {
+      params.delete("filters");
+    }
+
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  };
+
   const table = useReactTable({
     data,
     columns,
@@ -395,8 +499,18 @@ export function DataTable<TData, TValue>({
       columnFilters,
       columnVisibility,
     },
-    onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
+    onSortingChange: (updater) => {
+      const newSorting =
+        typeof updater === "function" ? updater(sorting) : updater;
+      setSorting(newSorting);
+      updateUrl(newSorting, columnFilters);
+    },
+    onColumnFiltersChange: (updater) => {
+      const newFilters =
+        typeof updater === "function" ? updater(columnFilters) : updater;
+      setColumnFilters(newFilters);
+      updateUrl(sorting, newFilters);
+    },
     onColumnVisibilityChange: setColumnVisibility,
     filterFns: {
       custom: (row, id, filterValue) => {
@@ -431,22 +545,43 @@ export function DataTable<TData, TValue>({
     },
   });
 
+  const resetFilters = () => {
+    table.resetColumnFilters();
+    table.resetSorting();
+    router.replace(pathname, { scroll: false });
+  };
+
   return (
     <div className="w-full">
       <div className="relative mb-4">
         <div className="flex flex-col gap-4 max-w-7xl mx-auto">
-          <div className="flex justify-end">
-            <Button
-              variant="outline1"
-              onClick={() => setShowFilters(!showFilters)}
-              className={cn(
-                "flex items-center gap-2 transition-colors",
-                showFilters && "bg-primary text-white"
-              )}
-            >
-              <Filter className="h-4 w-4" />
-              Refine Search
-            </Button>
+          <div className="flex w-full justify-between items-center">
+            <ActiveFilterChips table={table} resetFilters={resetFilters} />
+            <div className="flex gap-2 justify-end w-full">
+              {/* <Button
+                variant="outline1"
+                onClick={resetFilters}
+                className={cn(
+                  "flex items-center gap-2 transition-colors",
+                  (columnFilters.length > 0 || sorting.length > 0) &&
+                    "bg-destructive text-white hover:bg-destructive/90"
+                )}
+              >
+                <X className="h-4 w-4" />
+                Reset Filters
+              </Button> */}
+              <Button
+                variant="outline1"
+                onClick={() => setShowFilters(!showFilters)}
+                className={cn(
+                  "flex items-center gap-2 transition-colors",
+                  showFilters && "bg-primary text-white"
+                )}
+              >
+                <Filter className="h-4 w-4" />
+                Refine Search
+              </Button>
+            </div>
           </div>
           <FilterPanel table={table} showFilters={showFilters} data={data} />
         </div>
@@ -457,13 +592,13 @@ export function DataTable<TData, TValue>({
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow
               key={headerGroup.id}
-              className="border border-border bg-muted"
+              className="border border-border bg-muted hover:bg-muted"
             >
               {headerGroup.headers.map((header) => (
                 <TableHead
                   key={header.id}
                   className="h-12 font-semibold
-                   transition-colors duration-100 w-fit border border-border"
+                   transition-colors duration-100 w-fit border border-border text-primary"
                 >
                   {header.isPlaceholder
                     ? null
@@ -481,7 +616,7 @@ export function DataTable<TData, TValue>({
             table.getRowModel().rows.map((row) => (
               <TableRow
                 key={row.id}
-                className="w-fit border-b border-border transition-colors"
+                className="w-fit border-b border-border transition-colors odd:bg-background even:bg-primary/10"
               >
                 {row.getVisibleCells().map((cell) => (
                   <TableCell key={cell.id} className=" ">
