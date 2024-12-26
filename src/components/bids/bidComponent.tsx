@@ -8,6 +8,7 @@ import { useBids } from "@/hooks/useBids";
 import { User } from "@/types/auth";
 import { FiDollarSign, FiCheck, FiX, FiEdit2, FiTrash2 } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
+import { TripCostCalculator } from "@/components/ui/TripCostCalculator";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,6 +20,11 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 interface BidComponentProps {
   bid?: Bid;
@@ -202,7 +208,7 @@ export default function BidComponent({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="absolute bottom-0 top-4 right-10"
+        className="absolute bottom-0 top-4 right-10 h-fit"
       >
         <Button
           onClick={() => setShowBidCard(true)}

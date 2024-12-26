@@ -11,6 +11,17 @@ import { useAuth } from "@/context/AuthContext";
 import { useBids } from "@/hooks/useBids";
 import { User } from "@/types/auth";
 import BidsContainer from "@/components/bids/bidsContainer";
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
+
+import { TripCalculatorRes } from "@/components/ui/TripCalculatorRes";
 
 import {
   Tooltip,
@@ -303,8 +314,11 @@ export default function ViewLoad({
       </section>
       {load?.bid_enabled && (
         <section className="bg-card border border-border px-4 py-5 sm:p-6 rounded-lg relative">
-          <span className="flex justify-between items-center  mb-4">
+          <span className="flex justify-between items-center w-3/4  mb-4">
             <h2 className="text-lg font-semibold text-primary">Bids</h2>
+            <div className="absolute bottom-0 top-4 right-44 h-fit">
+              <TripCalculatorRes />
+            </div>
             {user?.role === "admin" || user?.id === load?.broker_id ? (
               <TooltipProvider>
                 <Tooltip>
