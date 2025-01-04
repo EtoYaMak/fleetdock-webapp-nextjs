@@ -285,7 +285,7 @@ const SidebarTrigger = React.forwardRef<
       <span
         className={cn(state === "collapsed" ? "sr-only" : "inline-block ml-2 ")}
       >
-        Toggle Sidebar
+        Collapse
       </span>
     </Button>
   );

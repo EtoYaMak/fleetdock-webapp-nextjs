@@ -40,13 +40,13 @@ const items = [
     title: "Documents",
     url: "/me/documents",
     icon: FileText,
-    status: "wip",
+    status: "completed",
   },
   {
     title: "Vehicles",
     url: "/me/vehicles",
     icon: CarFront,
-    status: "todo",
+    status: "completed",
   },
   {
     title: "Settings",
@@ -84,7 +84,7 @@ export function ProfileSidebar({ open }: { open: boolean }) {
   };
 
   return (
-    <Sidebar collapsible="icon">
+    <Sidebar collapsible="icon" side="left" variant="floating">
       <SidebarHeader>
         <SidebarTrigger
           className={`${open ? "w-full text-left" : "mx-auto"}`}

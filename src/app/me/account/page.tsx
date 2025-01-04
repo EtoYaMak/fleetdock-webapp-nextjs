@@ -11,7 +11,14 @@ import {
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Calendar, Mail, Phone, Shield, CheckCircle, XCircle } from "lucide-react";
+import {
+  Calendar,
+  Mail,
+  Phone,
+  Shield,
+  CheckCircle,
+  XCircle,
+} from "lucide-react";
 
 export default function Account() {
   const { auth, broker, trucker } = useProfileSidebar();
@@ -72,14 +79,14 @@ export default function Account() {
               <div className="flex items-center gap-2">
                 <Calendar className="h-4 w-4 text-muted-foreground" />
                 <span>
-                  Joined: {new Date(auth.user?.created_at || "").toLocaleDateString()}
+                  Joined: {new Date(auth.user?.created_at || "").toDateString()}
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 <Shield className="h-4 w-4 text-muted-foreground" />
                 <span>
                   Last login:{" "}
-                  {new Date(auth.user?.last_sign_in_at || "").toLocaleDateString()}
+                  {new Date(auth.user?.last_sign_in_at || "").toDateString()}
                 </span>
               </div>
               <div className="flex items-center gap-2">
@@ -107,8 +114,8 @@ export default function Account() {
                 <div className="grid gap-4">
                   {/* Add trucker-specific fields here using the trucker context */}
                   <CardDescription>
-                    Additional trucker-specific information will be displayed here
-                    once completed.
+                    Additional trucker-specific information will be displayed
+                    here once completed.
                   </CardDescription>
                 </div>
               </div>
@@ -123,8 +130,8 @@ export default function Account() {
                 <div className="grid gap-4">
                   {/* Add broker-specific fields here using the broker context */}
                   <CardDescription>
-                    Additional broker-specific information will be displayed here
-                    once completed.
+                    Additional broker-specific information will be displayed
+                    here once completed.
                   </CardDescription>
                 </div>
               </div>

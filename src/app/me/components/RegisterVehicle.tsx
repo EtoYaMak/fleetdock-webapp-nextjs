@@ -1,6 +1,11 @@
-import { useEffect, useState } from "react";
-import { VehicleFormData } from "@/types/vehicles";
+"use client";
+
+import { useState, useEffect } from "react";
+//TYPES
+import { User } from "@/types/auth";
+import { VehicleFormData, VehicleWithType } from "@/types/vehicles";
 import { useVehiclesTypes } from "@/hooks/useVehicleTypes";
+//UI
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import DatePicker from "@/components/ui/datepicker";
@@ -12,22 +17,34 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useAuth } from "@/context/AuthContext";
 import { Label } from "@/components/ui/label";
-import { VehicleWithType } from "@/types/vehicles";
-import { cn } from "@/lib/utils";
-export default function VehicleRegisterForm({
-  initialData,
+
+export default function RegisterVehicle({
+  user,
   onSubmit,
   isLoading,
 }: {
-  initialData: VehicleFormData;
+  user: User;
   onSubmit: (data: VehicleFormData) => void;
   isLoading: boolean;
 }) {
-  const { user } = useAuth();
   const { vehiclesTypes, isLoading: typesLoading } = useVehiclesTypes();
-  const [formData, setFormData] = useState<VehicleFormData>(initialData);
+
+  const [formData, setFormData] = useState<VehicleFormData>({
+    trucker_id: user.id,
+    vehicle_type_id: "",
+    license_plate: "",
+    manufacturer: "",
+    model: "",
+    year: 0,
+    insurance_expiry: new Date(),
+    last_maintenance_date: new Date(),
+    next_maintenance_date: new Date(),
+    dimensions: { length: 0, width: 0, height: 0 },
+    is_active: true,
+    verification_status: false,
+    verified_at: new Date(),
+  });
 
   useEffect(() => {
     if (user) {
@@ -37,10 +54,8 @@ export default function VehicleRegisterForm({
       }));
     }
   }, [user]);
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    //
     onSubmit(formData as VehicleWithType);
   };
 
@@ -53,9 +68,8 @@ export default function VehicleRegisterForm({
       [name]: value,
     }));
   };
-
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 w-fit">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <div className="grid grid-cols-2 gap-4">
         {/* Vehicle Type Selection */}
         <div className="space-y-2">
@@ -186,7 +200,6 @@ export default function VehicleRegisterForm({
           </div>
         </div>
       </div>
-
       {/* Dates Section */}
       <div className="grid gap-4">
         <div className="flex flex-col gap-2">
@@ -243,11 +256,7 @@ export default function VehicleRegisterForm({
         disabled={isLoading}
         className="w-full bg-[#4895d0] hover:bg-[#4895d0]/90"
       >
-        {isLoading
-          ? "Processing..."
-          : initialData.id
-          ? "Update Vehicle"
-          : "Register Vehicle"}
+        {isLoading ? "Processing..." : "Register Vehicle"}
       </Button>
     </form>
   );

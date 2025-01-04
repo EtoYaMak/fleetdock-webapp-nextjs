@@ -15,7 +15,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/context/AuthContext";
 import { Label } from "@/components/ui/label";
 import { VehicleWithType } from "@/types/vehicles";
-import { cn } from "@/lib/utils";
 export default function VehicleRegisterForm({
   initialData,
   onSubmit,

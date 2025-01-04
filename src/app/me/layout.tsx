@@ -6,6 +6,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useBroker } from "@/hooks/useBroker";
 import { useTrucker } from "@/hooks/useTrucker";
 import { useState, ReactNode } from "react";
+import Navbar from "@/components/common/Navbar";
 
 // Create a context to share the hooks data
 export type DashboardContextType = {
@@ -29,12 +30,13 @@ export const useProfileSidebar = () => {
 };
 
 export default function Layout({ children }: { children: ReactNode }) {
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
 
   // Initialize all your hooks
   const auth = useAuth();
   const broker = useBroker();
   const trucker = useTrucker();
+
   // Create the shared context value
   const dashboardValue = {
     auth,
@@ -44,12 +46,11 @@ export default function Layout({ children }: { children: ReactNode }) {
 
   return (
     <DashboardContext.Provider value={dashboardValue}>
-      <div>
+      <div className="flex h-screen overflow-hidden">
         <SidebarProvider open={open} onOpenChange={setOpen}>
           <ProfileSidebar open={open} />
-          <main className="w-full h-screen flex flex-col gap-4 relative">
-            {children}
-          </main>
+
+          <main className="flex-1">{children}</main>
         </SidebarProvider>
       </div>
     </DashboardContext.Provider>

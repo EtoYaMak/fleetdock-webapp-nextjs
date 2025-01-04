@@ -1,10 +1,10 @@
 "use client";
-import React, { useState, useEffect, Suspense } from "react";
+import React, { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/context/AuthContext";
 import { TruckerDetails, DocumentMetadata } from "@/types/trucker";
 import Image from "next/image";
-import { FileUp, Eye, AlertCircle, X } from "lucide-react";
+import { FileUp, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -19,8 +19,9 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
+import DocumentList from "./DocumentList";
 
 interface DocumentViewerModalProps {
   url: string | null;
@@ -96,6 +97,30 @@ const getFileTypeFromUrl = (url: string): "pdf" | "image" => {
   return extension === "pdf" ? "pdf" : "image";
 };
 
+interface TruckerDocumentData {
+  certifications?: Record<string, DocumentMetadata>;
+  licenses?: Record<string, DocumentMetadata>;
+}
+
+const StepIndicator = ({ currentStep }: { currentStep: number }) => {
+  return (
+    <div className="flex items-center justify-center gap-2 mb-6">
+      {[1, 2, 3].map((step) => (
+        <div
+          key={step}
+          className={`w-2.5 h-2.5 rounded-full transition-all duration-200  ${
+            step === currentStep
+              ? "bg-primary w-8"
+              : step < currentStep
+              ? "bg-primary/50"
+              : "bg-muted-foreground/50"
+          }`}
+        />
+      ))}
+    </div>
+  );
+};
+
 const DocumentUpload = ({
   trucker,
   auth,
@@ -117,6 +142,9 @@ const DocumentUpload = ({
     documentName: "",
     isPDF: false,
   });
+  const [currentStep, setCurrentStep] = useState(1);
+  const [fileName, setFileName] = useState("");
+  const { toast } = useToast();
 
   useEffect(() => {
     if (trucker) {
@@ -177,8 +205,6 @@ const DocumentUpload = ({
       return;
     }
 
-    console.log("existingData", existingData);
-
     // Ensure existingData is typed correctly
     type DocumentMap = Record<
       string,
@@ -194,13 +220,12 @@ const DocumentUpload = ({
       column as keyof typeof existingData
     ] || {}) as DocumentMap;
 
-    console.log("existingDocuments", existingDocuments);
     // Merge existing data with new document
     const updatedData: DocumentMap = {
       ...existingDocuments,
-      [file.name]: {
+      [fileName]: {
         url: data.path,
-        name: file.name,
+        name: fileName,
         uploadedAt: new Date().toISOString(),
         verification_status: "pending",
       },
@@ -241,43 +266,282 @@ const DocumentUpload = ({
     setModalState({ isOpen: false, url: null, documentName: "", isPDF: false });
   };
 
+  const showToast = (
+    type: "success" | "error" | "warning",
+    message: string
+  ) => {
+    toast({
+      variant:
+        type === "error"
+          ? "destructive"
+          : type === "success"
+          ? "success"
+          : "warning",
+      title: type.charAt(0).toUpperCase() + type.slice(1),
+      description: message,
+    });
+  };
+
+  const handleDelete = async (documentName: string) => {
+    const documentType =
+      documentName in certifications ? "certificate" : "license";
+    const bucket = "trucker-documents";
+    const folder = documentType === "certificate" ? "certificates" : "licenses";
+    const columnName =
+      documentType === "certificate" ? "certifications" : "licenses";
+
+    // Get the document URL
+    const documents =
+      documentType === "certificate" ? certifications : licenses;
+    const documentUrl = documents[documentName]?.url;
+
+    if (!documentUrl) {
+      showToast("error", "Document not found");
+      return;
+    }
+
+    // Delete from storage
+    const { error: storageError } = await supabase.storage
+      .from(bucket)
+      .remove([documentUrl]);
+
+    if (storageError) {
+      console.error("Error deleting file from storage:", storageError);
+      showToast("error", "Failed to delete document from storage");
+      return;
+    }
+
+    // Get existing documents
+    const { data: existingData, error: fetchError } = await supabase
+      .from("trucker_details")
+      .select(columnName)
+      .eq("profile_id", auth.user?.id)
+      .single();
+
+    if (fetchError) {
+      console.error("Error fetching existing data:", fetchError);
+      showToast("error", "Failed to fetch document data");
+      return;
+    }
+
+    const typedData = existingData as TruckerDocumentData;
+    const currentDocuments = typedData[columnName] || {};
+    const updatedDocuments = { ...currentDocuments };
+    delete updatedDocuments[documentName];
+
+    // Update database
+    const { error: dbError } = await supabase
+      .from("trucker_details")
+      .update({ [columnName]: updatedDocuments })
+      .eq("profile_id", auth.user?.id);
+
+    if (dbError) {
+      console.error("Error updating database:", dbError);
+      showToast("error", "Failed to update document list");
+      return;
+    }
+
+    // Update local state
+    if (documentType === "certificate") {
+      setCertifications(updatedDocuments);
+    } else {
+      setLicenses(updatedDocuments);
+    }
+
+    showToast("success", "Document deleted successfully");
+  };
+
+  const handleUpdateStatus = async (
+    documentName: string,
+    newStatus: string
+  ) => {
+    if (auth.user?.role !== "admin") {
+      showToast("error", "Only admins can update document status");
+      return;
+    }
+
+    const documentType =
+      documentName in certifications ? "certificate" : "license";
+    const columnName =
+      documentType === "certificate" ? "certifications" : "licenses";
+
+    // Get existing documents
+    const { data: existingData, error: fetchError } = await supabase
+      .from("trucker_details")
+      .select(columnName)
+      .eq("profile_id", auth.user?.id)
+      .single();
+
+    if (fetchError) {
+      console.error("Error fetching existing data:", fetchError);
+      showToast("error", "Failed to fetch document data");
+      return;
+    }
+
+    const typedData = existingData as TruckerDocumentData;
+    const currentDocuments = typedData[columnName] || {};
+    const updatedDocuments = {
+      ...currentDocuments,
+      [documentName]: {
+        ...currentDocuments[documentName],
+        verification_status: newStatus,
+      },
+    };
+
+    // Update database
+    const { error: dbError } = await supabase
+      .from("trucker_details")
+      .update({ [columnName]: updatedDocuments })
+      .eq("profile_id", auth.user?.id);
+
+    if (dbError) {
+      console.error("Error updating database:", dbError);
+      showToast("error", "Failed to update document status");
+      return;
+    }
+
+    // Update local state
+    if (documentType === "certificate") {
+      setCertifications(updatedDocuments);
+    } else {
+      setLicenses(updatedDocuments);
+    }
+
+    showToast("success", "Document status updated successfully");
+  };
+
   return (
-    <div className="w-full flex flex-col gap-4 min-h-screen">
+    <div className="w-full flex flex-col gap-6 min-h-screen">
       {auth.user?.role === "trucker" && (
-        <Card>
-          <CardHeader className="flex flex-col gap-2">
-            <CardTitle>Upload New Document</CardTitle>
-            <CardDescription>
+        <Card className="appearance-none bg-transparent border-none shadow-none">
+          <CardHeader className="pb-4  bg-primary rounded-t-xl">
+            <CardTitle className="text-2xl font-bold text-white">
+              Upload New Document
+            </CardTitle>
+            <CardDescription className="text-white">
               Add your certifications and licenses here for verification
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex flex-col sm:flex-row gap-4 bg-border p-4 rounded-lg">
-              <Select value={documentType} onValueChange={handleTypeChange}>
-                <SelectTrigger className="w-full sm:w-[200px] bg-primary text-white font-medium">
-                  {documentType || "Select document type"}
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="certificate">Certificate</SelectItem>
-                  <SelectItem value="license">License</SelectItem>
-                </SelectContent>
-              </Select>
+          <CardContent>
+            <div className="max-w-xl mx-auto w-full mt-2">
+              <StepIndicator currentStep={currentStep} />
 
-              <div className="flex-1 flex gap-4">
-                <input
-                  type="file"
-                  onChange={handleFileChange}
-                  accept=".pdf,.jpg,.jpeg,.png"
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium"
-                />
-                <Button
-                  onClick={handleUpload}
-                  disabled={!file || !documentType}
-                  className=" text-white"
-                >
-                  <FileUp className="mr-2 h-4 w-4 text-white" />
-                  Upload
-                </Button>
+              <div className="space-y-6">
+                {currentStep === 1 && (
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-foreground/90">
+                      Select Document Type
+                    </h3>
+                    <Select
+                      value={documentType}
+                      onValueChange={(value) => {
+                        setDocumentType(value);
+                        setCurrentStep(2);
+                      }}
+                    >
+                      <SelectTrigger className="w-full h-12 ">
+                        <span className="text-muted-foreground">
+                          {documentType || "Choose type of document"}
+                        </span>
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="certificate">Certificate</SelectItem>
+                        <SelectItem value="license">License</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
+                {currentStep === 2 && (
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-foreground/90">
+                      Name Your Document
+                    </h3>
+                    <Input
+                      placeholder="Enter a descriptive name"
+                      value={fileName}
+                      onChange={(e) => setFileName(e.target.value)}
+                      className="h-12 bg-background/50 border-border/50 focus:bg-background/80 transition-colors"
+                    />
+                    <div className="flex justify-end gap-3 pt-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => setCurrentStep(1)}
+                        className="h-11"
+                      >
+                        Back
+                      </Button>
+                      <Button
+                        onClick={() => setCurrentStep(3)}
+                        disabled={!fileName.trim()}
+                        className="h-11"
+                      >
+                        Continue
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {currentStep === 3 && (
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-foreground/90">
+                      Upload Document
+                    </h3>
+                    <div className="grid gap-4">
+                      <div className="relative">
+                        <input
+                          type="file"
+                          onChange={handleFileChange}
+                          accept=".pdf,.jpg,.jpeg,.png"
+                          className="w-full h-32 rounded-lg border-2 border-dashed border-border/50 
+                                   bg-background/50 cursor-pointer file:hidden
+                                   hover:bg-background/80 transition-colors
+                                   flex items-center justify-center"
+                        />
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                          <div className="text-center">
+                            <FileUp className="h-6 w-6 mx-auto mb-2 text-muted-foreground" />
+                            <span className="text-sm text-muted-foreground">
+                              {file
+                                ? file.name
+                                : "Drop your file here or click to browse"}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex justify-end gap-3">
+                        <Button
+                          variant="outline"
+                          onClick={() => setCurrentStep(2)}
+                          className="h-11"
+                        >
+                          Back
+                        </Button>
+                        <Button
+                          onClick={async () => {
+                            try {
+                              await handleUpload();
+                              showToast(
+                                "success",
+                                "Document uploaded successfully!"
+                              );
+                              setCurrentStep(1);
+                              setFileName("");
+                              setFile(null);
+                              setDocumentType("");
+                            } catch (error) {
+                              showToast("error", "Failed to upload document");
+                            }
+                          }}
+                          disabled={!file}
+                          className="h-11"
+                        >
+                          Upload Document
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </CardContent>
@@ -285,115 +549,22 @@ const DocumentUpload = ({
       )}
 
       <div className="grid md:grid-cols-2 gap-6">
-        {/* Certifications */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              Certifications
-              <Badge variant="secondary">
-                {Object.keys(certifications).length}
-              </Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {Object.entries(certifications).length > 0 ? (
-              Object.entries(certifications).map(([name, doc]) => (
-                <div
-                  key={name}
-                  className="flex items-center justify-between group border-b border-border pb-2 rounded-b-lg px-4 shadow-md"
-                >
-                  <div className="space-y-1">
-                    <p className="font-medium">{name}</p>
-                    <p className="text-sm text-muted-foreground">
-                      Uploaded: {new Date(doc.uploadedAt).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Badge
-                      variant={
-                        doc.verification_status === "verified"
-                          ? "default"
-                          : "secondary"
-                      }
-                      className="fade-in-10"
-                    >
-                      {doc.verification_status}
-                    </Badge>
-                    <Button
-                      variant="default"
-                      size="icon"
-                      onClick={() =>
-                        openPreview(doc.url, name, "trucker-documents")
-                      }
-                    >
-                      <Eye className="h-4 w-4 text-white" />
-                    </Button>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <Alert variant="default">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
-                  No certifications uploaded yet
-                </AlertDescription>
-              </Alert>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Licenses */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              Licenses
-              <Badge variant="secondary">{Object.keys(licenses).length}</Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {Object.entries(licenses).length > 0 ? (
-              Object.entries(licenses).map(([name, doc]) => (
-                <div
-                  key={name}
-                  className="flex items-center justify-between group  border-b border-border pb-2 rounded-b-lg px-4 shadow-md"
-                >
-                  <div className="space-y-1">
-                    <p className="font-medium">{name}</p>
-                    <p className="text-sm text-muted-foreground">
-                      Uploaded: {new Date(doc.uploadedAt).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Badge
-                      variant={
-                        doc.verification_status === "verified"
-                          ? "default"
-                          : "secondary"
-                      }
-                      className="fade-in-10"
-                    >
-                      {doc.verification_status}
-                    </Badge>
-                    <Button
-                      variant="default"
-                      size="icon"
-                      onClick={() =>
-                        openPreview(doc.url, name, "trucker-documents")
-                      }
-                    >
-                      <Eye className="h-4 w-4 text-white" />
-                    </Button>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <Alert variant="default">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>No licenses uploaded yet</AlertDescription>
-              </Alert>
-            )}
-          </CardContent>
-        </Card>
+        <DocumentList
+          title="Certifications"
+          documents={certifications}
+          onPreview={openPreview}
+          onDelete={handleDelete}
+          onUpdateStatus={handleUpdateStatus}
+          isAdmin={auth.user?.role === "admin"}
+        />
+        <DocumentList
+          title="Licenses"
+          documents={licenses}
+          onPreview={openPreview}
+          onDelete={handleDelete}
+          onUpdateStatus={handleUpdateStatus}
+          isAdmin={auth.user?.role === "admin"}
+        />
       </div>
       <DocumentViewerModal
         {...modalState}
