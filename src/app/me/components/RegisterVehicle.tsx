@@ -81,10 +81,10 @@ export default function RegisterVehicle({
               setFormData((prev) => ({ ...prev, vehicle_type_id: value }))
             }
           >
-            <SelectTrigger className="bg-[#203152] border-[#4895d0]/30">
+            <SelectTrigger className="bg-input border-input">
               <SelectValue placeholder="Select vehicle type" />
             </SelectTrigger>
-            <SelectContent className="bg-[#203152] border-[#4895d0]/30">
+            <SelectContent className="bg-input border-input">
               {vehiclesTypes.map((type) => (
                 <SelectItem key={type.id} value={type.id}>
                   {type.name} - {type.capacity}t
@@ -102,7 +102,7 @@ export default function RegisterVehicle({
             name="license_plate"
             value={formData.license_plate}
             onChange={handleChange}
-            className="bg-[#203152] border-[#4895d0]/30"
+            className="bg-input border-input"
             placeholder="Enter license plate"
           />
         </div>
@@ -115,7 +115,7 @@ export default function RegisterVehicle({
             name="manufacturer"
             value={formData.manufacturer}
             onChange={handleChange}
-            className="bg-[#203152] border-[#4895d0]/30"
+            className="bg-input border-input"
             placeholder="Enter manufacturer"
           />
         </div>
@@ -128,7 +128,7 @@ export default function RegisterVehicle({
             name="model"
             value={formData.model}
             onChange={handleChange}
-            className="bg-[#203152] border-[#4895d0]/30"
+            className="bg-input border-input"
             placeholder="Enter model"
           />
         </div>
@@ -142,7 +142,7 @@ export default function RegisterVehicle({
             type="number"
             value={formData.year}
             onChange={handleChange}
-            className="bg-[#203152] border-[#4895d0]/30"
+            className="bg-input border-input"
             min="1900"
             max={new Date().getFullYear() + 1}
           />
@@ -165,7 +165,7 @@ export default function RegisterVehicle({
                   },
                 }))
               }
-              className="bg-[#203152] border-[#4895d0]/30"
+              className="bg-input border-input"
             />
             <Input
               placeholder="Width"
@@ -180,7 +180,7 @@ export default function RegisterVehicle({
                   },
                 }))
               }
-              className="bg-[#203152] border-[#4895d0]/30"
+              className="bg-input border-input"
             />
             <Input
               placeholder="Height"
@@ -195,7 +195,7 @@ export default function RegisterVehicle({
                   },
                 }))
               }
-              className="bg-[#203152] border-[#4895d0]/30"
+              className="bg-input border-input"
             />
           </div>
         </div>
@@ -212,8 +212,6 @@ export default function RegisterVehicle({
                 insurance_expiry: date || new Date(),
               }))
             }
-            className="bg-[#111827] text-[#f1f0f3] border-2 border-[#4895d0]/70 outline-none rounded-md"
-            popoverContentClassName="bg-[#111827] text-[#f1f0f3] border-2 border-[#4d5769]/20 outline-none rounded-md"
           />
         </div>
 
@@ -227,8 +225,6 @@ export default function RegisterVehicle({
                 next_maintenance_date: date || new Date(),
               }))
             }
-            className="bg-[#111827] text-[#f1f0f3] border-2 border-[#4895d0]/70 outline-none rounded-md"
-            popoverContentClassName="bg-[#111827] text-[#f1f0f3] border-2 border-[#4d5769]/20 outline-none rounded-md"
           />
         </div>
       </div>
@@ -254,7 +250,7 @@ export default function RegisterVehicle({
       <Button
         type="submit"
         disabled={isLoading}
-        className="w-full bg-[#4895d0] hover:bg-[#4895d0]/90"
+        className="w-full bg-primary hover:bg-primary/90"
       >
         {isLoading ? "Processing..." : "Register Vehicle"}
       </Button>
