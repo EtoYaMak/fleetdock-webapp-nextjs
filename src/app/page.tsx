@@ -6,6 +6,7 @@ import Loading from "./loading";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { membershipTiers } from "@/config/membershipTiers";
+import { FiTruck, FiPackage } from "react-icons/fi";
 
 // Keep your existing animation variants
 const containerVariants = {
@@ -37,36 +38,41 @@ const TierContent = function TierContent() {
 
   return (
     <motion.div
-      className="w-full max-w-6xl mx-auto px-4 mt-24"
+      className="w-full max-w-6xl mx-auto px-4 mt-24  bg-none"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
     >
-      {/* Role Toggle */}
+      {/* Updated Role Toggle */}
       <motion.div
-        className="flex justify-center gap-4 mb-12"
+        className="flex flex-col items-center gap-6 mb-12"
         variants={childVariants}
       >
-        <button
-          onClick={() => setSelectedRole("trucker")}
-          className={`px-6 py-2 rounded-full transition-all shadow-lg duration-300 font-medium ${
-            selectedRole === "trucker"
-              ? "bg-primary text-white shadow-primary/30 hover:shadow-primary/50 scale-105"
-              : "bg-secondary/10 hover:bg-secondary/20"
-          }`}
-        >
-          Trucker
-        </button>
-        <button
-          onClick={() => setSelectedRole("broker")}
-          className={`px-6 py-2 rounded-full transition-all shadow-lg duration-300 font-medium ${
-            selectedRole === "broker"
-              ? "bg-primary text-white shadow-primary/30 hover:shadow-primary/50 scale-105"
-              : "bg-secondary/10 hover:bg-secondary/20"
-          }`}
-        >
-          Broker
-        </button>
+        <h2 className="text-xl font-bold text-center mb-2 underline text-muted-foreground">
+          Choose Your Role
+        </h2>
+        <div className="flex gap-4">
+          <button
+            onClick={() => setSelectedRole("trucker")}
+            className={`px-8 py-3 rounded-xl transition-all shadow-lg duration-300 font-medium flex gap-3 items-center justify-center text-lg min-w-[160px] ${
+              selectedRole === "trucker"
+                ? "bg-primary text-white shadow-primary/30 hover:shadow-primary/50 scale-105"
+                : "bg-secondary/10 hover:bg-secondary/20"
+            }`}
+          >
+            <FiTruck size={24} /> Trucker
+          </button>
+          <button
+            onClick={() => setSelectedRole("broker")}
+            className={`px-8 py-3 rounded-xl transition-all shadow-lg duration-300 font-medium flex gap-3 items-center justify-center text-lg min-w-[160px] ${
+              selectedRole === "broker"
+                ? "bg-primary text-white shadow-primary/30 hover:shadow-primary/50 scale-105"
+                : "bg-secondary/10 hover:bg-secondary/20"
+            }`}
+          >
+            <FiPackage size={24} /> Broker
+          </button>
+        </div>
       </motion.div>
 
       {/* Pricing Cards */}
@@ -79,16 +85,30 @@ const TierContent = function TierContent() {
             <motion.div
               key={tier}
               variants={childVariants}
-              className={`rounded-2xl p-6 ${
-                tier === "premium"
-                  ? "bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20"
-                  : "bg-card"
-              } border shadow-lg hover:shadow-xl transition-all`}
+              className={`rounded-2xl p-6
+               ${
+                 tier === "professional"
+                   ? "bg-gradient-to-br from-primary/40 to-primary/20 border-primary/20"
+                   : "bg-card"
+               }
+               ${
+                 tier === "enterprise"
+                   ? "bg-gradient-to-br from-primary to-primary/60 border-primary/20 text-white"
+                   : "bg-card"
+               }
+                border shadow-lg hover:shadow-xl transition-all`}
             >
-              <h3 className="text-2xl font-bold capitalize mb-2">{tier}</h3>
+              <h3 className="text-2xl font-bold capitalize mb-2 flex items-center gap-2 justify-center">
+                {selectedRole === "trucker" ? <FiTruck /> : <FiPackage />}
+                {tier}
+              </h3>
               <div className="text-3xl font-bold mb-6">
                 ${details.price}
-                <span className="text-base font-normal text-muted-foreground">
+                <span
+                  className={`text-base font-normal text-muted-foreground ${
+                    tier === "enterprise" ? "text-white" : ""
+                  }`}
+                >
                   /month
                 </span>
               </div>
@@ -125,10 +145,10 @@ const TierContent = function TierContent() {
                         />
                       </svg>
                     )}
-                    <span className="capitalize">
+                    <span className="capitalize font-medium">
                       {feature.replace(/_/g, " ")}:{" "}
                     </span>
-                    <span className="font-medium">
+                    <span className="font-semibold">
                       {value === true
                         ? "Yes"
                         : value === false
@@ -140,12 +160,14 @@ const TierContent = function TierContent() {
               </ul>
 
               <Link
-                href="/signup"
-                className={`mt-6 w-full inline-block text-center px-6 py-3 rounded-xl ${
+                href={`/signup?role=${selectedRole}&tier=${tier}`}
+                className={`mt-6 w-full inline-block text-center px-6 py-3 rounded-xl font-semibold ${
                   tier === "enterprise"
                     ? "bg-primary text-white"
-                    : "bg-secondary/80 text-secondary-foreground hover:bg-secondary"
-                } transition-all`}
+                    : "bg-secondary/80 text-secondary-foreground hover:bg-secondary "
+                } 
+                
+                  transition-all`}
               >
                 Get Started
               </Link>
@@ -160,7 +182,7 @@ const TierContent = function TierContent() {
 const HeroContent = function HeroContent() {
   return (
     <motion.div
-      className="max-w-3xl mx-auto  select-none"
+      className="max-w-3xl mx-auto  select-none bg-none"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
@@ -207,8 +229,8 @@ export default function Home() {
   }, [user, router]);
 
   return (
-    <main className="min-h-screen">
-      <section className="container mx-auto px-6 py-20 text-center">
+    <main className="min-h-screen bg-gradient-to-br from-primary/10 to-background/5">
+      <section className="container mx-auto px-6 py-20 text-center bg-none">
         {!user && !isClient ? (
           <>
             <HeroContent />

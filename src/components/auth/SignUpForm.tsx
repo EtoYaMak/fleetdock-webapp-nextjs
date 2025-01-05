@@ -22,6 +22,12 @@ const SignUpForm = function SignUpForm() {
     full_name: "",
     role: "",
     phone: "",
+    membership_tier: "",
+    membership_status: "",
+    stripe_customer_id: "",
+    subscription_id: "",
+    subscription_end_date: "",
+    selectedTier: "starter" as "starter" | "professional" | "enterprise",
   });
   const [stageErrors, setStageErrors] = useState<string[]>(["", ""]);
   const [error, setError] = useState<string | null>(null);

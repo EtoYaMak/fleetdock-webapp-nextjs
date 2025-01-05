@@ -102,15 +102,9 @@ const Navbar = function Navbar() {
         <NavLink
           href="/signin"
           className="text-primary hover:bg-primary hover:text-primary-foreground px-4 py-2 
-          rounded-3xl text-sm font-medium uppercase transition-all duration-300"
+          rounded-3xl text-sm font-medium uppercase transition-all duration-200"
         >
           Sign In
-        </NavLink>
-        <NavLink
-          href="/signup"
-          className="text-primary hover:bg-primary hover:text-primary-foreground px-4 py-2 rounded-3xl text-sm font-medium uppercase transition-all duration-300"
-        >
-          Sign Up
         </NavLink>
       </div>
     );

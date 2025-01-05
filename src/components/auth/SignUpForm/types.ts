@@ -5,6 +5,12 @@ export interface FormData {
   full_name: string;
   role: string;
   phone: string;
+  membership_tier: string;
+  membership_status: string;
+  stripe_customer_id: string;
+  subscription_id: string;
+  subscription_end_date: string;
+  selectedTier: "starter" | "professional" | "enterprise";
 }
 
 export type SignUpStep = 'role-selection' | 'details';
