@@ -49,7 +49,12 @@ export default function DatePicker({
           {value ? formattedDate : <span>{placeholder}</span>}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className={cn("w-auto p-0", popoverContentClassName)}>
+      <PopoverContent
+        className={cn(
+          "w-auto p-0 pointer-events-auto",
+          popoverContentClassName
+        )}
+      >
         <Calendar
           mode="single"
           selected={value}

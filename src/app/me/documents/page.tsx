@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import DocumentUpload from "../components/DocumentUpload";
+import DocumentUpload from "@/app/me/documents/components/DocumentUpload";
 import { useProfileSidebar } from "../layout";
 import { TruckerDetails } from "@/types/trucker";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
