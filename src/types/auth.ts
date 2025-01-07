@@ -4,6 +4,11 @@ export interface User {
   role: string;
   full_name: string;
   phone: string;
+  membership_tier: string | null;
+  membership_status: string | null;
+  stripe_customer_id?: string | null;
+  subscription_id?: string | null;
+  subscription_end_date?: string | null;
   avatar?: string | null;
   is_active: boolean;
   company_name: string | null;

@@ -16,6 +16,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { useAuth } from "@/context/AuthContext";
+import { useFeatureAccess } from "@/hooks/useFeatureAccess";
+import { useToast } from "@/hooks/use-toast";
 
 const BrokerDashboard = ({
   loads,
@@ -30,8 +32,15 @@ const BrokerDashboard = ({
 }) => {
   const router = useRouter();
   const { user } = useAuth();
-  // Filter loads for current broker
-  const brokerLoads = loads.filter((load) => load.broker_id === user?.id);
+  const { checkAccess } = useFeatureAccess();
+  const { toast } = useToast();
+  // Filter loads for current broker and sort by latest pickup date
+  const brokerLoads = loads
+    .filter((load) => load.broker_id === user?.id)
+    .sort(
+      (a, b) =>
+        new Date(b.pickup_date).getTime() - new Date(a.pickup_date).getTime()
+    );
   // Stats calculation
   const stats = {
     totalLoads: brokerLoads.length,
@@ -45,8 +54,18 @@ const BrokerDashboard = ({
     router.push(`/dashboard/loads/${loadId}`);
   };
 
-  const handleCreate = () => {
-    router.push("/dashboard/loads/create");
+  const handleCreate = async () => {
+    const canCreate = await checkAccess("load_posts_per_month");
+    console.log(canCreate);
+    if (canCreate) {
+      router.push("/dashboard/loads/create");
+    } else {
+      toast({
+        title: "You have reached your limit for creating loads.",
+        description: "Please upgrade your plan to create more loads.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleEdit = (loadId: string) => {
@@ -83,6 +102,7 @@ const BrokerDashboard = ({
       {/* Header */}
       <div className="flex justify-end items-center">
         {/*  <h1 className="text-xl font-bold">Loads Dashboard</h1> */}
+
         <Button onClick={handleCreate} variant="default" className="text-white">
           <FiPlus className="mr-2 h-5 w-5" />
           Create New Load

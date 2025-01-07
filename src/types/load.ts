@@ -29,6 +29,8 @@ export interface Load {
   created_at?: Date; // Timestamp
   updated_at?: Date; // Timestamp
 }
+
+
 export interface Dimensions {
   length: number;
   width: number;
