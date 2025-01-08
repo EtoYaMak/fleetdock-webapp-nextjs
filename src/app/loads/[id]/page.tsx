@@ -11,15 +11,6 @@ import { useAuth } from "@/context/AuthContext";
 import { useBids } from "@/hooks/useBids";
 import { User } from "@/types/auth";
 import BidsContainer from "@/components/bids/bidsContainer";
-import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from "@/components/ui/drawer";
 
 import { TripCalculatorRes } from "@/components/ui/TripCalculatorRes";
 
@@ -39,6 +30,7 @@ export default function ViewLoad({
   const [load, setLoad] = useState<Load | null>(null);
   const [id, setId] = useState<string | null>(null);
   const router = useRouter();
+
   const {
     bids,
     isLoading: bidsLoading,
@@ -77,7 +69,7 @@ export default function ViewLoad({
       {/* Header Section */}
       <div className="flex justify-between items-center mb-8 bg-transparent">
         <Button variant="outline1" onClick={() => router.back()}>
-          <FiArrowLeft className="mr-2" /> Back to Loads
+          <FiArrowLeft className="mr-2" /> Back
         </Button>
         {user?.role === "admin" || user?.id === load?.broker_id ? (
           <Button

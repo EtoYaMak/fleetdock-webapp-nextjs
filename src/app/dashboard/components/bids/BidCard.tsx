@@ -15,9 +15,10 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
-
+import { useRouter } from "next/navigation";
 const BidCard = ({ bid }: { bid: Bid }) => {
   const { deleteBid } = useBids();
+  const router = useRouter();
 
   const handleDelete = () => {
     deleteBid(bid.id as string);
@@ -38,9 +39,14 @@ const BidCard = ({ bid }: { bid: Bid }) => {
             <span className="text-xs font-medium text-muted-foreground">
               Load ID
             </span>
-            <span className="font-mono text-sm font-medium">
+            <Button
+              variant="ghost"
+              size="lg"
+              className="font-mono text-sm"
+              onClick={() => router.push(`/loads/${bid.load_id}`)}
+            >
               {bid.load_id.slice(0, 8)}
-            </span>
+            </Button>
           </div>
 
           <div className="flex flex-col gap-1">

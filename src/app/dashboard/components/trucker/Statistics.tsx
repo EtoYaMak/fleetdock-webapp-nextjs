@@ -10,9 +10,12 @@ const Statistics = ({
   pendingBids: any[];
   rejectedBids: any[];
 }) => {
+  const currentMonth = new Date().toLocaleDateString("en-US", {
+    month: "short",
+  });
   const chartData = [
     {
-      month: "Current Period",
+      month: currentMonth,
       accepted: acceptedBids.length,
       pending: pendingBids.length,
       rejected: rejectedBids.length,
@@ -35,8 +38,8 @@ const Statistics = ({
   };
 
   return (
-        <BarChartWithLegends
-          data={chartData}
+    <BarChartWithLegends
+      data={chartData}
       config={chartConfig}
       title="Bids Statistics"
       description="Your recent bids"

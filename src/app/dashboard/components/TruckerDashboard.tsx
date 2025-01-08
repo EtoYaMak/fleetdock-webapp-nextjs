@@ -8,7 +8,6 @@ import {
   usePendingBids,
   useRejectedBids,
 } from "@/hooks/useTruckerDash";
-import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 import { useProfile } from "@/hooks/useProfile";
 import { FiTruck, FiClock, FiCheck, FiX } from "react-icons/fi";
 import { membershipTiers } from "@/config/membershipTiers";
@@ -17,7 +16,6 @@ const TruckerDashboard = ({ user }: { user: User }) => {
   const { acceptedBids } = useAcceptedBids();
   const { pendingBids } = usePendingBids();
   const { rejectedBids } = useRejectedBids();
-  const { checkAccess } = useFeatureAccess();
   const { profile } = useProfile();
 
   // Get tier limits
@@ -44,10 +42,14 @@ const TruckerDashboard = ({ user }: { user: User }) => {
       title: "Active Bids",
       value: acceptedBids.length,
       icon: <FiCheck className="h-4 w-4" />,
-      description: formatLimit(
-        acceptedBids.length,
-        tierLimits?.active_loads || 0
-      ),
+      description:
+        acceptedBids.length === tierLimits?.active_loads ? (
+          <span>
+            ⚠️ {acceptedBids.length} / {tierLimits.active_loads}{" "}
+          </span>
+        ) : (
+          formatLimit(acceptedBids.length, tierLimits?.active_loads || 0)
+        ),
     },
     {
       title: "Pending Bids",
@@ -65,11 +67,11 @@ const TruckerDashboard = ({ user }: { user: User }) => {
 
   return (
     <div className="flex-1 space-y-6 p-8 pt-6">
-      <div className="flex items-center justify-between space-y-2">
+      {/* <div className="flex items-center justify-between space-y-2">
         <h2 className="text-3xl font-bold tracking-tight">
           Welcome back, {user?.full_name}!
         </h2>
-      </div>
+      </div> */}
 
       {/* Membership Card */}
       <Card className="bg-gradient-to-br from-primary/10 via-primary/5 to-background border-primary/10">
@@ -82,24 +84,66 @@ const TruckerDashboard = ({ user }: { user: User }) => {
           <div className="space-y-2">
             <p className="text-sm text-muted-foreground">Current Tier</p>
             <p className="text-2xl font-semibold capitalize">
-              {profile?.membership_tier}
+              {profile?.membership_tier
+                ? profile.membership_tier
+                : "Loading..."}
             </p>
           </div>
           <div className="space-y-2">
             <p className="text-sm text-muted-foreground">Bids Available</p>
-            <p className="text-2xl font-semibold">
-              {tierLimits
-                ? formatLimit(pendingBids.length, tierLimits.bids_per_month)
-                : "Loading..."}
-            </p>
+            <span className="text-2xl font-semibold">
+              {tierLimits ? (
+                <div>
+                  {acceptedBids.length +
+                    pendingBids.length +
+                    rejectedBids.length ===
+                  tierLimits.bids_per_month ? (
+                    <span>
+                      ⚠️{" "}
+                      {acceptedBids.length +
+                        pendingBids.length +
+                        rejectedBids.length}{" "}
+                      / {tierLimits.bids_per_month}{" "}
+                      <p className="text-sm">(Limit Reached)</p>{" "}
+                      <p className="text-sm">
+                        You cannot place anymore bids.
+                      </p>
+                    </span>
+                  ) : (
+                    formatLimit(
+                      acceptedBids.length +
+                        pendingBids.length +
+                        rejectedBids.length,
+                      tierLimits.bids_per_month
+                    )
+                  )}
+                </div>
+              ) : (
+                "Loading..."
+              )}
+            </span>
           </div>
           <div className="space-y-2">
             <p className="text-sm text-muted-foreground">Active Loads</p>
-            <p className="text-2xl font-semibold">
-              {tierLimits
-                ? formatLimit(acceptedBids.length, tierLimits.active_loads)
-                : "Loading..."}
-            </p>
+            <span className="text-2xl font-semibold">
+              {tierLimits ? (
+                <div>
+                  {acceptedBids.length === tierLimits.active_loads ? (
+                    <span>
+                      ⚠️ {acceptedBids.length} / {tierLimits.active_loads}{" "}
+                      <p className="text-sm">(Limit Reached)</p>{" "}
+                      <p className="text-xs text-primary font-light font-mono">
+                        Your <i>PENDING</i> bids will not be accepted.
+                      </p>
+                    </span>
+                  ) : (
+                    formatLimit(acceptedBids.length, tierLimits.active_loads)
+                  )}
+                </div>
+              ) : (
+                "Loading..."
+              )}
+            </span>
           </div>
         </CardContent>
       </Card>
@@ -134,7 +178,7 @@ const TruckerDashboard = ({ user }: { user: User }) => {
           />
         </div>
 
-        <div>
+        <div className="col-span-3">
           <MyBids />
         </div>
       </div>
@@ -142,4 +186,4 @@ const TruckerDashboard = ({ user }: { user: User }) => {
   );
 };
 
-export default memo(TruckerDashboard);
+export default TruckerDashboard;

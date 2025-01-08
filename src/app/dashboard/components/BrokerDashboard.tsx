@@ -17,7 +17,6 @@ import { format } from "date-fns";
 import { useAuth } from "@/context/AuthContext";
 import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 import { useToast } from "@/hooks/use-toast";
-
 const BrokerDashboard = ({
   loads,
   isLoading,
@@ -29,11 +28,12 @@ const BrokerDashboard = ({
   error: string;
   deleteLoad: (loadId: string) => Promise<void>;
 }) => {
-  const router = useRouter();
   const { user } = useAuth();
-  const { toast } = useToast();
+  const router = useRouter();
   const { checkAccess } = useFeatureAccess();
-  // Filter loads for current broker and sort by latest pickup date
+  const { toast } = useToast();
+  //get Current Month in format Jan etc
+  const currentMonth = format(new Date(), "MMM");
   const brokerLoads = loads
     .filter((load) => load.broker_id === user?.id)
     .sort(
@@ -47,6 +47,11 @@ const BrokerDashboard = ({
       (load) => load.load_status === LoadStatus.ACCEPTED
     ).length,
     biddingLoads: brokerLoads.filter((load) => load.bid_enabled).length,
+    [`${currentMonth}'s Loads`]: brokerLoads.filter(
+      (load) =>
+        new Date(load.pickup_date).getMonth() === new Date().getMonth() &&
+        new Date(load.pickup_date).getFullYear() === new Date().getFullYear()
+    ).length,
   };
 
   const handleView = (loadId: string) => {

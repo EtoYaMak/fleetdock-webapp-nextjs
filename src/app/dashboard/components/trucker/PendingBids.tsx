@@ -56,4 +56,4 @@ const PendingBids = ({
   );
 };
 
-export default memo(PendingBids);
+export default PendingBids;

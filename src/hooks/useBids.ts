@@ -17,11 +17,14 @@ import { useState, useEffect, useCallback } from "react";
 import { Bid, NewBid } from "@/types/bid";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
+import { useFeatureAccess } from "@/hooks/useFeatureAccess";
+
 export const useBids = (loadId?: string) => {
   const [bids, setBids] = useState<Bid[]>([]);
   const [isLoading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
+  const { checkAccess } = useFeatureAccess();
 
   // Fetch bids for a specific load
   const fetchBids = useCallback(async () => {
@@ -161,6 +164,27 @@ export const useBids = (loadId?: string) => {
     async (id: string) => {
       setLoading(true);
       try {
+        // First, get the bid details to check trucker_id
+        const { data: bidData, error: bidError } = await supabase
+          .from("bids")
+          .select("*")
+          .eq("id", id)
+          .single();
+
+        if (bidError) throw bidError;
+
+        // Check if trucker has reached their active load limit
+        const canAcceptMoreLoads = await checkAccess(
+          "active_loads",
+          bidData.trucker_id
+        );
+        if (!canAcceptMoreLoads) {
+          throw new Error(
+            "Trucker has reached their maximum active loads limit"
+          );
+        }
+
+        // If check passes, proceed with accepting the bid
         const { data, error } = await supabase
           .from("bids")
           .update({ bid_status: "accepted" })
@@ -175,8 +199,6 @@ export const useBids = (loadId?: string) => {
 
         if (error) throw error;
 
-        // The trigger function will handle rejecting other bids
-        // We just need to update the UI for the accepted bid
         setBids((prev) =>
           prev.map((bid) =>
             bid.id === id ? { ...bid, bid_status: "accepted" } : bid
@@ -192,7 +214,11 @@ export const useBids = (loadId?: string) => {
         setError(error.message);
         toast({
           title: "Error",
-          description: "Failed to accept bid",
+          description:
+            error.message ===
+            "Trucker has reached their maximum active loads limit"
+              ? "Cannot accept bid: Trucker has reached their maximum active loads limit"
+              : "Failed to accept bid",
           variant: "destructive",
         });
         return null;
@@ -200,7 +226,7 @@ export const useBids = (loadId?: string) => {
         setLoading(false);
       }
     },
-    [toast]
+    [toast, checkAccess]
   );
 
   // Reject a bid

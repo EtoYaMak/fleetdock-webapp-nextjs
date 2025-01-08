@@ -41,7 +41,7 @@ const Navbar = function Navbar() {
 
   //tier pill colors
   const tierColors = {
-    starter: "bg-primary/80 rounded-full px-2 text-white shadow-md",
+    starter: "text-white",
     professional: "bg-primary/90 rounded-full px-2 text-white  shadow-md",
     enterprise: "bg-primary rounded-full px-2 text-white shadow-md",
   };
@@ -49,8 +49,6 @@ const Navbar = function Navbar() {
   useEffect(() => {
     setMounted(true);
   }, []);
-
-  console.log(user);
 
   // Memoize navigation items based on user state
   const navigationItems = useMemo(() => {
@@ -130,7 +128,7 @@ const Navbar = function Navbar() {
             >
               FleetDock{" "}
               <span
-                className={`text-[0.55rem] ${
+                className={`text-[0.55rem] p-0 ${
                   tierColors[user?.membership_tier as keyof typeof tierColors]
                 } ml-1 uppercase`}
               >

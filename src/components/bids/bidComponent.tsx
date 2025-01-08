@@ -53,7 +53,6 @@ export default function BidComponent({
   const { checkAccess } = useFeatureAccess();
   const [canPlaceBid, setCanPlaceBid] = useState(true);
   const [isShaking, setIsShaking] = useState(false);
-
   useEffect(() => {
     if (showBidCard) {
       setBidAmount(bid?.bid_amount || 0);
@@ -92,7 +91,7 @@ export default function BidComponent({
           description: `Your bid of $${bidAmount} has been updated.`,
         });
       } else {
-        // API call to create new bid
+        // Check if the user has reached their bid limit for this month
         const canPlaceBid = await checkAccess("bids_per_month");
         if (!canPlaceBid) {
           toast({
@@ -102,6 +101,7 @@ export default function BidComponent({
           });
           return;
         }
+        // API call to create new bid
         await createBid({
           ...placeholderBid,
           bid_amount: bidAmount,
@@ -123,7 +123,23 @@ export default function BidComponent({
 
   const handleAcceptBid = async () => {
     try {
-      // API call to accept bid
+      // Check if trucker has reached their active load limit
+      const canAcceptMoreLoads = await checkAccess(
+        "active_loads",
+        bid?.trucker_id
+      );
+      console.log("bid?.trucker_id at acceptBid", bid?.trucker_id);
+      if (!canAcceptMoreLoads) {
+        toast({
+          title: "Cannot Accept Bid",
+          description:
+            "This trucker has reached their maximum allowed active loads.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Proceed with accepting the bid
       await bidActions.acceptBid(bid?.id || "");
       toast({
         title: "Bid Accepted",

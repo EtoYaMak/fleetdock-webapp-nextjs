@@ -5,13 +5,42 @@ import { useProfile } from "@/hooks/useProfile";
 export const useFeatureAccess = () => {
   const { profile } = useProfile();
 
-  const checkAccess = async (feature: string): Promise<boolean> => {
-    if (!profile || !profile.role || !profile.membership_tier) {
+  const checkAccess = async (
+    feature: string,
+    userId?: string
+  ): Promise<boolean> => {
+    let targetProfile;
+    console.log("userId at checkAccess", userId);
+    if (userId && userId !== profile?.id) {
+      // Fetch the target user's profile if a userId is provided
+      const { data: userProfile, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", userId)
+        .single();
+
+      if (error || !userProfile) {
+        console.error("Error fetching user profile:", error);
+        return false;
+      }
+
+      targetProfile = userProfile;
+      console.log("targetProfile at checkAccess", targetProfile);
+    } else {
+      // Use the current user's profile
+      targetProfile = profile;
+    }
+
+    if (
+      !targetProfile ||
+      !targetProfile.role ||
+      !targetProfile.membership_tier
+    ) {
       console.error("Profile, role, or membership tier is not loaded.");
       return false;
     }
 
-    const { role, membership_tier } = profile;
+    const { role, membership_tier } = targetProfile;
 
     // Log the values to verify
     console.log("Checking access:", {
@@ -70,15 +99,24 @@ export const useFeatureAccess = () => {
       let tableName: string | null = null;
       let filterColumn: string | null = null;
       let additionalFilters: Record<string, any> = {};
-      // Define table and column mappings for features
+
       switch (feature) {
         case "load_posts_per_month":
           tableName = "loads";
           filterColumn = "broker_id";
           break;
         case "active_loads":
-          tableName = "loads";
-          filterColumn = "broker_id";
+          // For truckers, we count their accepted bids
+          if (targetProfile.role === "trucker") {
+            tableName = "bids";
+            filterColumn = "trucker_id";
+            additionalFilters = { bid_status: "accepted" };
+          } else {
+            // For brokers, we count their active loads
+            tableName = "loads";
+            filterColumn = "broker_id";
+            additionalFilters = { status: "active" };
+          }
           break;
         case "bids_per_month":
           tableName = "bids";
@@ -87,7 +125,7 @@ export const useFeatureAccess = () => {
         case "active_bids":
           tableName = "bids";
           filterColumn = "trucker_id";
-          additionalFilters = { bid_status: "ACCEPTED" };
+          additionalFilters = { bid_status: "accepted" };
           break;
         default:
           console.error(`No table mapping found for feature: ${feature}`);
@@ -95,18 +133,35 @@ export const useFeatureAccess = () => {
       }
 
       if (tableName && filterColumn) {
-        // Query the database for feature usage
-        const { count, error } = await supabase
+        // Build the query with additional filters
+        let query = supabase
           .from(tableName)
           .select("*", { count: "exact" })
-          .eq(filterColumn, profile?.id)
-          .gte("created_at", startOfMonth); // Fix the timestamp filter
+          .eq(filterColumn, targetProfile.id);
+
+        // Apply any additional filters
+        Object.entries(additionalFilters).forEach(([key, value]) => {
+          query = query.eq(key, value);
+        });
+
+        // Add date filter for monthly features
+        if (feature.includes("_per_month")) {
+          query = query.gte("created_at", startOfMonth);
+        }
+
+        const { count, error } = await query;
 
         if (error) {
           console.error(`Error querying ${tableName}:`, error);
           return false;
         }
 
+        console.log(
+          `Current count for ${feature}:`,
+          count,
+          `Limit:`,
+          featureLimit
+        );
         return count !== null && count < (featureLimit as number);
       }
     }
@@ -114,8 +169,8 @@ export const useFeatureAccess = () => {
     // If feature configuration is not recognized, deny access
     console.error(
       `Invalid feature configuration for feature: ${feature} ${
-        profile?.id.split("-")[0]
-      } ${profile?.role} ${profile?.membership_tier}`
+        targetProfile.id.split("-")[0]
+      } ${targetProfile.role} ${targetProfile.membership_tier}`
     );
     return false;
   };

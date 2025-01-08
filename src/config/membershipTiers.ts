@@ -47,7 +47,7 @@ export const membershipTiers = {
   broker: {
     starter: {
       features: {
-        load_posts_per_month: 5,
+        load_posts_per_month:10,
         active_loads: 2,
         carrier_verification: false,
         automated_matching: false,

@@ -26,7 +26,7 @@ const InvalidRole = memo(function InvalidRole() {
   );
 });
 
-const Dashboard = memo(function Dashboard() {
+const Dashboard = function Dashboard() {
   const { user } = useAuth();
   const { loads, isLoading, error, deleteLoad } = useLoads();
   if (isLoading) {
@@ -54,6 +54,6 @@ const Dashboard = memo(function Dashboard() {
   return (
     roleComponents[user.role as keyof typeof roleComponents] || <InvalidRole />
   );
-});
+};
 
 export default Dashboard;

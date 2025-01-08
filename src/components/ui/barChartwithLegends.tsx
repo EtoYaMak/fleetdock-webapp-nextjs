@@ -80,7 +80,7 @@ export function Component({
         </ChartContainer>
       </CardContent>
       {(trendingValue || footerText) && (
-        <CardFooter className="flex-col items-start gap-2 text-sm">
+        <CardFooter className="flex-col items-start gap-2 text-md">
           {trendingValue && (
             <div className="flex gap-2 font-medium leading-none">
               Trending {trendingValue > 0 ? "up" : "down"} by{" "}
