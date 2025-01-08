@@ -1,5 +1,4 @@
 "use client";
-import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FiPlus, FiTrash2, FiEdit2, FiEye } from "react-icons/fi";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
@@ -32,8 +31,8 @@ const BrokerDashboard = ({
 }) => {
   const router = useRouter();
   const { user } = useAuth();
-  const { checkAccess } = useFeatureAccess();
   const { toast } = useToast();
+  const { checkAccess } = useFeatureAccess();
   // Filter loads for current broker and sort by latest pickup date
   const brokerLoads = loads
     .filter((load) => load.broker_id === user?.id)
@@ -56,7 +55,6 @@ const BrokerDashboard = ({
 
   const handleCreate = async () => {
     const canCreate = await checkAccess("load_posts_per_month");
-    console.log(canCreate);
     if (canCreate) {
       router.push("/dashboard/loads/create");
     } else {

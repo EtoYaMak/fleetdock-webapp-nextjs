@@ -2,35 +2,151 @@ import React, { memo } from "react";
 import { User } from "@/types/auth";
 import MyBids from "./trucker/MyBids";
 import Statistics from "./trucker/Statistics";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   useAcceptedBids,
   usePendingBids,
   useRejectedBids,
 } from "@/hooks/useTruckerDash";
+import { useFeatureAccess } from "@/hooks/useFeatureAccess";
+import { useProfile } from "@/hooks/useProfile";
+import { FiTruck, FiClock, FiCheck, FiX } from "react-icons/fi";
+import { membershipTiers } from "@/config/membershipTiers";
 
 const TruckerDashboard = ({ user }: { user: User }) => {
   const { acceptedBids } = useAcceptedBids();
   const { pendingBids } = usePendingBids();
   const { rejectedBids } = useRejectedBids();
+  const { checkAccess } = useFeatureAccess();
+  const { profile } = useProfile();
+
+  // Get tier limits
+  const tierLimits = profile?.membership_tier
+    ? membershipTiers.trucker[
+        profile.membership_tier as keyof typeof membershipTiers.trucker
+      ].features
+    : null;
+
+  const formatLimit = (used: number, limit: number | string) => {
+    if (limit === "unlimited") return `${used} / Unlimited`;
+    return `${used} / ${limit}`;
+  };
+
+  // Calculate stats
+  const stats = [
+    {
+      title: "Total Bids",
+      value: pendingBids.length + acceptedBids.length + rejectedBids.length,
+      icon: <FiTruck className="h-4 w-4" />,
+      description: "All time bids placed",
+    },
+    {
+      title: "Active Bids",
+      value: acceptedBids.length,
+      icon: <FiCheck className="h-4 w-4" />,
+      description: formatLimit(
+        acceptedBids.length,
+        tierLimits?.active_loads || 0
+      ),
+    },
+    {
+      title: "Pending Bids",
+      value: pendingBids.length,
+      icon: <FiClock className="h-4 w-4" />,
+      description: "Awaiting response",
+    },
+    {
+      title: "Rejected Bids",
+      value: rejectedBids.length,
+      icon: <FiX className="h-4 w-4" />,
+      description: "Not accepted",
+    },
+  ];
 
   return (
-    <div className="min-h-screen">
-      {/* Welcome Section */}
-      <header className="mb-4">
-        <p className="text-lg text-center">
-          Here's an overview of your activities.
-        </p>
-      </header>
+    <div className="flex-1 space-y-6 p-8 pt-6">
+      <div className="flex items-center justify-between space-y-2">
+        <h2 className="text-3xl font-bold tracking-tight">
+          Welcome back, {user?.full_name}!
+        </h2>
+      </div>
 
-      {/* Statistics Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8 px-8">
-        <Statistics
-          acceptedBids={acceptedBids}
-          pendingBids={pendingBids}
-          rejectedBids={rejectedBids}
-        />
+      {/* Membership Card */}
+      <Card className="bg-gradient-to-br from-primary/10 via-primary/5 to-background border-primary/10">
+        <CardHeader>
+          <CardTitle className="text-lg font-medium">
+            Membership Details
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-4 md:grid-cols-3">
+          <div className="space-y-2">
+            <p className="text-sm text-muted-foreground">Current Tier</p>
+            <p className="text-2xl font-semibold capitalize">
+              {profile?.membership_tier}
+            </p>
+          </div>
+          <div className="space-y-2">
+            <p className="text-sm text-muted-foreground">Bids Available</p>
+            <p className="text-2xl font-semibold">
+              {tierLimits
+                ? formatLimit(pendingBids.length, tierLimits.bids_per_month)
+                : "Loading..."}
+            </p>
+          </div>
+          <div className="space-y-2">
+            <p className="text-sm text-muted-foreground">Active Loads</p>
+            <p className="text-2xl font-semibold">
+              {tierLimits
+                ? formatLimit(acceptedBids.length, tierLimits.active_loads)
+                : "Loading..."}
+            </p>
+          </div>
+        </CardContent>
+      </Card>
 
-        <MyBids />
+      {/* Stats Grid */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {stats.map((stat) => (
+          <Card key={stat.title}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                {stat.title}
+              </CardTitle>
+              <div className="h-4 w-4 text-muted-foreground">{stat.icon}</div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stat.value}</div>
+              <p className="text-xs text-muted-foreground">
+                {stat.description}
+              </p>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* Main Content */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+        <Card className="col-span-4">
+          <CardHeader>
+            <CardTitle>Bid Statistics</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Statistics
+              acceptedBids={acceptedBids}
+              pendingBids={pendingBids}
+              rejectedBids={rejectedBids}
+            />
+          </CardContent>
+        </Card>
+
+        <Card className="col-span-3">
+          <CardHeader>
+            <CardTitle>Recent Bids</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <MyBids />
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

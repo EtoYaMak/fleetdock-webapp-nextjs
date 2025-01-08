@@ -1,11 +1,9 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { Load } from "@/types/load";
 import { supabase } from "@/lib/supabase";
-import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 import { useToast } from "@/hooks/use-toast";
 
 export const useLoads = () => {
-  const { checkAccess } = useFeatureAccess();
   const { toast } = useToast();
   const [loads, setLoads] = useState<Load[]>([]);
   const [isLoading, setLoading] = useState<boolean>(false);

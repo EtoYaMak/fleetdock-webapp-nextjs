@@ -8,6 +8,7 @@ import { useLoads } from "@/hooks/useLoads";
 import { User } from "@/types/auth";
 import { Load } from "@/types/load";
 import { useAuth } from "@/context/AuthContext";
+
 const InvalidRole = memo(function InvalidRole() {
   return (
     <div className="min-h-screen bg-[#203152] flex flex-col justify-center py-12 sm:px-6 lg:px-8">

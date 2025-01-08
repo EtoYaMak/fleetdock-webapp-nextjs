@@ -4,7 +4,7 @@ export const membershipTiers = {
     starter: {
       features: {
         load_board_access: true,
-        bids_per_month: 10,
+        bids_per_month: 2,
         active_loads: 2,
         real_time_tracking: false,
         doc_management: false,

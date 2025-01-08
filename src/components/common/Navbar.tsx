@@ -39,9 +39,18 @@ const Navbar = function Navbar() {
   const { signOut } = useAuth();
   const [mounted, setMounted] = useState(false);
 
+  //tier pill colors
+  const tierColors = {
+    starter: "bg-primary/80 rounded-full px-2 text-white shadow-md",
+    professional: "bg-primary/90 rounded-full px-2 text-white  shadow-md",
+    enterprise: "bg-primary rounded-full px-2 text-white shadow-md",
+  };
+
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  console.log(user);
 
   // Memoize navigation items based on user state
   const navigationItems = useMemo(() => {
@@ -119,7 +128,14 @@ const Navbar = function Navbar() {
               href={user && user?.role ? "/dashboard" : "/"}
               className="flex items-center px-2 text-primary font-bold text-xl"
             >
-              FleetDock
+              FleetDock{" "}
+              <span
+                className={`text-[0.55rem] ${
+                  tierColors[user?.membership_tier as keyof typeof tierColors]
+                } ml-1 uppercase`}
+              >
+                {user?.membership_tier}
+              </span>
             </NavLink>
           </div>
           {!loading ? (

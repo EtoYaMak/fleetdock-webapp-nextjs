@@ -8,7 +8,6 @@ import { useBids } from "@/hooks/useBids";
 import { User } from "@/types/auth";
 import { FiDollarSign, FiCheck, FiX, FiEdit2, FiTrash2 } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
-import { TripCostCalculator } from "@/components/ui/TripCostCalculator";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,11 +19,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 
 interface BidComponentProps {
   bid?: Bid;
@@ -55,6 +50,9 @@ export default function BidComponent({
   const [isEditing, setIsEditing] = useState<boolean>(!bid);
   const { toast } = useToast();
   const { createBid, updateBid } = useBids();
+  const { checkAccess } = useFeatureAccess();
+  const [canPlaceBid, setCanPlaceBid] = useState(true);
+  const [isShaking, setIsShaking] = useState(false);
 
   useEffect(() => {
     if (showBidCard) {
@@ -76,6 +74,16 @@ export default function BidComponent({
   const handleSubmitBid = async () => {
     try {
       // If editing existing bid
+      if (bidAmount <= 0) {
+        setIsShaking(true);
+        setTimeout(() => setIsShaking(false), 900); // Reset after animation
+        toast({
+          title: "Error",
+          description: "Bid amount must be greater than 0.",
+          variant: "destructive",
+        });
+        return;
+      }
       if (bid) {
         // API call to update bid
         await updateBid(bid.id as string, { bid_amount: bidAmount });
@@ -85,6 +93,15 @@ export default function BidComponent({
         });
       } else {
         // API call to create new bid
+        const canPlaceBid = await checkAccess("bids_per_month");
+        if (!canPlaceBid) {
+          toast({
+            title: "Error",
+            description: "You have reached your bid limit for this month.",
+            variant: "destructive",
+          });
+          return;
+        }
         await createBid({
           ...placeholderBid,
           bid_amount: bidAmount,
@@ -258,13 +275,17 @@ export default function BidComponent({
               <div className="flex-1">
                 {isEditing ? (
                   <div className="flex items-center gap-2">
-                    <div className="relative">
+                    <div
+                      className={`relative ${isShaking ? "animate-shake" : ""}`}
+                    >
                       <FiDollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
                       <Input
                         type="number"
                         value={bidAmount}
                         onChange={(e) => setBidAmount(Number(e.target.value))}
-                        className="pl-8 h-10 w-40 border-gray-200 focus:ring-2 focus:ring-blue-500"
+                        className={`pl-8 h-10 w-40 border-gray-200 focus:ring-2 focus:ring-blue-500 ${
+                          isShaking ? "ring-2 ring-red-500" : ""
+                        }`}
                       />
                     </div>
                   </div>

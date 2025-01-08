@@ -216,7 +216,6 @@ const HeroContent = function HeroContent() {
 export default function Home() {
   const { user } = useAuth();
   const router = useRouter();
-
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
