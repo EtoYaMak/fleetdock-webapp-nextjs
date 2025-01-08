@@ -126,27 +126,17 @@ const TruckerDashboard = ({ user }: { user: User }) => {
 
       {/* Main Content */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <Card className="col-span-4">
-          <CardHeader>
-            <CardTitle>Bid Statistics</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Statistics
-              acceptedBids={acceptedBids}
-              pendingBids={pendingBids}
-              rejectedBids={rejectedBids}
-            />
-          </CardContent>
-        </Card>
+        <div className="col-span-4">
+          <Statistics
+            acceptedBids={acceptedBids}
+            pendingBids={pendingBids}
+            rejectedBids={rejectedBids}
+          />
+        </div>
 
-        <Card className="col-span-3">
-          <CardHeader>
-            <CardTitle>Recent Bids</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <MyBids />
-          </CardContent>
-        </Card>
+        <div>
+          <MyBids />
+        </div>
       </div>
     </div>
   );

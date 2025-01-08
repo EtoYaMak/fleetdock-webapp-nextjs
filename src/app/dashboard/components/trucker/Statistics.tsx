@@ -1,3 +1,4 @@
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Component as BarChartWithLegends } from "@/components/ui/barChartwithLegends";
 
 const Statistics = ({
@@ -21,23 +22,24 @@ const Statistics = ({
   const chartConfig = {
     accepted: {
       label: "Accepted",
-      color: "hsl(142, 76%, 36%)", // Green
+      color: "hsl(142, 76%, 36%)",
     },
     pending: {
       label: "Pending",
-      color: "hsl(48, 96%, 53%)", // Yellow
+      color: "hsl(48, 96%, 53%)",
     },
     rejected: {
       label: "Rejected",
-      color: "hsl(0, 84%, 60%)", // Red
+      color: "hsl(0, 84%, 60%)",
     },
   };
 
   return (
-    <BarChartWithLegends
-      data={chartData}
+        <BarChartWithLegends
+          data={chartData}
       config={chartConfig}
-      title="Your Bids Statistics"
+      title="Bids Statistics"
+      description="Your recent bids"
     />
   );
 };
