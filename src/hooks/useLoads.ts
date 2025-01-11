@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { Load } from "@/types/load";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
+import { notifyLoadStatusChange } from "@/utils/loadNotifications";
 
 export const useLoads = () => {
   const { toast } = useToast();
@@ -97,6 +98,24 @@ export const useLoads = () => {
     }
   }, []);
 
+  // When updating a load's status
+  const updateLoadStatus = async (
+    loadId: string,
+    status: string,
+    truckerId: string
+  ) => {
+    // Your existing load update logic
+    const { error } = await supabase
+      .from("loads")
+      .update({ status: status })
+      .eq("id", loadId);
+
+    if (!error) {
+      // Create notification after successful status update
+      await notifyLoadStatusChange(truckerId, loadId, status);
+    }
+  };
+
   useEffect(() => {
     fetchLoads();
   }, [fetchLoads]);
@@ -110,7 +129,16 @@ export const useLoads = () => {
       createLoad,
       updateLoad,
       deleteLoad,
+      updateLoadStatus,
     }),
-    [loads, isLoading, error, createLoad, updateLoad, deleteLoad]
+    [
+      loads,
+      isLoading,
+      error,
+      createLoad,
+      updateLoad,
+      deleteLoad,
+      updateLoadStatus,
+    ]
   );
 };

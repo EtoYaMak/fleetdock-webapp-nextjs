@@ -1,24 +1,8 @@
-/* 
-create table
-  public.bids (
-    id uuid not null default gen_random_uuid (),
-    load_id uuid not null,
-    trucker_id uuid not null,
-    bid_amount numeric not null,
-    bid_status text null default 'pending'::text,
-    created_at timestamp without time zone null default now(),
-    updated_at timestamp without time zone null default now(),
-    constraint bids_pkey1 primary key (id),
-    constraint bids_load_id_fkey1 foreign key (load_id) references loads (id) on delete cascade,
-    constraint bids_trucker_id_fkey1 foreign key (trucker_id) references profiles (id) on delete cascade
-  ) tablespace pg_default;
-*/
 import { useState, useEffect, useCallback } from "react";
 import { Bid, NewBid } from "@/types/bid";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 import { useFeatureAccess } from "@/hooks/useFeatureAccess";
-
 export const useBids = (loadId?: string) => {
   const [bids, setBids] = useState<Bid[]>([]);
   const [isLoading, setLoading] = useState<boolean>(false);

@@ -1,13 +1,14 @@
 "use client";
 import Link from "next/link";
 import { User, LogOutIcon } from "lucide-react";
-import { FiUser, FiLogOut, FiPackage } from "react-icons/fi";
+import { FiUser, FiPackage } from "react-icons/fi";
 import { useMemo, useState, useEffect } from "react";
 import { TbLayoutDashboard } from "react-icons/tb";
 import { useAuth } from "@/context/AuthContext";
 import { ModeToggle } from "@/components/common/themeToggle";
 import { Button } from "@/components/ui/button";
 import NavLoadingSkeleton from "@/components/common/navloadingskeleton";
+import NotificationList from "@/components/notifications/notificationList";
 const NavLink = function NavLink({
   href,
   children,
@@ -87,14 +88,8 @@ const Navbar = function Navbar() {
               <User className="h-5 w-5 text-primary" />
               Profile
             </NavLink>
-            <NavLink
-              href="/profile"
-              className="flex items-center gap-1 px-3 py-2 text-sm font-medium rounded-lg
-              hover:bg-muted transition-all duration-300"
-            >
-              <User className="h-5 w-5 text-red-500" />
-              Old Profile
-            </NavLink>
+
+            <NotificationList userId={user.id} />
 
             <Button onClick={signOut} variant="default" size="icon">
               <LogOutIcon className="h-5 w-5 transition-all duration-300" />
