@@ -19,10 +19,21 @@ import {
   KeyIcon,
   UserIcon,
   ShieldIcon,
+  KeyRoundIcon,
+  CheckIcon,
+  CircleDotIcon,
+  MailIcon,
+  MailOpenIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { useRouter } from "next/navigation";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface Notification {
   id: string;
@@ -45,6 +56,22 @@ const NotificationIcons = {
   password_change: KeyIcon,
   profile_update: UserIcon,
   security_alert: ShieldIcon,
+  auth_alert: KeyRoundIcon,
+} as const;
+
+// Add color mapping for notification types
+const NotificationColors = {
+  load_status: "text-blue-500",
+  document_verification: "text-green-500",
+  bid_status: "text-yellow-500", // Default bid status color
+  bid_accepted: "text-green-500",
+  bid_rejected: "text-red-500",
+  general_alert: "text-orange-500",
+  account_verification: "text-purple-500",
+  password_change: "text-cyan-500",
+  profile_update: "text-indigo-500",
+  security_alert: "text-red-500",
+  auth_alert: "text-amber-500",
 } as const;
 
 const NotificationList = ({ userId }: { userId: string }) => {
@@ -78,6 +105,20 @@ const NotificationList = ({ userId }: { userId: string }) => {
     if (!error) {
       setNotifications((prev) =>
         prev.map((n) => (n.id === notificationId ? { ...n, is_read: true } : n))
+      );
+    }
+  };
+  const markAsUnread = async (notificationId: string) => {
+    const { error } = await supabase
+      .from("notifications")
+      .update({ is_read: false })
+      .eq("id", notificationId);
+
+    if (!error) {
+      setNotifications((prev) =>
+        prev.map((n) =>
+          n.id === notificationId ? { ...n, is_read: false } : n
+        )
       );
     }
   };
@@ -150,21 +191,21 @@ const NotificationList = ({ userId }: { userId: string }) => {
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-80 p-0" align="end">
-        <div className="flex items-center justify-between p-4 border-b">
-          <h4 className="font-semibold">Notifications</h4>
+      <PopoverContent className="w-80 p-0 rounded-b-lg" align="end">
+        <div className="flex items-center justify-between px-3 py-3 border-b bg-primary rounded-t-lg max-h-12">
+          <h4 className="font-semibold text-white my-auto">Notifications</h4>
           {unreadCount > 0 && (
             <Button
               variant="ghost"
               size="sm"
               onClick={markAllAsRead}
-              className="text-xs"
+              className="text-xs hover:bg-muted/10 text-white hover:text-white bg-muted/5"
             >
               Mark all as read
             </Button>
           )}
         </div>
-        <ScrollArea className="h-[calc(80vh-8rem)]">
+        <ScrollArea className="h-[calc(80vh-8rem)] bg-muted/20">
           {/* Unread Notifications */}
           {unreadNotifications.length > 0 && (
             <div className="p-4 pb-2">
@@ -177,6 +218,7 @@ const NotificationList = ({ userId }: { userId: string }) => {
                     key={notification.id}
                     notification={notification}
                     onRead={markAsRead}
+                    onUnread={markAsUnread}
                   />
                 ))}
               </div>
@@ -185,7 +227,7 @@ const NotificationList = ({ userId }: { userId: string }) => {
 
           {/* Read Notifications */}
           {readNotifications.length > 0 && (
-            <div className="p-4 pt-2">
+            <div className="p-4 pt-4">
               <h5 className="text-xs font-medium text-muted-foreground mb-3">
                 EARLIER
               </h5>
@@ -195,6 +237,7 @@ const NotificationList = ({ userId }: { userId: string }) => {
                     key={notification.id}
                     notification={notification}
                     onRead={markAsRead}
+                    onUnread={markAsUnread}
                   />
                 ))}
               </div>
@@ -217,16 +260,33 @@ const NotificationList = ({ userId }: { userId: string }) => {
 const NotificationItem = ({
   notification,
   onRead,
+  onUnread,
 }: {
   notification: Notification;
   onRead: (id: string) => void;
+  onUnread: (id: string) => void;
 }) => {
   const Icon =
     NotificationIcons[notification.type as keyof typeof NotificationIcons];
   const router = useRouter();
 
-  const handleClick = async () => {
-    await onRead(notification.id);
+  // Determine icon color based on notification type and status
+  const getIconColor = () => {
+    if (notification.type === "bid_status") {
+      // Check message content for bid status
+      if (notification.message.toLowerCase().includes("accepted")) {
+        return NotificationColors.bid_accepted;
+      }
+      if (notification.message.toLowerCase().includes("rejected")) {
+        return NotificationColors.bid_rejected;
+      }
+    }
+    return NotificationColors[
+      notification.type as keyof typeof NotificationColors
+    ];
+  };
+
+  const handleClick = () => {
     if (notification.type === "load_status" && notification.load_id) {
       router.push(`/loads/${notification.load_id}`);
     }
@@ -235,29 +295,61 @@ const NotificationItem = ({
     }
   };
 
+  const handleReadToggle = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent triggering the parent click
+    if (notification.is_read) {
+      onUnread(notification.id);
+    } else {
+      onRead(notification.id);
+    }
+  };
+
   return (
     <div
       className={cn(
-        "p-3 rounded-lg transition-colors cursor-pointer hover:bg-muted bg-muted/30",
-        !notification.is_read && "bg-muted/50"
+        "px-2 py-2 rounded-lg transition-colors hover:bg-muted/60 bg-muted/30",
+        !notification.is_read &&
+          "bg-muted/80 shadow-[0px_2px_3px_-1px_rgba(0,0,0,0.1),0px_1px_0px_0px_rgba(25,28,33,0.02),0px_0px_0px_1px_rgba(25,28,33,0.08)]"
       )}
-      onClick={handleClick}
     >
-      <div className="flex items-start gap-3">
-        <div className="mt-1">
-          <Icon className="h-5 w-5 text-muted-foreground" />
+      <div className="flex items-start gap-1">
+        <div className="my-auto">
+          <Icon className={cn("h-5 w-5", getIconColor())} />
         </div>
-        <div className="flex-1 space-y-1">
-          <p className={cn("text-sm", !notification.is_read && "font-medium")}>
+        <div className="flex-1" onClick={handleClick}>
+          <p
+            className={cn(
+              "text-sm hover:underline cursor-pointer",
+              !notification.is_read && "font-medium"
+            )}
+          >
             {notification.message}
           </p>
           <p className="text-xs text-muted-foreground">
             {format(new Date(notification.created_at), "MMM d, h:mm a")}
           </p>
         </div>
-        {!notification.is_read && (
-          <div className="w-2 h-2 rounded-full bg-primary mt-2" />
-        )}
+        <TooltipProvider delayDuration={100}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className=" my-auto"
+                onClick={handleReadToggle}
+              >
+                {notification.is_read ? (
+                  <MailOpenIcon className="h-4 w-4 text-muted-foreground" />
+                ) : (
+                  <MailIcon className="h-4 w-4 text-primary" />
+                )}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent className="text-white">
+              {notification.is_read ? "Mark as unread" : "Mark as read"}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
     </div>
   );
