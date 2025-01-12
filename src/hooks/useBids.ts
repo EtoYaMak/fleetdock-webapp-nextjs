@@ -64,6 +64,7 @@ export const useBids = (loadId?: string) => {
           title: "Success",
           description: "Bid placed successfully",
         });
+        console.log(data);
         return data;
       } catch (error: any) {
         setError(error.message);

@@ -1,5 +1,5 @@
 // components/NotificationList.js
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import {
@@ -80,21 +80,25 @@ const NotificationList = ({ userId }: { userId: string }) => {
   const [open, setOpen] = useState(false);
 
   // Split and sort notifications
-  const unreadNotifications = notifications
-    .filter((n) => !n.is_read)
-    .sort(
-      (a, b) =>
-        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-    );
+  const sortedNotifications = useMemo(() => {
+    const unread = notifications
+      .filter((n) => !n.is_read)
+      .sort(
+        (a, b) =>
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
 
-  const readNotifications = notifications
-    .filter((n) => n.is_read)
-    .sort(
-      (a, b) =>
-        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-    );
+    const read = notifications
+      .filter((n) => n.is_read)
+      .sort(
+        (a, b) =>
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
 
-  const unreadCount = unreadNotifications.length;
+    return { unread, read };
+  }, [notifications]);
+
+  const unreadCount = sortedNotifications.unread.length;
 
   const markAsRead = async (notificationId: string) => {
     const { error } = await supabase
@@ -153,24 +157,38 @@ const NotificationList = ({ userId }: { userId: string }) => {
       else setNotifications(data as Notification[]);
     };
 
-    fetchNotifications();
-
     const channel = supabase
       .channel(`notifications:${userId}`)
       .on(
-        "postgres_changes",
+        "postgres_changes" as const,
         {
-          event: "INSERT",
+          event: "*",
           schema: "public",
           table: "notifications",
           filter: `user_id=eq.${userId}`,
         },
-        (payload: { new: Notification }) => {
-          setNotifications((prev: Notification[]) => [payload.new, ...prev]);
+        (payload) => {
+          switch (payload.eventType) {
+            case "INSERT":
+              setNotifications((prev: Notification[]) => [
+                payload.new as Notification,
+                ...prev,
+              ]);
+              break;
+            case "DELETE":
+              console.log("DELETE", payload.old);
+              setNotifications((prev: Notification[]) =>
+                prev.filter(
+                  (notification) => notification.id !== payload.old.id
+                )
+              );
+              console.log(notifications);
+              break;
+          }
         }
       )
       .subscribe();
-
+    fetchNotifications();
     return () => {
       supabase.removeChannel(channel);
     };
@@ -207,13 +225,13 @@ const NotificationList = ({ userId }: { userId: string }) => {
         </div>
         <ScrollArea className="h-[calc(80vh-8rem)] bg-muted/20">
           {/* Unread Notifications */}
-          {unreadNotifications.length > 0 && (
+          {sortedNotifications.unread.length > 0 && (
             <div className="p-4 pb-2">
               <h5 className="text-xs font-medium text-muted-foreground mb-3">
                 NEW
               </h5>
               <div className="space-y-4">
-                {unreadNotifications.map((notification) => (
+                {sortedNotifications.unread.map((notification) => (
                   <NotificationItem
                     key={notification.id}
                     notification={notification}
@@ -226,13 +244,13 @@ const NotificationList = ({ userId }: { userId: string }) => {
           )}
 
           {/* Read Notifications */}
-          {readNotifications.length > 0 && (
+          {sortedNotifications.read.length > 0 && (
             <div className="p-4 pt-4">
               <h5 className="text-xs font-medium text-muted-foreground mb-3">
                 EARLIER
               </h5>
               <div className="space-y-4">
-                {readNotifications.map((notification) => (
+                {sortedNotifications.read.map((notification) => (
                   <NotificationItem
                     key={notification.id}
                     notification={notification}
