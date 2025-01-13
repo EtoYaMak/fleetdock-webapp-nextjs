@@ -8,3 +8,4 @@ export const NotificationTypes = {
   PROFILE_UPDATE: "profile_update",
   SECURITY_ALERT: "security_alert",
 };
+

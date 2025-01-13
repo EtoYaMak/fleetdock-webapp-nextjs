@@ -307,7 +307,7 @@ export const useBids = (loadId?: string) => {
       .subscribe();
 
     return () => {
-      channel.unsubscribe();
+      subscription.unsubscribe();
     };
   }, [loadId]);
 

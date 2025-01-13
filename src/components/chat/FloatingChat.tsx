@@ -11,6 +11,7 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { ChatWindow } from "./chatWindow";
+import { useChat } from "@/context/ChatContext";
 
 interface FloatingChatProps {
   chatRooms: ChatRoom[];
@@ -23,13 +24,16 @@ export const FloatingChat: React.FC<FloatingChatProps> = ({
   participants,
   user,
 }) => {
-  const [isOpen, setIsOpen] = useState(false);
+  const { isOpen, activeChatRoom, closeChat, toggleChat, setActiveChatRoom, openChat } = useChat();
   const [minimized, setMinimized] = useState(false);
-  const [activeChatRoom, setActiveChatRoom] = useState<string | null>(null);
 
   const handleToggleChat = () => {
-    setIsOpen(!isOpen);
-    setMinimized(false); // Always open in expanded state
+    if (isOpen) {
+      closeChat();
+    } else {
+      setMinimized(false); // Always open in expanded state
+      toggleChat();
+    }
   };
 
   const getParticipantName = (chatRoom: ChatRoom) => {
@@ -110,7 +114,7 @@ export const FloatingChat: React.FC<FloatingChatProps> = ({
                   return (
                     <div
                       key={room.id}
-                      onClick={() => setActiveChatRoom(room.id)}
+                      onClick={() => openChat(room.id)}
                       className="p-3 hover:bg-accent rounded-lg cursor-pointer
                         transition-colors duration-200"
                     >
@@ -129,7 +133,7 @@ export const FloatingChat: React.FC<FloatingChatProps> = ({
         </div>
       ) : (
         <Button
-          onClick={handleToggleChat}
+          onClick={toggleChat}
           size="lg"
           className="rounded-full h-14 w-14 shadow-lg hover:scale-105 
             transition-transform duration-200"

@@ -2,6 +2,10 @@
 export type MessageStatus = "sent" | "delivered" | "read";
 export type MessageType = "text" | "file" | "system";
 
+export interface ChatRooms{
+  chatRooms: ChatRoom[];
+  participants: Record<string, ChatParticipant>;
+}
 export interface ChatRoom {
   id: string;
   load_id: string;

@@ -11,98 +11,94 @@ export function useChatRooms(userId: string) {
     Record<string, ChatParticipant>
   >({});
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    async function fetchChatRooms() {
-      if (!userId) {
-        setIsLoading(false);
-        return;
-      }
-
-      try {
-        // Using separate queries and combining results
-        const { data: brokerRooms, error: brokerError } = await supabase
+    const fetchChatRooms = async () => {
+      if (userId && userId.trim() !== "") {
+        const { data: rooms, error } = await supabase
           .from("chat_rooms")
           .select("*")
-          .eq("broker_id", userId)
+          .or(`broker_id.eq.${userId},trucker_id.eq.${userId}`)
           .order("last_activity_at", { ascending: false });
 
-        const { data: truckerRooms, error: truckerError } = await supabase
-          .from("chat_rooms")
-          .select("*")
-          .eq("trucker_id", userId)
-          .order("last_activity_at", { ascending: false });
+        if (error) {
+          console.error("Error fetching chat rooms:", error);
+        } else {
+          setChatRooms(rooms ?? []);
+          if (rooms?.length) {
+            // Fetch participants for all rooms
+            const participantIds = rooms.map((room) =>
+              room.broker_id === userId ? room.trucker_id : room.broker_id
+            );
 
-        if (brokerError) {
-          console.error("Error fetching broker rooms:", brokerError);
-          throw brokerError;
+            const { data: users } = await supabase
+              .from("profiles")
+              .select("id, full_name")
+              .in("id", participantIds);
+
+            if (users) {
+              const participantsMap = users.reduce(
+                (acc, user) => ({
+                  ...acc,
+                  [user.id]: user,
+                }),
+                {}
+              );
+              setParticipants(participantsMap);
+            }
+          }
+          console.log("Chat rooms:", rooms);
         }
-
-        if (truckerError) {
-          console.error("Error fetching trucker rooms:", truckerError);
-          throw truckerError;
-        }
-
-        // Combine and sort rooms
-        const allRooms = [...(brokerRooms || []), ...(truckerRooms || [])].sort(
-          (a, b) =>
-            new Date(b.last_activity_at).getTime() -
-            new Date(a.last_activity_at).getTime()
-        );
-
-        if (allRooms.length === 0) {
-          setChatRooms([]);
-          setParticipants({});
-          setIsLoading(false);
-          return;
-        }
-
-        setChatRooms(allRooms);
-
-        // Fetch participants for all rooms
-        const participantIds = allRooms
-          .map((room) =>
-            room.broker_id === userId ? room.trucker_id : room.broker_id
-          )
-          .filter((id): id is string => Boolean(id)); // Type guard to ensure non-null IDs
-
-        if (participantIds.length === 0) {
-          setParticipants({});
-          setIsLoading(false);
-          return;
-        }
-
-        const { data: users, error: usersError } = await supabase
-          .from("profiles")
-          .select("id, full_name")
-          .in("id", participantIds);
-
-        if (usersError) {
-          console.error("Error fetching users:", usersError);
-          throw usersError;
-        }
-
-        const participantsMap = (users || []).reduce(
-          (acc, user) => ({
-            ...acc,
-            [user.id]: user,
-          }),
-          {}
-        );
-        setParticipants(participantsMap);
-      } catch (err) {
-        console.error("Error in useChatRooms:", err);
-        setError(err as Error);
-      } finally {
-        setIsLoading(false);
+      } else {
+        console.error("Invalid userId:", userId);
       }
+
+      setIsLoading(false);
     }
 
     fetchChatRooms();
+
+    const channel = supabase
+      .channel(`chat_rooms:${userId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "chat_rooms",
+          filter: `broker_id=eq.${userId} OR trucker_id=eq.${userId}`,
+        },
+        (payload) => {
+          console.log("Received event:", payload.eventType);
+          switch (payload.eventType) {
+            case "INSERT":
+              setChatRooms((prev) => [payload.new as ChatRoom, ...prev]);
+              break;
+            case "UPDATE":
+              setChatRooms((prev) =>
+                prev.map((room) =>
+                  room.id === (payload.new as ChatRoom).id
+                    ? (payload.new as ChatRoom)
+                    : room
+                )
+              );
+              break;
+            case "DELETE":
+              setChatRooms((prev) =>
+                prev.filter((room) => room.id !== payload.old.id)
+              );
+              break;
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [userId]);
 
-  return { chatRooms, participants, isLoading, error };
+  return { chatRooms, participants, isLoading };
 }
 
 // Hook for managing a single chat room

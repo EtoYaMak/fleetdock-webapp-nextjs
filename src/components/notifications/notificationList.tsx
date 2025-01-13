@@ -33,7 +33,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-
 interface Notification {
   id: string;
   message: string;
@@ -76,31 +75,63 @@ const NotificationColors = {
   new_message: "text-blue-500",
 } as const;
 
-const NotificationList = ({ userId }: { userId: string }) => {
-  const router = useRouter();
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+export const NotificationList = ({ userId }: { userId: string }) => {
   const [open, setOpen] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
 
-  // Split and sort notifications
-  const sortedNotifications = useMemo(() => {
-    const unread = notifications
-      .filter((n) => !n.is_read)
-      .sort(
-        (a, b) =>
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-      );
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      //fetch all types except new_message
+      const { data, error } = await supabase
+        .from("notifications")
+        .select("*")
+        .eq("user_id", userId)
+        .neq("type", "new_message")
+        .order("created_at", { ascending: false });
 
-    const read = notifications
-      .filter((n) => n.is_read)
-      .sort(
-        (a, b) =>
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-      );
+      if (error) {
+        console.error("Error fetching notifications:", error);
+      } else {
+        setNotifications(data as Notification[]);
+      }
+    };
 
-    return { unread, read };
-  }, [notifications]);
+    // Real-time subscription for notifications
+    const channel = supabase.channel(`notifications:${userId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${userId}`,
+        },
+        (payload) => {
+          setNotifications((prev) => {
+            switch (payload.eventType) {
+              case 'INSERT':
+                return [payload.new as Notification, ...prev];
+              case 'UPDATE':
+                return prev.map((n) =>
+                  n.id === payload.new.id ? (payload.new as Notification) : n
+                );
+              case 'DELETE':
+                return prev.filter((n) => n.id !== payload.old.id);
+              default:
+                return prev;
+            }
+          });
+        }
+      )
+      .subscribe();
 
-  const unreadCount = sortedNotifications.unread.length;
+    fetchNotifications();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [userId]);
+
 
   const markAsRead = async (notificationId: string) => {
     const { error } = await supabase
@@ -141,72 +172,18 @@ const NotificationList = ({ userId }: { userId: string }) => {
     }
   };
 
-  const handleNotificationClick = (notification: Notification) => {
-    if (notification.type === "bid_status" && notification.load_id) {
-      router.push(`/loads/${notification.load_id}`);
-    }
-  };
-
-  useEffect(() => {
-    const fetchNotifications = async () => {
-      const { data, error } = await supabase
-        .from("notifications")
-        .select("*")
-        .eq("user_id", userId)
-        .order("created_at", { ascending: false });
-
-      if (error) console.error("Error fetching notifications:", error);
-      else setNotifications(data as Notification[]);
-    };
-
-    const channel = supabase
-      .channel(`notifications:${userId}`)
-      .on(
-        "postgres_changes" as const,
-        {
-          event: "*",
-          schema: "public",
-          table: "notifications",
-          filter: `user_id=eq.${userId}`,
-        },
-        (payload) => {
-          switch (payload.eventType) {
-            case "INSERT":
-              setNotifications((prev: Notification[]) => [
-                payload.new as Notification,
-                ...prev,
-              ]);
-              break;
-            case "DELETE":
-              console.log("DELETE", payload.old);
-              setNotifications((prev: Notification[]) =>
-                prev.filter(
-                  (notification) => notification.id !== payload.old.id
-                )
-              );
-              console.log(notifications);
-              break;
-          }
-        }
-      )
-      .subscribe();
-    fetchNotifications();
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [userId]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button variant="ghost" size="icon" className="relative">
           <BellIcon className="h-5 w-5" />
-          {unreadCount > 0 && (
+          {notifications.filter((n) => !n.is_read).length > 0 && (
             <Badge
               variant="destructive"
               className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs"
             >
-              {unreadCount}
+              {notifications.filter((n) => !n.is_read).length}
             </Badge>
           )}
         </Button>
@@ -214,7 +191,7 @@ const NotificationList = ({ userId }: { userId: string }) => {
       <PopoverContent className="w-80 p-0 rounded-b-lg" align="end">
         <div className="flex items-center justify-between px-3 py-3 border-b bg-primary rounded-t-lg max-h-12">
           <h4 className="font-semibold text-white my-auto">Notifications</h4>
-          {unreadCount > 0 && (
+          {notifications.filter((n) => !n.is_read).length > 0 && (
             <Button
               variant="ghost"
               size="sm"
@@ -227,39 +204,45 @@ const NotificationList = ({ userId }: { userId: string }) => {
         </div>
         <ScrollArea className="h-[calc(80vh-8rem)] bg-muted/20">
           {/* Unread Notifications */}
-          {sortedNotifications.unread.length > 0 && (
+          {notifications.filter((n) => !n.is_read).length > 0 && (
             <div className="p-4 pb-2">
               <h5 className="text-xs font-medium text-muted-foreground mb-3">
                 NEW
               </h5>
               <div className="space-y-4">
-                {sortedNotifications.unread.map((notification) => (
-                  <NotificationItem
-                    key={notification.id}
-                    notification={notification}
-                    onRead={markAsRead}
-                    onUnread={markAsUnread}
-                  />
-                ))}
+                {notifications.filter((n) => !n.is_read)
+                  .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+                  .map((notification) => (
+                    <NotificationItem
+                      key={notification.id}
+                      notification={notification}
+                      onRead={markAsRead}
+                      onUnread={markAsUnread}
+                      setOpen={setOpen}
+                    />
+                  ))}
               </div>
             </div>
           )}
 
           {/* Read Notifications */}
-          {sortedNotifications.read.length > 0 && (
+          {notifications.filter((n) => n.is_read).length > 0 && (
             <div className="p-4 pt-4">
               <h5 className="text-xs font-medium text-muted-foreground mb-3">
                 EARLIER
               </h5>
               <div className="space-y-4">
-                {sortedNotifications.read.map((notification) => (
-                  <NotificationItem
-                    key={notification.id}
-                    notification={notification}
-                    onRead={markAsRead}
-                    onUnread={markAsUnread}
-                  />
-                ))}
+                {notifications.filter((n) => n.is_read)
+                  .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+                  .map((notification) => (
+                    <NotificationItem
+                      key={notification.id}
+                      notification={notification}
+                      onRead={markAsRead}
+                      onUnread={markAsUnread}
+                      setOpen={setOpen}
+                    />
+                  ))}
               </div>
             </div>
           )}
@@ -281,10 +264,12 @@ const NotificationItem = ({
   notification,
   onRead,
   onUnread,
+  setOpen,
 }: {
   notification: Notification;
   onRead: (id: string) => void;
   onUnread: (id: string) => void;
+  setOpen: (open: boolean) => void;
 }) => {
   const Icon =
     NotificationIcons[notification.type as keyof typeof NotificationIcons];
@@ -313,9 +298,8 @@ const NotificationItem = ({
     if (notification.type === "bid_status" && notification.bid_id) {
       router.push(`/loads/${notification.load_id}`);
     }
-    if (notification.type === "new_message" && notification.reference_id) {
-      return;
-    }
+    onRead(notification.id);
+    setOpen(false);
   };
 
   const handleReadToggle = (e: React.MouseEvent) => {

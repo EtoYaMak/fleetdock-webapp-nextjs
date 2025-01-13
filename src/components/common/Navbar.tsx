@@ -8,7 +8,9 @@ import { useAuth } from "@/context/AuthContext";
 import { ModeToggle } from "@/components/common/themeToggle";
 import { Button } from "@/components/ui/button";
 import NavLoadingSkeleton from "@/components/common/navloadingskeleton";
-import NotificationList from "@/components/notifications/notificationList";
+import { NotificationList } from "@/components/notifications/notificationList";
+import { MessageNotifications } from "@/components/notifications/MessageNotifications";
+
 const NavLink = function NavLink({
   href,
   children,
@@ -90,6 +92,7 @@ const Navbar = function Navbar() {
             </NavLink>
 
             <NotificationList userId={user.id} />
+            <MessageNotifications userId={user.id} />
 
             <Button onClick={signOut} variant="default" size="icon">
               <LogOutIcon className="h-5 w-5 transition-all duration-300" />
@@ -123,9 +126,8 @@ const Navbar = function Navbar() {
             >
               FleetDock{" "}
               <span
-                className={`text-[0.55rem] p-0 ${
-                  tierColors[user?.membership_tier as keyof typeof tierColors]
-                } ml-1 uppercase`}
+                className={`text-[0.55rem] p-0 ${tierColors[user?.membership_tier as keyof typeof tierColors]
+                  } ml-1 uppercase`}
               >
                 {user?.membership_tier}
               </span>
