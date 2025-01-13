@@ -20,10 +20,9 @@ import {
   UserIcon,
   ShieldIcon,
   KeyRoundIcon,
-  CheckIcon,
-  CircleDotIcon,
   MailIcon,
   MailOpenIcon,
+  MessageCircleIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
@@ -44,6 +43,7 @@ interface Notification {
   type: string;
   load_id?: string;
   bid_id?: string;
+  reference_id?: string;
 }
 
 // Add icon mapping
@@ -57,6 +57,7 @@ const NotificationIcons = {
   profile_update: UserIcon,
   security_alert: ShieldIcon,
   auth_alert: KeyRoundIcon,
+  new_message: MessageCircleIcon,
 } as const;
 
 // Add color mapping for notification types
@@ -72,6 +73,7 @@ const NotificationColors = {
   profile_update: "text-indigo-500",
   security_alert: "text-red-500",
   auth_alert: "text-amber-500",
+  new_message: "text-blue-500",
 } as const;
 
 const NotificationList = ({ userId }: { userId: string }) => {
@@ -311,6 +313,9 @@ const NotificationItem = ({
     if (notification.type === "bid_status" && notification.bid_id) {
       router.push(`/loads/${notification.load_id}`);
     }
+    if (notification.type === "new_message" && notification.reference_id) {
+      return;
+    }
   };
 
   const handleReadToggle = (e: React.MouseEvent) => {
@@ -327,7 +332,7 @@ const NotificationItem = ({
       className={cn(
         "px-2 py-2 rounded-lg transition-colors hover:bg-muted/60 bg-muted/30",
         !notification.is_read &&
-          "bg-muted/80 shadow-[0px_2px_3px_-1px_rgba(0,0,0,0.1),0px_1px_0px_0px_rgba(25,28,33,0.02),0px_0px_0px_1px_rgba(25,28,33,0.08)]"
+        "bg-muted/80 shadow-[0px_2px_3px_-1px_rgba(0,0,0,0.1),0px_1px_0px_0px_rgba(25,28,33,0.02),0px_0px_0px_1px_rgba(25,28,33,0.08)]"
       )}
     >
       <div className="flex items-start gap-1">

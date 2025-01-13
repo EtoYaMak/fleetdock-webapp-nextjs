@@ -11,7 +11,6 @@ import { useAuth } from "@/context/AuthContext";
 import { useBids } from "@/hooks/useBids";
 import { User } from "@/types/auth";
 import BidsContainer from "@/components/bids/bidsContainer";
-
 import { TripCalculatorRes } from "@/components/ui/TripCalculatorRes";
 
 import {
@@ -20,6 +19,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+
 export default function ViewLoad({
   params,
 }: {
@@ -30,6 +30,7 @@ export default function ViewLoad({
   const [load, setLoad] = useState<Load | null>(null);
   const [id, setId] = useState<string | null>(null);
   const router = useRouter();
+
 
   const {
     bids,
@@ -56,6 +57,7 @@ export default function ViewLoad({
       }
     }
   }, [loads, id]);
+
   if (isLoading || !load) {
     return (
       <div className="flex justify-center items-center h-screen bg-background">
