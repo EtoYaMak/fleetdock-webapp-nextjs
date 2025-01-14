@@ -4,24 +4,29 @@ import Navbar from "@/components/common/Navbar";
 import Footer from "@/components/common/Footer";
 import UserProvider from "@/context/AuthContext";
 import { Toaster } from "@/components/ui/toaster";
-import { usePathname } from "next/navigation";
-
+import { ChatProvider } from "@/context/ChatContext";
+import { useAuth } from "@/context/AuthContext";
+import { GlobalFloatingChat } from "@/components/chat/GlobalFloatingChat";
+import { User } from "@/types/auth";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 export default function ClientLayout({
   children,
+
 }: {
   children: React.ReactNode;
 }) {
-  const pathname = usePathname();
-  const isProfilePage = pathname?.startsWith("/me");
+  const { user, loading } = useAuth();
+  if (loading) return <LoadingSpinner />;
 
   return (
     <UserProvider>
-      {/*  {!isProfilePage && <Navbar />} */}
-      <Navbar />
-      <main className="flex-grow">{children}</main>
-      <Toaster />
-      {/* {!isProfilePage && <Footer />} */}
-      <Footer />
+      <ChatProvider>
+        <Navbar />
+        <main className="flex-grow">{children}</main>
+        <GlobalFloatingChat user={user as User} />
+        <Toaster />
+        <Footer />
+      </ChatProvider>
     </UserProvider>
   );
 }

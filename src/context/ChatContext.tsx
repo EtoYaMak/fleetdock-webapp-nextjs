@@ -20,7 +20,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         // Subscribe to chat_rooms changes
         const subscription = supabase
-            .channel('chat_rooms_changes')
+            .channel('chat_rooms')
             .on('postgres_changes', {
                 event: 'DELETE',
                 schema: 'public',
@@ -29,6 +29,16 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
                 // If the deleted room was active, close the chat
                 if (payload.old.id === activeChatRoom) {
                     closeChat();
+                }
+            })
+            .on('postgres_changes', {
+                event: 'INSERT',
+                schema: 'public',
+                table: 'chat_rooms',
+            }, (payload) => {
+                // If the inserted room was active, open the chat
+                if (payload.new.id === activeChatRoom) {
+                    openChat(payload.new.id);
                 }
             })
             .subscribe();

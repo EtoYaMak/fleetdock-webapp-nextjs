@@ -1,7 +1,6 @@
 "use client"
 import React, { useState } from "react";
 import { ChatRoom, ChatParticipant } from "@/types/chat";
-import { User } from "@/types/auth";
 import { Button } from "@/components/ui/button";
 import {
   MessageCircle,
@@ -12,21 +11,20 @@ import {
 } from "lucide-react";
 import { ChatWindow } from "./chatWindow";
 import { useChat } from "@/context/ChatContext";
-
+import { useAuth } from "@/context/AuthContext";
 interface FloatingChatProps {
   chatRooms: ChatRoom[];
   participants: Record<string, ChatParticipant>;
-  user: User;
 }
 
 export const FloatingChat: React.FC<FloatingChatProps> = ({
   chatRooms,
   participants,
-  user,
 }) => {
   const { isOpen, activeChatRoom, closeChat, toggleChat, setActiveChatRoom, openChat } = useChat();
   const [minimized, setMinimized] = useState(false);
-
+  const { user } = useAuth();
+  if (!user) return null;
   const handleToggleChat = () => {
     if (isOpen) {
       closeChat();

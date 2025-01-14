@@ -1,103 +1,111 @@
 // hooks/useChat.ts
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ChatRoom, Message, ChatParticipant } from "../types/chat";
 import { User } from "@/types/auth";
 import { supabase } from "@/lib/supabase";
-
+import { useAuth } from "@/context/AuthContext";
 // Hook for managing multiple chat rooms
-export function useChatRooms(userId: string) {
+export function useChatRooms() {
   const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);
   const [participants, setParticipants] = useState<
     Record<string, ChatParticipant>
   >({});
   const [isLoading, setIsLoading] = useState(true);
+  const { user } = useAuth();
+
+  const fetchChatRooms = useCallback(async () => {
+    if (!user) return;
+    try {
+      const { data: rooms, error } = await supabase
+        .from("chat_rooms")
+        .select("*")
+        .or(`broker_id.eq.${user.id},trucker_id.eq.${user.id}`);
+      if (error) throw error;
+      setChatRooms(rooms ?? []);
+
+      if (rooms?.length) {
+        const participantIds = rooms.map((room) =>
+          room.broker_id === user.id ? room.trucker_id : room.broker_id
+        );
+
+        const { data: users } = await supabase
+          .from("profiles")
+          .select("id, full_name")
+          .in("id", participantIds);
+
+        if (users) {
+          const participantsMap = users.reduce(
+            (acc, user) => ({
+              ...acc,
+              [user.id]: user,
+            }),
+            {}
+          );
+          setParticipants(participantsMap);
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching chat rooms:", error);
+    }
+  }, [user]);
 
   useEffect(() => {
-    const fetchChatRooms = async () => {
-      if (userId && userId.trim() !== "") {
-        const { data: rooms, error } = await supabase
-          .from("chat_rooms")
-          .select("*")
-          .or(`broker_id.eq.${userId},trucker_id.eq.${userId}`)
-          .order("last_activity_at", { ascending: false });
-
-        if (error) {
-          console.error("Error fetching chat rooms:", error);
-        } else {
-          setChatRooms(rooms ?? []);
-          if (rooms?.length) {
-            // Fetch participants for all rooms
-            const participantIds = rooms.map((room) =>
-              room.broker_id === userId ? room.trucker_id : room.broker_id
-            );
-
-            const { data: users } = await supabase
-              .from("profiles")
-              .select("id, full_name")
-              .in("id", participantIds);
-
-            if (users) {
-              const participantsMap = users.reduce(
-                (acc, user) => ({
-                  ...acc,
-                  [user.id]: user,
-                }),
-                {}
-              );
-              setParticipants(participantsMap);
-            }
-          }
-          console.log("Chat rooms:", rooms);
-        }
-      } else {
-        console.error("Invalid userId:", userId);
-      }
-
+    if (!user) {
       setIsLoading(false);
+      return;
     }
 
-    fetchChatRooms();
+    fetchChatRooms().finally(() => setIsLoading(false));
 
-    const channel = supabase
-      .channel(`chat_rooms:${userId}`)
+    const subscription = supabase
+      .channel(`chat_rooms:${user.id}`)
       .on(
         "postgres_changes",
         {
-          event: "*",
+          event: "INSERT",
           schema: "public",
           table: "chat_rooms",
-          filter: `broker_id=eq.${userId} OR trucker_id=eq.${userId}`,
+          filter: `broker_id=eq.${user.id},trucker_id=eq.${user.id}`,
         },
-        (payload) => {
-          console.log("Received event:", payload.eventType);
-          switch (payload.eventType) {
-            case "INSERT":
-              setChatRooms((prev) => [payload.new as ChatRoom, ...prev]);
-              break;
-            case "UPDATE":
-              setChatRooms((prev) =>
-                prev.map((room) =>
-                  room.id === (payload.new as ChatRoom).id
-                    ? (payload.new as ChatRoom)
-                    : room
-                )
-              );
-              break;
-            case "DELETE":
-              setChatRooms((prev) =>
-                prev.filter((room) => room.id !== payload.old.id)
-              );
-              break;
-          }
+        () => {
+          console.log("INSERT chat_rooms");
+          fetchChatRooms();
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "chat_rooms",
+          filter: `broker_id=eq.${user.id},trucker_id=eq.${user.id}`,
+        },
+        () => {
+          console.log("UPDATE chat_rooms");
+          fetchChatRooms();
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "DELETE",
+          schema: "public",
+          table: "chat_rooms",
+          filter: `broker_id=eq.${user.id},trucker_id=eq.${user.id}`,
+        },
+        () => {
+          console.log("DELETE chat_rooms");
+          fetchChatRooms();
         }
       )
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      subscription.unsubscribe();
     };
-  }, [userId]);
+  }, [user, fetchChatRooms]);
 
+  if (!user) return { chatRooms: [], participants: {}, isLoading: false };
   return { chatRooms, participants, isLoading };
 }
 

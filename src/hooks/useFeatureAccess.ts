@@ -10,7 +10,6 @@ export const useFeatureAccess = () => {
     userId?: string
   ): Promise<boolean> => {
     let targetProfile;
-    console.log("userId at checkAccess", userId);
     if (userId && userId !== profile?.id) {
       // Fetch the target user's profile if a userId is provided
       const { data: userProfile, error } = await supabase
@@ -25,7 +24,6 @@ export const useFeatureAccess = () => {
       }
 
       targetProfile = userProfile;
-      console.log("targetProfile at checkAccess", targetProfile);
     } else {
       // Use the current user's profile
       targetProfile = profile;
@@ -42,18 +40,6 @@ export const useFeatureAccess = () => {
 
     const { role, membership_tier } = targetProfile;
 
-    // Log the values to verify
-    console.log("Checking access:", {
-      role,
-      membership_tier,
-      feature,
-      tierConfig:
-        membershipTiers[role as "trucker" | "broker"]?.[
-          membership_tier as "starter" | "professional" | "enterprise"
-        ],
-    });
-
-    // Get tier configuration with proper type assertion
     const tierConfig =
       membershipTiers[role as keyof typeof membershipTiers]?.[
         membership_tier as keyof (typeof membershipTiers)[keyof typeof membershipTiers]
@@ -156,12 +142,6 @@ export const useFeatureAccess = () => {
           return false;
         }
 
-        console.log(
-          `Current count for ${feature}:`,
-          count,
-          `Limit:`,
-          featureLimit
-        );
         return count !== null && count < (featureLimit as number);
       }
     }

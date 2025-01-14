@@ -64,7 +64,6 @@ export const useBids = (loadId?: string) => {
           title: "Success",
           description: "Bid placed successfully",
         });
-        console.log(data);
         return data;
       } catch (error: any) {
         setError(error.message);
@@ -282,7 +281,6 @@ export const useBids = (loadId?: string) => {
           table: "bids",
         },
         (payload) => {
-          console.log("Received event:", payload.eventType);
           switch (payload.eventType) {
             case "INSERT":
               setBids((prev) => [payload.new as Bid, ...prev]);
