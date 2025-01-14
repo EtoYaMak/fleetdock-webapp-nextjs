@@ -1,6 +1,6 @@
 "use client"
+
 import React, { useState } from "react";
-import { ChatRoom, ChatParticipant } from "@/types/chat";
 import { Button } from "@/components/ui/button";
 import {
   MessageCircle,
@@ -11,66 +11,76 @@ import {
 } from "lucide-react";
 import { ChatWindow } from "./chatWindow";
 import { useChat } from "@/context/ChatContext";
+import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/context/AuthContext";
-interface FloatingChatProps {
-  chatRooms: ChatRoom[];
-  participants: Record<string, ChatParticipant>;
-}
 
-export const FloatingChat: React.FC<FloatingChatProps> = ({
-  chatRooms,
-  participants,
-}) => {
-  const { isOpen, activeChatRoom, closeChat, toggleChat, setActiveChatRoom, openChat } = useChat();
-  const [minimized, setMinimized] = useState(false);
+export function FloatingChat() {
+  const {
+    isOpen,
+    activeChatRoom,
+    chatRooms,
+    participants,
+    messages,
+    unreadCounts,
+    totalUnreadCount,
+    openChat,
+    closeChat,
+    backToRooms,
+    toggleChat,
+  } = useChat();
   const { user } = useAuth();
-  if (!user) return null;
+  const [minimized, setMinimized] = useState(false);
+
   const handleToggleChat = () => {
     if (isOpen) {
       closeChat();
     } else {
-      setMinimized(false); // Always open in expanded state
+      setMinimized(false);
       toggleChat();
     }
   };
 
-  const getParticipantName = (chatRoom: ChatRoom) => {
-    const participantId = chatRoom.broker_id === user.id
-      ? chatRoom.trucker_id
-      : chatRoom.broker_id;
-    return participants[participantId]?.full_name;
+  const getParticipantName = (roomId: string) => {
+    const room = chatRooms.find((r) => r.id === roomId);
+    if (!room || !user) return "";
+
+    // If the user is the broker, show trucker's name, and vice versa
+    const participantId = room.broker_id === user.id ? room.trucker_id : room.broker_id;
+    return participants[participantId]?.full_name || "Unknown User";
   };
+
   return (
     <div className="fixed bottom-4 right-4 z-50">
       {isOpen ? (
-        <div className={`
-          bg-card border rounded-lg shadow-lg 
-          transition-all duration-300 ease-in-out
-          ${minimized ? 'h-[80px]' : 'h-[500px]'}
-          w-[360px]
-          flex flex-col
-        `}>
-          {/* Unified Header - with truncation */}
+        <div
+          className={`
+            bg-card border rounded-lg shadow-lg 
+            transition-all duration-300 ease-in-out
+            ${minimized ? "h-[80px]" : "h-[500px]"}
+            w-[360px]
+            flex flex-col
+          `}
+        >
+          {/* Header */}
           <div className="p-3 border-b flex items-center justify-between shrink-0">
-            <div className="flex items-center gap-2 min-w-0"> {/* min-w-0 allows truncation */}
+            <div className="flex items-center gap-2 min-w-0">
               {activeChatRoom && (
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setActiveChatRoom(null)}
-                  className="hover:bg-accent shrink-0" // shrink-0 prevents button from shrinking
+                  onClick={() => backToRooms()}
+                  className="hover:bg-accent shrink-0"
                 >
                   <ArrowLeft size={18} />
                 </Button>
               )}
-              <h3 className="font-semibold truncate"> {/* truncate long text */}
+              <h3 className="font-semibold truncate">
                 {activeChatRoom
-                  ? getParticipantName(chatRooms.find(room => room.id === activeChatRoom)!)
-                  : 'Messages'
-                }
+                  ? getParticipantName(activeChatRoom)
+                  : "Messages"}
               </h3>
             </div>
-            <div className="flex gap-2 shrink-0"> {/* shrink-0 prevents buttons from shrinking */}
+            <div className="flex gap-2 shrink-0">
               <Button
                 variant="ghost"
                 size="sm"
@@ -90,38 +100,42 @@ export const FloatingChat: React.FC<FloatingChatProps> = ({
             </div>
           </div>
 
-          {/* Chat Content - with flex-grow and overflow handling */}
-          <div className={`
-            transition-all duration-300 ease-in-out
-            ${minimized ? 'hidden' : 'flex-grow overflow-hidden flex flex-col'}
-          `}>
+          {/* Content */}
+          <div
+            className={`
+              transition-all duration-300 ease-in-out
+              ${minimized ? "hidden" : "flex-grow overflow-hidden flex flex-col"}
+            `}
+          >
             {activeChatRoom ? (
               <ChatWindow
                 chatRoomId={activeChatRoom}
-                otherParticipant={participants[activeChatRoom]}
-                user={user}
+                messages={messages[activeChatRoom] || []}
               />
             ) : (
               <div className="p-4 space-y-2 overflow-y-auto flex-grow">
                 {chatRooms.map((room) => {
-                  const participantId = room.broker_id === user.id
-                    ? room.trucker_id
-                    : room.broker_id;
-                  const participant = participants[participantId];
-
+                  const unreadCount = unreadCounts[room.id] || 0;
                   return (
                     <div
                       key={room.id}
                       onClick={() => openChat(room.id)}
                       className="p-3 hover:bg-accent rounded-lg cursor-pointer
-                        transition-colors duration-200"
+                        transition-colors duration-200 flex items-center justify-between"
                     >
-                      <p className="font-medium truncate">
-                        {participant?.full_name}
-                      </p>
-                      <p className="text-sm text-muted-foreground truncate">
-                        Load #{room.load_id.slice(0, 8)}
-                      </p>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-medium truncate">
+                          {getParticipantName(room.id)}
+                        </p>
+                        <p className="text-sm text-muted-foreground truncate">
+                          Load #{room.load_id.slice(0, 8)}
+                        </p>
+                      </div>
+                      {unreadCount > 0 && (
+                        <Badge variant="default" className="ml-2">
+                          {unreadCount}
+                        </Badge>
+                      )}
                     </div>
                   );
                 })}
@@ -130,15 +144,25 @@ export const FloatingChat: React.FC<FloatingChatProps> = ({
           </div>
         </div>
       ) : (
-        <Button
-          onClick={toggleChat}
-          size="lg"
-          className="rounded-full h-14 w-14 shadow-lg hover:scale-105 
-            transition-transform duration-200"
-        >
-          <MessageCircle size={24} />
-        </Button>
+        <div className="relative">
+          <Button
+            onClick={toggleChat}
+            size="lg"
+            className="rounded-full h-14 w-14 shadow-lg hover:scale-105 
+              transition-transform duration-200"
+          >
+            <MessageCircle size={24} />
+          </Button>
+          {totalUnreadCount > 0 && (
+            <Badge
+              variant="destructive"
+              className="absolute -top-2 -right-2 min-w-[20px] h-5"
+            >
+              {totalUnreadCount}
+            </Badge>
+          )}
+        </div>
       )}
     </div>
   );
-};
+}

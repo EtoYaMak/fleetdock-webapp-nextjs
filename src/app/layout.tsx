@@ -6,7 +6,9 @@ import { ThemeProvider } from "@/context/theme-provider";
 import { Montserrat } from "next/font/google";
 import ClientLayout from "@/app/client-layout";
 import { metadata as siteMetadata } from "./metadata";
+import { ChatProvider } from "@/context/ChatContext";
 import { GlobalFloatingChat } from "@/components/chat/GlobalFloatingChat";
+import UserProvider from "@/context/AuthContext";
 
 const montserrat = Montserrat({ subsets: ["latin"] });
 
@@ -27,11 +29,14 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <Suspense fallback={<LoadingSpinner />}>
-            <ClientLayout>
-
-              {children}
-
-            </ClientLayout>
+            <UserProvider>
+              <ChatProvider>
+                <ClientLayout>
+                  {children}
+                </ClientLayout>
+                <GlobalFloatingChat />
+              </ChatProvider>
+            </UserProvider>
           </Suspense>
         </ThemeProvider>
       </body>
