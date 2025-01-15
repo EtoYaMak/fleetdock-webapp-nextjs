@@ -32,6 +32,7 @@ export interface Message {
   file_size?: number;
   is_deleted?: boolean;
   original_content?: string;
+  edited_at?: string;
   is_pinned?: boolean;
   reply_to_id?: string;
   thread_participants?: string[];

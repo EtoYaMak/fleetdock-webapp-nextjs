@@ -4,8 +4,8 @@ export const membershipTiers = {
     starter: {
       features: {
         load_board_access: true,
-        bids_per_month:10,
-        active_loads: 2,
+        bids_per_month: 10,
+        active_loads: 10,
         real_time_tracking: false,
         doc_management: false,
         fuel_optimization: false,
@@ -47,7 +47,7 @@ export const membershipTiers = {
   broker: {
     starter: {
       features: {
-        load_posts_per_month:10,
+        load_posts_per_month: 10,
         active_loads: 2,
         carrier_verification: false,
         automated_matching: false,

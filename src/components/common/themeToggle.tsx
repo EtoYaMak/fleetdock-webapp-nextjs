@@ -24,7 +24,7 @@ export function ModeToggle() {
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="end"
-        className="bg-muted-foreground/10 backdrop-blur-sm"
+        className=" backdrop-blur-sm"
       >
         <DropdownMenuItem onClick={() => setTheme("light")}>
           Light

@@ -5,6 +5,7 @@ import { useAuth } from "./AuthContext";
 import { supabase } from "@/lib/supabase";
 import { ChatRoom, Message, ChatParticipant } from "@/types/chat";
 
+
 interface ChatContextType {
     isOpen: boolean;
     activeChatRoom: string | null;
@@ -18,6 +19,7 @@ interface ChatContextType {
     toggleChat: () => void;
     backToRooms: () => void;
     sendMessage: (roomId: string, content: string) => Promise<void>;
+    editMessage: (messageId: string, newContent: string) => Promise<void>;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -322,6 +324,8 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         return () => clearInterval(interval);
     }, [user?.id, activeChatRoom]);
 
+
+
     const openChat = (roomId: string) => {
         setActiveChatRoom(roomId);
         setIsOpen(true);
@@ -350,12 +354,46 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
             chat_room_id: roomId,
             sender_id: user.id,
             content,
+            status: 'sent',
+            read_at: null
         });
 
         if (error) {
             console.error("Error sending message:", error);
             throw error;
         }
+    };
+
+    const editMessage = async (messageId: string, newContent: string) => {
+        if (!user?.id) return;
+
+        const { error } = await supabase.rpc('edit_message', {
+            p_message_id: messageId,
+            p_new_content: newContent
+        });
+
+        if (error) {
+            console.error("Error editing message:", error);
+            throw error;
+        }
+
+        // Update local state optimistically
+        setMessages((prev) => {
+            const newMessages = { ...prev };
+            Object.keys(newMessages).forEach((roomId) => {
+                newMessages[roomId] = newMessages[roomId].map((msg) =>
+                    msg.id === messageId
+                        ? {
+                            ...msg,
+                            content: newContent,
+                            edited_at: new Date().toISOString(),
+                            original_content: msg.original_content || msg.content
+                        }
+                        : msg
+                );
+            });
+            return newMessages;
+        });
     };
 
     const value = {
@@ -371,6 +409,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         closeChat,
         toggleChat,
         sendMessage,
+        editMessage,
     };
 
     return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;

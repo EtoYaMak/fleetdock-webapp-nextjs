@@ -181,9 +181,9 @@ export const NotificationList = ({ userId }: { userId: string }) => {
           {notifications.filter((n) => !n.is_read).length > 0 && (
             <Badge
               variant="destructive"
-              className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs"
+              className={`absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs ${notifications.filter((n) => !n.is_read).length > 1 ? 'w-7' : 'w-5'}`}
             >
-              {notifications.filter((n) => !n.is_read).length}
+              {notifications.filter((n) => !n.is_read).length > 99 ? '99+' : notifications.filter((n) => !n.is_read).length}
             </Badge>
           )}
         </Button>

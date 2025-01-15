@@ -9,8 +9,7 @@ import { ModeToggle } from "@/components/common/themeToggle";
 import { Button } from "@/components/ui/button";
 import NavLoadingSkeleton from "@/components/common/navloadingskeleton";
 import { NotificationList } from "@/components/notifications/notificationList";
-import { MessageNotifications } from "@/components/notifications/MessageNotifications";
-
+import { NewMessageNotfier } from "@/components/chat/NewMessageNotfier";
 const NavLink = function NavLink({
   href,
   children,
@@ -87,12 +86,11 @@ const Navbar = function Navbar() {
               className="flex items-center gap-1 px-3 py-2 text-sm font-medium rounded-lg
               hover:bg-muted transition-all duration-300"
             >
-              <User className="h-5 w-5 text-primary" />
-              Profile
+              <User className="h-5 w-5" />
             </NavLink>
 
             <NotificationList userId={user.id} />
-            <MessageNotifications userId={user.id} />
+            <NewMessageNotfier />
 
             <Button onClick={signOut} variant="default" size="icon">
               <LogOutIcon className="h-5 w-5 transition-all duration-300" />
@@ -119,7 +117,8 @@ const Navbar = function Navbar() {
     <nav className="bg-transparent">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
-          <div className="flex">
+          <div className="flex items-center ">
+
             <NavLink
               href={user && user?.role ? "/dashboard" : "/"}
               className="flex items-center px-2 text-primary font-bold text-xl"
