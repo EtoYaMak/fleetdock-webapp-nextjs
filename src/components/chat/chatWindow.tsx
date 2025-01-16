@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Message } from "@/types/chat";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Send, ChevronDown, Paperclip, Loader2, X, Download, ExternalLink, FileText } from "lucide-react";
+import { Send, ChevronDown, Paperclip, Loader2, X, Download, ExternalLink, FileText, MoreVertical } from "lucide-react";
 import { useChat } from "@/context/ChatContext";
 import { format } from "date-fns";
 import { useAuth } from "@/context/AuthContext";
@@ -22,7 +22,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { supabase } from "@/lib/supabase";
 
 interface ChatWindowProps {
   chatRoomId: string;
@@ -30,25 +29,55 @@ interface ChatWindowProps {
 }
 
 export function ChatWindow({ chatRoomId, messages }: ChatWindowProps) {
-  const { sendMessage, editMessage, uploadFile } = useChat();
+  const { sendMessage, editMessage, uploadFile, getFileUrl } = useChat();
   const { user } = useAuth();
   const [newMessage, setNewMessage] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
+  const [replyingTo, setReplyingTo] = useState<Message | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [selectedFile, setSelectedFile] = useState<Message | null>(null);
   const [fileUrl, setFileUrl] = useState<string | null>(null);
   const [thumbnailUrls, setThumbnailUrls] = useState<Record<string, { url: string, expiresAt: number }>>({});
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  const scrollToBottom = (force = false) => {
+    if (!scrollRef.current) return;
+
+    const { scrollHeight, scrollTop, clientHeight } = scrollRef.current;
+    const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
+
+    if (force || (shouldAutoScroll && isNearBottom)) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
   };
 
   useEffect(() => {
-    scrollToBottom();
+    const scrollElement = scrollRef.current;
+    if (!scrollElement) return;
+
+    const handleScroll = () => {
+      const { scrollHeight, scrollTop, clientHeight } = scrollElement;
+      const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
+      setShouldAutoScroll(isNearBottom);
+    };
+
+    scrollElement.addEventListener('scroll', handleScroll);
+    return () => scrollElement.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
+    if (messages.length > 0) {
+      scrollToBottom();
+    }
   }, [messages]);
+
+  useEffect(() => {
+    scrollToBottom(true);
+  }, []);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -56,37 +85,18 @@ export function ChatWindow({ chatRoomId, messages }: ChatWindowProps) {
     }
   };
 
-  const getFileUrl = async (filePath: string, messageId: string) => {
-    const now = Date.now();
-    const cached = thumbnailUrls[messageId];
-
-    // Return cached URL if it exists and isn't expired (5 minutes before actual expiry)
-    if (cached && now < cached.expiresAt - 300000) {
-      return cached.url;
-    }
-
-    const { data } = await supabase.storage
-      .from('chat-attachments')
-      .createSignedUrl(filePath, 3600); // 1 hour expiry
-
-    if (data?.signedUrl) {
-      // Cache the URL with expiration (1 hour from now)
-      setThumbnailUrls(prev => ({
-        ...prev,
-        [messageId]: {
-          url: data.signedUrl,
-          expiresAt: now + 3600000 // 1 hour in milliseconds
-        }
-      }));
-      return data.signedUrl;
-    }
-    return null;
-  };
-
   const handleFileClick = async (message: Message) => {
     if (!message.file_url) return;
 
-    const url = await getFileUrl(message.file_url, message.id);
+    // For images, reuse the existing thumbnail URL if available
+    if (isImageFile(message.file_name || '') && thumbnailUrls[message.id]?.url) {
+      setFileUrl(thumbnailUrls[message.id].url);
+      setSelectedFile(message);
+      return;
+    }
+
+    // For non-images or if thumbnail URL doesn't exist, get a new signed URL
+    const url = await getFileUrl(message.file_url);
     if (url) {
       setFileUrl(url);
       setSelectedFile(message);
@@ -107,20 +117,20 @@ export function ChatWindow({ chatRoomId, messages }: ChatWindowProps) {
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newMessage.trim()) return;
+    if (!chatRoomId || !newMessage.trim()) return;
 
     try {
-      setIsUploading(true);
-
-      let attachmentData = null;
-      if (file) {
-        attachmentData = await uploadFile(file, chatRoomId);
-      }
       if (editingMessageId) {
         await editMessage(editingMessageId, newMessage);
         setEditingMessageId(null);
       } else {
-        await sendMessage(chatRoomId, newMessage, attachmentData);
+        let attachmentData = null;
+        if (file) {
+          setIsUploading(true);
+          attachmentData = await handleFileUpload();
+        }
+        await sendMessage(chatRoomId, newMessage, attachmentData, replyingTo?.id);
+        setReplyingTo(null);
       }
       setNewMessage("");
       setFile(null);
@@ -178,7 +188,7 @@ export function ChatWindow({ chatRoomId, messages }: ChatWindowProps) {
     messages.forEach(async (message) => {
       if (message.file_url &&
         (!thumbnailUrls[message.id] || now >= thumbnailUrls[message.id].expiresAt - 300000)) {
-        const url = await getFileUrl(message.file_url, message.id);
+        const url = await getFileUrl(message.file_url);
         if (url) {
           setThumbnailUrls(prev => ({
             ...prev,
@@ -190,7 +200,72 @@ export function ChatWindow({ chatRoomId, messages }: ChatWindowProps) {
         }
       }
     });
-  }, [messages]);
+  }, [messages, getFileUrl]);
+
+  const startReply = (message: Message) => {
+    setReplyingTo(message);
+    textareaRef.current?.focus();
+  };
+
+  const cancelReply = () => {
+    setReplyingTo(null);
+  };
+
+  const getRepliedMessage = (replyToId: string | undefined) => {
+    if (!replyToId) return null;
+    return messages.find(m => m.id === replyToId);
+  };
+
+  const ReplyPreview = ({ message }: { message: Message }) => (
+    <div className="flex items-center gap-2 px-4 py-2 bg-muted/50 border-b">
+      <div className="flex items-center gap-2">
+        <div className="w-1 h-full bg-primary/50" />
+        <div>
+          <span className="text-xs font-medium">
+            Replying to {message.sender_id === user?.id ? 'yourself' : 'them'}
+          </span>
+          <p className="text-sm text-muted-foreground truncate">
+            {message.content || (message.file_url ? 'File' : '')}
+          </p>
+        </div>
+      </div>
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        onClick={cancelReply}
+        className="h-6 w-6 p-0"
+      >
+        <X className="h-4 w-4" />
+      </Button>
+    </div>
+  );
+
+  const MessageReply = ({ replyToId }: { replyToId: string }) => {
+    const repliedMessage = messages?.find(m => m.id === replyToId);
+    if (!repliedMessage) return null;
+
+    return (
+      <div className="ml-4 pl-2 border-l-2 border-gray-300 dark:border-gray-600 mb-1">
+        <p className="text-sm text-gray-500">
+          {repliedMessage.sender_id === user?.id ? 'You' : 'They'} replied to
+        </p>
+        <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
+          {repliedMessage.content}
+        </p>
+      </div>
+    );
+  };
+
+  const handleFileUpload = async () => {
+    if (!file || !chatRoomId) return null;
+    try {
+      return await uploadFile(file, chatRoomId);
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      return null;
+    }
+  };
 
   return (
     <div className="flex flex-col min-h-full">
@@ -259,7 +334,7 @@ export function ChatWindow({ chatRoomId, messages }: ChatWindowProps) {
         </DialogContent>
       </Dialog>
 
-      <div className="flex-1 overflow-y-auto p-2 space-y-2">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto p-2 space-y-2">
         {messages.map((message, index) => {
           const isCurrentUser = message.sender_id === user?.id;
           const showSeparator =
@@ -270,87 +345,142 @@ export function ChatWindow({ chatRoomId, messages }: ChatWindowProps) {
           return (
             <React.Fragment key={message.id}>
               {showSeparator && renderDateSeparator(message.created_at)}
-              <div className={`flex relative  ${isCurrentUser ? "justify-end" : "justify-start"}`}>
-                {isCurrentUser && canEditMessage(message) && (
-                  <div className="absolute right-0 top-0 z-10">
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6 p-0 hover:bg-accent/50 bg-transparent rounded-full"
-                        >
-                          <ChevronDown className="h-4 w-4 text-white" />
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent
-                        className="w-[140px] p-0"
-                        align="end"
-                        side="top"
-                      >
-                        <button
-                          onClick={() => startEditing(message)}
-                          className="w-full px-2 py-1.5 text-sm text-left hover:bg-accent"
-                        >
-                          Edit message
-                        </button>
-                        {/* TODO: Add delete option */}
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-                )}
-                <div
-                  className={cn(
-                    "max-w-[90%] rounded-lg p-3",
-                    message.is_deleted ? "bg-muted" : isCurrentUser ? "bg-primary text-primary-foreground" : "bg-accent",
-                    isCurrentUser ? "rounded-br-sm" : "rounded-bl-sm"
-                  )}
-                >
-                  {message.is_deleted ? (
-                    <p className="text-sm italic">Message deleted</p>
-                  ) : (
-                    <>
-                      <p className="break-words text-sm max-w-[90%]">{message.content}</p>
-                      {message.file_url && (
-                        <button
-                          onClick={() => handleFileClick(message)}
-                          className="mt-2 flex items-center gap-2 hover:bg-black/10 p-1.5 rounded-md transition-colors"
-                        >
-                          {isImageFile(message.file_name || "") ? (
-                            <div className="relative w-32 h-32 bg-black/20 rounded-md overflow-hidden">
-                              {thumbnailUrls[message.id]?.url ? (
-                                <img
-                                  src={thumbnailUrls[message.id].url}
-                                  alt={message.file_name || 'Preview'}
-                                  className="w-full h-full object-cover"
-                                />
-                              ) : (
-                                <div className="w-full h-full flex items-center justify-center">
-                                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                                </div>
-                              )}
-                            </div>
-                          ) : (
-                            <>
-                              <FileText className="h-5 w-5" />
-                              <span className="text-xs font-medium underline">
-                                {message.file_name}
-                              </span>
-                            </>
-                          )}
-                        </button>
-                      )}
-                    </>
+              <div className={`flex flex-col ${isCurrentUser ? "items-end" : "items-start"}`}>
+                <div className={`flex relative ${isCurrentUser ? "justify-end" : "justify-start"} w-full max-w-[70%] group`}>
+                  {!isCurrentUser && !message.is_deleted && (
+                    <div className="absolute right-0 top-0 z-10">
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6 p-0 hover:bg-accent/50 bg-transparent rounded-full opacity-50 group-hover:opacity-100 transition-opacity"
+                          >
+                            <MoreVertical className="h-4 w-4 " />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-24 p-0" align="start" side="top">
+                          <div className="flex flex-col">
+                            <Button
+                              variant="ghost"
+                              className="justify-start rounded-none"
+                              onClick={() => startReply(message)}
+                            >
+                              Reply
+                            </Button>
+                          </div>
+                        </PopoverContent>
+                      </Popover>
+                    </div>
                   )}
                   <div className={cn(
-                    "text-xs mt-1 flex items-center gap-2",
-                    isCurrentUser ? "text-primary-foreground/80" : "text-muted-foreground"
+                    "rounded-lg p-3 w-full break-words whitespace-pre-wrap",
+                    message.is_deleted ? "bg-muted" : isCurrentUser ? "bg-primary text-primary-foreground" : "bg-accent",
+                    isCurrentUser ? "rounded-br-sm" : "rounded-bl-sm"
                   )}>
-                    <span>{formatMessageDate(message.created_at)}</span>
-                    {message.edited_at && (
-                      <span className="italic">(edited)</span>
+                    {message.is_deleted ? (
+                      <p className="text-sm italic">Message deleted</p>
+                    ) : (
+                      <>
+                        {message.reply_to_id && (
+                          <div className="mb-1 -mt-1 mr-2 border-l-4 border-black/50 bg-accent rounded-lg">
+                            {(() => {
+                              const repliedMessage = getRepliedMessage(message.reply_to_id);
+                              if (!repliedMessage) return null;
+                              return (
+                                <div className="text-xs text-primary-foreground/70 px-2 py-1">
+                                  <span className="font-medium text-muted-foreground">
+                                    {repliedMessage.sender_id === user?.id ? 'You' : 'They'} replied to{" "}
+                                  </span>
+                                  <p className="truncate text-primary font-bold">
+                                    {repliedMessage.content || (repliedMessage.file_url ? 'File' : 'Message unavailable')}
+                                  </p>
+                                </div>
+                              );
+                            })()}
+                          </div>
+                        )}
+                        <p className={`break-words whitespace-pre-wrap text-sm ${isCurrentUser ? "text-white" : ""}`}>{message.content}</p>
+                        {message.file_url && (
+                          <button
+                            onClick={() => handleFileClick(message)}
+                            className="mt-2 flex items-center gap-2 hover:bg-black/10 p-1.5 rounded-md transition-colors"
+                          >
+                            {isImageFile(message.file_name || "") ? (
+                              <div className="relative w-32 h-32 bg-black/20 rounded-md overflow-hidden">
+                                {thumbnailUrls[message.id]?.url ? (
+                                  <img
+                                    src={thumbnailUrls[message.id].url}
+                                    alt={message.file_name || 'Preview'}
+                                    className="w-full h-full object-cover"
+                                  />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center">
+                                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                                  </div>
+                                )}
+                              </div>
+                            ) : (
+                              <>
+                                <FileText className="h-5 w-5 shrink-0" />
+                                <span className="text-xs font-medium underline break-all text-left">
+                                  {message.file_name}
+                                </span>
+                              </>
+                            )}
+                          </button>
+                        )}
+                        <div className={cn(
+                          "text-xs mt-1 flex items-center gap-1",
+                          isCurrentUser ? "text-white/80" : "text-muted-foreground"
+                        )}>
+                          <span>{formatMessageDate(message.created_at)}</span>
+                          {message.edited_at && (
+                            <span className="italic">(edited)</span>
+                          )}
+                        </div>
+                      </>
                     )}
                   </div>
+                  {isCurrentUser && !message.is_deleted && (
+                    <div className="absolute right-0 top-0 z-10">
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6 p-0 hover:bg-accent/50 bg-transparent rounded-full opacity-50 group-hover:opacity-100 transition-opacity"
+                          >
+                            <MoreVertical className="h-4 w-4 text-white" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-24 p-0" align="end" side="top">
+                          <div className="flex flex-col">
+                            <Button
+                              variant="ghost"
+                              className="justify-start rounded-none"
+                              onClick={() => startReply(message)}
+                            >
+                              Reply
+                            </Button>
+                            {canEditMessage(message) && (
+                              <Button
+                                variant="ghost"
+                                className="justify-start rounded-none"
+                                onClick={() => {
+                                  setNewMessage(message.content);
+                                  setEditingMessageId(message.id);
+                                  textareaRef.current?.focus();
+                                }}
+                              >
+                                Edit
+                              </Button>
+                            )}
+                          </div>
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                  )}
                 </div>
               </div>
             </React.Fragment>
@@ -359,17 +489,21 @@ export function ChatWindow({ chatRoomId, messages }: ChatWindowProps) {
         <div ref={messagesEndRef} />
       </div>
 
+      {replyingTo && <ReplyPreview message={replyingTo} />}
+
       <form onSubmit={handleSendMessage} className="sticky bottom-0 bg-background border-t">
+        {replyingTo && <ReplyPreview message={replyingTo} />}
         {editingMessageId && (
           <div className="flex items-center justify-between mb-2 px-2">
-            <span className="text-sm text-muted-foreground">Editing message</span>
+            <span className="text-xs text-muted-foreground">Editing message</span>
             <Button
               type="button"
               variant="ghost"
               size="sm"
               onClick={cancelEditing}
+              className="h-6 w-6 p-0"
             >
-              Cancel
+              <X className="h-4 w-4" />
             </Button>
           </div>
         )}

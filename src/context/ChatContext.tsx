@@ -18,9 +18,10 @@ interface ChatContextType {
     closeChat: () => void;
     toggleChat: () => void;
     backToRooms: () => void;
-    sendMessage: (roomId: string, content: string, attachmentData: { url: string, name: string, size: number, type: string } | null) => Promise<void>;
+    sendMessage: (roomId: string, content: string, attachmentData: { url: string, name: string, size: number, type: string } | null, replyToId?: string) => Promise<void>;
     uploadFile: (file: File, roomId: string) => Promise<{ url: string; type: string; name: string; size: number }>;
     editMessage: (messageId: string, newContent: string) => Promise<void>;
+    getFileUrl: (filePath: string) => Promise<string | null>;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -348,7 +349,12 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         setActiveChatRoom(null);
     };
 
-    const sendMessage = async (roomId: string, content: string, attachmentData: { url: string, name: string, size: number, type: string } | null) => {
+    const sendMessage = async (
+        roomId: string,
+        content: string,
+        attachmentData: { url: string, name: string, size: number, type: string } | null,
+        replyToId?: string
+    ) => {
         if (!user?.id) return;
 
         const { error } = await supabase.from("messages").insert({
@@ -360,7 +366,8 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
             file_name: attachmentData?.name || null,
             file_size: attachmentData?.size || null,
             status: 'sent',
-            read_at: null
+            read_at: null,
+            reply_to_id: replyToId || null
         });
 
         if (error) {
@@ -497,6 +504,14 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         });
     };
 
+    const getFileUrl = async (filePath: string) => {
+        const { data } = await supabase.storage
+            .from('chat-attachments')
+            .createSignedUrl(filePath, 3600); // 1 hour expiry
+
+        return data?.signedUrl || null;
+    };
+
     const value = {
         isOpen,
         activeChatRoom,
@@ -512,6 +527,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         sendMessage,
         uploadFile,
         editMessage,
+        getFileUrl,
     };
 
     return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;
