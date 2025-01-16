@@ -50,7 +50,7 @@ export function FloatingChat() {
             key="chat-window"
             className={`
               bg-card border rounded-lg shadow-lg 
-              ${minimized ? "h-[80px]" : "h-[500px]"}
+              ${minimized ? "h-[80px]" : "h-[650px]"}
               w-[360px]
               flex flex-col
             `}

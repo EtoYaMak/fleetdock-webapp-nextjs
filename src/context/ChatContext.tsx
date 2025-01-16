@@ -18,7 +18,8 @@ interface ChatContextType {
     closeChat: () => void;
     toggleChat: () => void;
     backToRooms: () => void;
-    sendMessage: (roomId: string, content: string) => Promise<void>;
+    sendMessage: (roomId: string, content: string, attachmentData: { url: string, name: string, size: number, type: string } | null) => Promise<void>;
+    uploadFile: (file: File, roomId: string) => Promise<{ url: string; type: string; name: string; size: number }>;
     editMessage: (messageId: string, newContent: string) => Promise<void>;
 }
 
@@ -347,13 +348,17 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         setActiveChatRoom(null);
     };
 
-    const sendMessage = async (roomId: string, content: string) => {
+    const sendMessage = async (roomId: string, content: string, attachmentData: { url: string, name: string, size: number, type: string } | null) => {
         if (!user?.id) return;
 
         const { error } = await supabase.from("messages").insert({
             chat_room_id: roomId,
             sender_id: user.id,
             content,
+            file_url: attachmentData?.url || null,
+            file_type: attachmentData?.type || null,
+            file_name: attachmentData?.name || null,
+            file_size: attachmentData?.size || null,
             status: 'sent',
             read_at: null
         });
@@ -362,6 +367,102 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
             console.error("Error sending message:", error);
             throw error;
         }
+    };
+
+
+    const uploadFile = async (file: File, roomId: string) => {
+        // Create a clean filename (remove special characters)
+        const cleanFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+        const fileName = `${Date.now()}-${cleanFileName}`;
+        // Start path with user ID to match the policy
+        const filePath = `${user?.id}/${roomId}/${fileName}`;
+
+        try {
+            if (file.type.startsWith('image/')) {
+                // For images, convert to webp and optimize
+                const optimizedImage = await optimizeImage(file);
+                const { data, error: uploadError } = await supabase.storage
+                    .from('chat-attachments')
+                    .upload(filePath.replace(/\.[^/.]+$/, '.webp'), optimizedImage);
+
+                if (uploadError) throw uploadError;
+
+                return {
+                    url: filePath.replace(/\.[^/.]+$/, '.webp'),
+                    type: 'image',
+                    name: file.name,
+                    size: optimizedImage.size
+                };
+            } else {
+                // For non-image files, upload as is
+                const { data, error: uploadError } = await supabase.storage
+                    .from('chat-attachments')
+                    .upload(filePath, file);
+
+                if (uploadError) throw uploadError;
+
+                return {
+                    url: filePath,
+                    type: file.type.startsWith('image/') ? 'image' : 'file',
+                    name: file.name,
+                    size: file.size
+                };
+            }
+        } catch (error) {
+            console.error('Error uploading file:', error);
+            throw error;
+        }
+    };
+
+    // Helper function to optimize images
+    const optimizeImage = async (file: File): Promise<Blob> => {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                if (!ctx) {
+                    reject(new Error('Could not get canvas context'));
+                    return;
+                }
+
+                // Set maximum dimensions while maintaining aspect ratio
+                const MAX_WIDTH = 1920;
+                const MAX_HEIGHT = 1080;
+                let width = img.width;
+                let height = img.height;
+
+                if (width > height) {
+                    if (width > MAX_WIDTH) {
+                        height *= MAX_WIDTH / width;
+                        width = MAX_WIDTH;
+                    }
+                } else {
+                    if (height > MAX_HEIGHT) {
+                        width *= MAX_HEIGHT / height;
+                        height = MAX_HEIGHT;
+                    }
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                ctx.drawImage(img, 0, 0, width, height);
+
+                canvas.toBlob(
+                    (blob) => {
+                        if (blob) {
+                            resolve(blob);
+                        } else {
+                            reject(new Error('Could not convert canvas to blob'));
+                        }
+                    },
+                    'image/webp',
+                    0.8 // quality
+                );
+            };
+            img.onerror = () => reject(new Error('Could not load image'));
+            img.src = URL.createObjectURL(file);
+        });
     };
 
     const editMessage = async (messageId: string, newContent: string) => {
@@ -409,6 +510,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         closeChat,
         toggleChat,
         sendMessage,
+        uploadFile,
         editMessage,
     };
 
