@@ -1,12 +1,11 @@
 "use client";
 
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import { ProfileSidebar } from "@/app/me/ProfileSidebar";
 import { useAuth } from "@/context/AuthContext";
 import { useBroker } from "@/hooks/useBroker";
 import { useTrucker } from "@/hooks/useTrucker";
 import { useState, ReactNode } from "react";
-import Navbar from "@/components/common/Navbar";
 
 // Create a context to share the hooks data
 export type DashboardContextType = {

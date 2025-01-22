@@ -9,6 +9,7 @@ import { metadata as siteMetadata } from "./metadata";
 import { ChatProvider } from "@/context/ChatContext";
 import { GlobalFloatingChat } from "@/components/chat/GlobalFloatingChat";
 import UserProvider from "@/context/AuthContext";
+import { AdminProvider } from "@/context/AdminContext";
 
 const montserrat = Montserrat({ subsets: ["latin"] });
 
@@ -30,12 +31,14 @@ export default function RootLayout({
         >
           <Suspense fallback={<LoadingSpinner />}>
             <UserProvider>
-              <ChatProvider>
-                <ClientLayout>
-                  {children}
-                </ClientLayout>
-                <GlobalFloatingChat />
-              </ChatProvider>
+              <AdminProvider>
+                <ChatProvider>
+                  <ClientLayout>
+                    {children}
+                  </ClientLayout>
+                  <GlobalFloatingChat />
+                </ChatProvider>
+              </AdminProvider>
             </UserProvider>
           </Suspense>
         </ThemeProvider>

@@ -1,7 +1,7 @@
 export interface User {
   id: string;
   email: string;
-  role: string;
+  role: "admin" | "broker" | "trucker";
   full_name: string;
   phone: string;
   membership_tier: string | null;
@@ -15,6 +15,7 @@ export interface User {
   created_at?: string | null;
   last_sign_in_at?: string | null;
   email_verified?: boolean | null;
+  is_admin?: boolean | null;
 }
 
 export interface UseContextType {
