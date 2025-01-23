@@ -14,6 +14,17 @@ const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<UseContextType["error"]>(null);
 
+  const setUserWithRole = (userData: any) => {
+    if (userData) {
+      setUser({
+        ...userData,
+        role: userData.app_metadata?.role
+      });
+    } else {
+      setUser(null);
+    }
+  };
+
   useEffect(() => {
     let isMounted = true;
 
@@ -29,7 +40,7 @@ const UserProvider = ({ children }: { children: React.ReactNode }) => {
             .single();
 
           if (isMounted) {
-            setUser({ ...sessionUser.data.user, ...profile });
+            setUserWithRole({ ...sessionUser.data.user, ...profile });
             setLoading(false);
           }
         } else if (isMounted) {
@@ -53,16 +64,19 @@ const UserProvider = ({ children }: { children: React.ReactNode }) => {
       setLoading(false);
     }
 
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        setUserWithRole(session.user);
+      }
+    });
+
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((session) => {
-      if (isMounted) {
-        if (session && !user) {
-          getUserProfile();
-        } else if (!session) {
-          setUser(null);
-          setLoading(false);
-        }
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        setUserWithRole(session.user);
+      } else {
+        setUser(null);
       }
     });
 
@@ -70,7 +84,7 @@ const UserProvider = ({ children }: { children: React.ReactNode }) => {
       isMounted = false;
       subscription?.unsubscribe();
     };
-  }, [user]);
+  }, []);
 
   const signIn = async (data: SignInType) => {
     try {
@@ -94,7 +108,7 @@ const UserProvider = ({ children }: { children: React.ReactNode }) => {
           .eq("id", authData.user.id)
           .single();
 
-        setUser({ ...authData.user, ...profile });
+        setUserWithRole({ ...authData.user, ...profile });
         return { success: true };
       }
 
@@ -170,10 +184,40 @@ const UserProvider = ({ children }: { children: React.ReactNode }) => {
       };
     }
   };
+  const refreshSession = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase.auth.refreshSession();
+      if (error) throw error;
+
+      // Fetch the updated user profile again
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", data.session?.user.id)
+        .single();
+
+      setUserWithRole({ ...data.session?.user, ...profile });
+      toast({
+        title: "Session Refreshed",
+        description: "Your session has been refreshed successfully.",
+        variant: "success",
+      });
+    } catch (error) {
+      toast({
+        title: "Refresh Failed",
+        description:
+          error instanceof Error ? error.message : "Failed to refresh session",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <UserContext.Provider
-      value={{ user, loading, error, signIn, signOut, signUp }}
+      value={{ user, loading, error, signIn, signOut, signUp, refreshSession }}
     >
       {children}
     </UserContext.Provider>

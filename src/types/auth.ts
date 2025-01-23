@@ -1,7 +1,7 @@
 export interface User {
   id: string;
   email: string;
-  role: "admin" | "broker" | "trucker";
+  role: string;
   full_name: string;
   phone: string;
   membership_tier: string | null;
@@ -16,12 +16,16 @@ export interface User {
   last_sign_in_at?: string | null;
   email_verified?: boolean | null;
   is_admin?: boolean | null;
+  app_metadata?: {
+    role: string;
+  };
 }
 
 export interface UseContextType {
   user: User | null;
   loading: boolean;
   error: any;
+  refreshSession: () => Promise<void>;
   signIn: (data: SignInType) => Promise<{
     success: boolean;
     error?: string | null;
@@ -52,3 +56,8 @@ export interface SignUpType {
   subscription_end_date: string;
   selectedTier: "starter" | "professional" | "enterprise";
 }
+
+// Helper function to get the correct role
+export const getUserRole = (user: User | null): string | null => {
+  return user?.app_metadata?.role || null;
+};

@@ -5,7 +5,7 @@ import { format, formatDistanceToNow } from "date-fns";
 import { ArrowUpDown, Clock, Weight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Load, Location } from "@/types/load";
-import { FiEye } from "react-icons/fi";
+import { FiEye, FiEdit2, FiTrash2 } from "react-icons/fi";
 import { User } from "@/types/auth";
 
 // Format location object to string
@@ -13,7 +13,7 @@ const formatLocation = (location: Location): string => {
   return `${location.city}`;
 };
 
-export const getColumns = (user: User, router: any) => {
+export const getColumns = (user: User, router: any, isAdmin: boolean = false) => {
   const baseColumns: ColumnDef<Load>[] = [
     {
       accessorKey: "load_id",
@@ -241,7 +241,50 @@ export const getColumns = (user: User, router: any) => {
     },
   };
 
-  return user?.role && user?.role !== null
-    ? [...baseColumns, ...hiddenColumns, actionColumn]
-    : [...baseColumns, ...hiddenColumns];
+  const adminActionColumn: ColumnDef<Load> = {
+    id: "actions",
+    header: "Actions",
+    cell: ({ row }) => {
+      const load = row.original;
+      return (
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => router.push(`/loads/${load.id}`)}
+            className="hover:bg-primary hover:text-white"
+          >
+            <FiEye className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => router.push(`/admin/loads/${load.id}/edit`)}
+            className="hover:bg-primary hover:text-white"
+          >
+            <FiEdit2 className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              // Add delete confirmation dialog and API call
+              if (window.confirm("Are you sure you want to delete this load?")) {
+                // Call your delete API
+              }
+            }}
+            className="hover:bg-destructive hover:text-white"
+          >
+            <FiTrash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      );
+    },
+  };
+
+  return isAdmin
+    ? [...baseColumns, ...hiddenColumns, adminActionColumn]
+    : user?.role && user?.role !== null
+      ? [...baseColumns, ...hiddenColumns, actionColumn]
+      : [...baseColumns, ...hiddenColumns];
 };

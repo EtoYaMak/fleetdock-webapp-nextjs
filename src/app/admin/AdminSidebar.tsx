@@ -6,6 +6,7 @@ import {
     UserRoundPenIcon,
     LayoutGrid,
     Hammer,
+    BoxIcon,
 } from "lucide-react";
 
 import {
@@ -28,6 +29,12 @@ const items = [
         title: "Overview ",
         url: "/admin",
         icon: LayoutGrid,
+        status: "completed",
+    },
+    {
+        title: "Loads",
+        url: "/admin/loads",
+        icon: BoxIcon,
         status: "completed",
     },
     {

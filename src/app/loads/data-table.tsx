@@ -68,7 +68,7 @@ const ResultsCounter = ({
 }) => {
   const start =
     table.getState().pagination.pageIndex *
-      table.getState().pagination.pageSize +
+    table.getState().pagination.pageSize +
     1;
   const end = Math.min(
     start + table.getState().pagination.pageSize - 1,
@@ -430,7 +430,7 @@ const ActiveFilterChips = ({
           className={cn(
             "flex items-center gap-2 transition-colors",
             activeFilters.length > 0 &&
-              "bg-destructive text-white hover:text-white hover:bg-destructive/90"
+            "bg-destructive text-white hover:text-white hover:bg-destructive/90"
           )}
         >
           Clear All
@@ -603,9 +603,9 @@ export function DataTable<TData, TValue>({
                   {header.isPlaceholder
                     ? null
                     : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
-                      )}
+                      header.column.columnDef.header,
+                      header.getContext()
+                    )}
                 </TableHead>
               ))}
             </TableRow>
@@ -647,10 +647,9 @@ export function DataTable<TData, TValue>({
                 }}
                 className={`
                   border border-primary 
-                  ${
-                    !table.getCanPreviousPage()
-                      ? "pointer-events-none opacity-50"
-                      : "hover:bg-primary hover:text-white transition-colors"
+                  ${!table.getCanPreviousPage()
+                    ? "pointer-events-none opacity-50"
+                    : "hover:bg-primary hover:text-white transition-colors"
                   }
                 `}
               />
@@ -669,11 +668,10 @@ export function DataTable<TData, TValue>({
                     }
                     className={`
                     border border-primary
-                    ${
-                      table.getState().pagination.pageIndex === pageNumber - 1
+                    ${table.getState().pagination.pageIndex === pageNumber - 1
                         ? "bg-primary text-white border-primary"
                         : "text-primary hover:bg-primary hover:text-white transition-colors"
-                    }
+                      }
                   `}
                   >
                     {pageNumber}
@@ -690,10 +688,9 @@ export function DataTable<TData, TValue>({
                 }}
                 className={`
                   border border-primary
-                  ${
-                    !table.getCanNextPage()
-                      ? "pointer-events-none opacity-50"
-                      : "hover:bg-primary hover:text-white transition-colors"
+                  ${!table.getCanNextPage()
+                    ? "pointer-events-none opacity-50"
+                    : "hover:bg-primary hover:text-white transition-colors"
                   }
                 `}
               />
