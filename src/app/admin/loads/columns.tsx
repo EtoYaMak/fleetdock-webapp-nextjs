@@ -4,10 +4,45 @@ import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Load } from "@/types/load";
+import { format } from "date-fns";
 
 export const columns: ColumnDef<Load>[] = [
     {
+        accessorKey: "created_at",
+        header: ({ column }) => (
+            <Button
+                variant="ghost"
+                className="flex w-fit hover:bg-black/20"
+                onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            >
+                Created At
+                <ArrowUpDown className="ml-2 h-4 w-4" />
+            </Button>
+        ),
+        cell: ({ row }) => {
+            return format(new Date(row.getValue("created_at")), "dd/mm/yyyy hh:mm a");
+        },
+    },
+    {
+        accessorKey: "updated_at",
+        header: ({ column }) => (
+            <Button
+                variant="ghost"
+                className="flex w-fit hover:bg-black/20"
+                onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            >
+                Updated At
+                <ArrowUpDown className="ml-2 h-4 w-4" />
+            </Button>
+        ),
+        cell: ({ row }) => {
+            return format(new Date(row.getValue("updated_at")), "dd/mm/yyyy hh:mm a");
+        },
+    },
+    {
         accessorKey: "id",
+        filterFn: "equals",
+        cell: ({ row }) => (<span className="text-xs font-medium text-muted-foreground bg-muted rounded-full px-2 py-1">{JSON.stringify(row.getValue("id") as string).slice(1, 9)}</span>),
         header: ({ column }) => (
             <Button
                 variant="ghost"

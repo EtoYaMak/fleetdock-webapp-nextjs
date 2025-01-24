@@ -14,6 +14,15 @@ import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import { useLoadTypes } from "@/hooks/useLoadTypes";
+import { useVehiclesTypes } from "@/hooks/useVehicleTypes";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 
 interface LoadSheetProps {
     load: Load;
@@ -24,18 +33,48 @@ interface LoadSheetProps {
 export function LoadSheet({ load, isOpen, onClose }: LoadSheetProps) {
     const { updateLoad, deleteLoad } = useLoads();
     const { toast } = useToast();
+    const { loadTypes, isLoading: loadTypesLoading } = useLoadTypes();
+    const { vehiclesTypes, isLoading: vehiclesTypesLoading } = useVehiclesTypes();
     const [isEditing, setIsEditing] = useState(false);
     const [editedLoad, setEditedLoad] = useState<Load>(load);
 
     const handleSave = async () => {
         try {
-            await updateLoad(editedLoad);
+            // Only include fields that are defined in the Load interface
+            const loadToUpdate: Partial<Load> = {
+                id: editedLoad.id,
+                broker_id: editedLoad.broker_id,
+                load_type_id: editedLoad.load_type_id,
+                temperature_controlled: editedLoad.temperature_controlled,
+                weight_kg: editedLoad.weight_kg,
+                dimensions: editedLoad.dimensions,
+                pickup_location: editedLoad.pickup_location,
+                delivery_location: editedLoad.delivery_location,
+                pickup_date: editedLoad.pickup_date,
+                delivery_date: editedLoad.delivery_date,
+                distance_km: editedLoad.distance_km,
+                special_instructions: editedLoad.special_instructions,
+                load_status: editedLoad.load_status,
+                budget_amount: editedLoad.budget_amount,
+                budget_currency: editedLoad.budget_currency,
+                bid_enabled: editedLoad.bid_enabled,
+                bidding_deadline: editedLoad.bidding_deadline,
+                fixed_rate: editedLoad.fixed_rate,
+                equipment_required: editedLoad.equipment_required,
+                truck_type_required: editedLoad.truck_type_required,
+                contact_name: editedLoad.contact_name,
+                contact_phone: editedLoad.contact_phone,
+                contact_email: editedLoad.contact_email
+            };
+
+            await updateLoad(loadToUpdate as Load);
             toast({
                 title: "Load updated successfully",
                 variant: "default",
             });
             setIsEditing(false);
         } catch (error) {
+            console.error("Error updating load:", error);
             toast({
                 title: "Failed to update load",
                 description: "Please try again later",
@@ -106,15 +145,27 @@ export function LoadSheet({ load, isOpen, onClose }: LoadSheetProps) {
                         <div>
                             <Label>Load Type</Label>
                             {isEditing ? (
-                                <Input
-                                    value={editedLoad.load_type_name}
-                                    onChange={(e) =>
+                                <Select
+                                    disabled={loadTypesLoading}
+                                    value={editedLoad.load_type_id}
+                                    onValueChange={(value) =>
                                         setEditedLoad({
                                             ...editedLoad,
-                                            load_type_name: e.target.value,
+                                            load_type_id: value,
                                         })
                                     }
-                                />
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select load type" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {loadTypes?.map((type) => (
+                                            <SelectItem key={type.id} value={type.id}>
+                                                {type.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                             ) : (
                                 <p className="text-sm">{load.load_type_name}</p>
                             )}
@@ -123,17 +174,58 @@ export function LoadSheet({ load, isOpen, onClose }: LoadSheetProps) {
                         <div>
                             <Label>Equipment Required</Label>
                             {isEditing ? (
-                                <Input
-                                    value={editedLoad.equipment_required_name}
-                                    onChange={(e) =>
+                                <Select
+                                    disabled={vehiclesTypesLoading}
+                                    value={editedLoad.equipment_required}
+                                    onValueChange={(value) =>
                                         setEditedLoad({
                                             ...editedLoad,
-                                            equipment_required_name: e.target.value,
+                                            equipment_required: value,
                                         })
                                     }
-                                />
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select equipment" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {vehiclesTypes?.map((type) => (
+                                            <SelectItem key={type.id} value={type.id}>
+                                                {type.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                             ) : (
                                 <p className="text-sm">{load.equipment_required_name}</p>
+                            )}
+                        </div>
+
+                        <div>
+                            <Label>Truck Type Required</Label>
+                            {isEditing ? (
+                                <Select
+                                    disabled={vehiclesTypesLoading}
+                                    value={editedLoad.truck_type_required_name}
+                                    onValueChange={(value) =>
+                                        setEditedLoad({
+                                            ...editedLoad,
+                                            truck_type_required: value,
+                                        })
+                                    }
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select truck type" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {vehiclesTypes?.map((type) => (
+                                            <SelectItem key={type.id} value={type.id}>
+                                                {type.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            ) : (
+                                <p className="text-sm">{load.truck_type_required}</p>
                             )}
                         </div>
 

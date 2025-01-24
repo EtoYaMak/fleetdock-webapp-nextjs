@@ -67,6 +67,7 @@ export const useLoads = () => {
   const updateLoad = useCallback(async (updatedLoad: Load) => {
     setLoading(true);
     try {
+      console.log("useLoads.ts: updateLoad", updatedLoad);
       const { data, error } = await supabase
         .from("loads")
         .update(updatedLoad)

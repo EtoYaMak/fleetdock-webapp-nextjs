@@ -1,4 +1,5 @@
 import { User } from "@/types/auth";
+
 export interface Load {
   id: string; // UUID
   broker_id: string; // UUID
@@ -30,11 +31,17 @@ export interface Load {
   updated_at?: Date; // Timestamp
 }
 
-
 export interface Dimensions {
   length: number;
   width: number;
   height: number;
+}
+
+export interface Location {
+  address: string;
+  city: string;
+  state: string;
+  zip: string;
 }
 export enum LoadStatus {
   POSTED = "posted",
@@ -70,13 +77,6 @@ export interface LoadReport {
 
 //combined type
 export type LoadCombined = Load & LoadType;
-
-export interface Location {
-  address: string;
-  city: string;
-  state: string;
-  zip: string;
-}
 
 export interface LoadActionsProps {
   load: Load;
