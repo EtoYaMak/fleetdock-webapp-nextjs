@@ -9,27 +9,26 @@ export const useTrucker = () => {
   const [trucker, setTrucker] = useState<TruckerDetails | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [truckers, setTruckers] = useState<TruckerDetails[]>([]);
 
   const fetchTrucker = useCallback(async () => {
     if (!user?.id) return;
     setIsLoading(true);
 
     try {
-      const { data, error } = await supabase
-        .from("trucker_details")
-        .select("*")
-        .eq("profile_id", user.id)
-        .single();
-
-      if (error) {
-        if (error.code === "PGRST116") {
-          setTrucker(null);
-          return;
-        }
-        throw error;
+      if (user.role === "admin") {
+        const { data, error } = await supabase
+          .from("trucker_details")
+          .select("*");
+        setTruckers(data ?? []);
+      } else {
+        const { data, error } = await supabase
+          .from("trucker_details")
+          .select("*")
+          .eq("profile_id", user.id)
+          .single();
+        setTrucker(data);
       }
-
-      setTrucker(data);
     } catch (err) {
       console.error(err);
       setError("Failed to fetch trucker data");
@@ -83,6 +82,7 @@ export const useTrucker = () => {
 
   return {
     trucker,
+    truckers,
     isLoading,
     error,
     createTrucker,

@@ -6,6 +6,10 @@ import { useEffect, useState } from "react";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { AdminSidebar } from "./AdminSidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
+import { useLoads } from "@/hooks/useLoads";
+import { useAdmin } from "@/context/AdminContext";
+
+
 
 export default function AdminLayout({
     children,
@@ -14,7 +18,7 @@ export default function AdminLayout({
 }) {
     const { user, loading } = useAuth();
     const router = useRouter();
-    const [open, setOpen] = useState(false);
+    const [open, setOpen] = useState(true);
 
     useEffect(() => {
         if (!loading && (!user || user.role !== "admin")) {

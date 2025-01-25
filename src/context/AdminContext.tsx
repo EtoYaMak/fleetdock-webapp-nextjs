@@ -3,10 +3,17 @@ import { createContext, useContext, useState, useEffect } from "react";
 import { useAuth } from "./AuthContext";
 import { User } from "@/types/auth";
 import { supabase } from "@/lib/supabase";
+import { useTrucker } from "@/hooks/useTrucker";
+import { useLoads } from "@/hooks/useLoads";
+import { TruckerDetails } from "@/types/trucker";
+import { Load } from "@/types/load";
+
 
 interface AdminContextType {
     isAdmin: boolean;
     users: User[];
+    truckers: TruckerDetails[];
+    loads: Load[];
     loading: boolean;
     fetchUsers: () => Promise<void>;
     updateUserStatus: (userId: string, status: boolean) => Promise<void>;
@@ -20,6 +27,8 @@ const AdminContext = createContext<AdminContextType | null>(null);
 
 export function AdminProvider({ children }: { children: React.ReactNode }) {
     const { user } = useAuth();
+    const { truckers } = useTrucker();
+    const { loads } = useLoads();
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(false);
     const isAdmin = user?.role === "admin";
@@ -131,6 +140,8 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
             value={{
                 isAdmin,
                 users,
+                truckers,
+                loads,
                 loading,
                 fetchUsers,
                 updateUserStatus,
