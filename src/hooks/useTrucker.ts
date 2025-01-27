@@ -81,6 +81,7 @@ export const useTrucker = () => {
   }, [user?.id, fetchTrucker]);
 
   return {
+    fetchTrucker,
     trucker,
     truckers,
     isLoading,
