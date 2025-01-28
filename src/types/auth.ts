@@ -16,7 +16,7 @@ export interface User {
   last_sign_in_at?: string | null;
   email_verified?: boolean | null;
   is_admin?: boolean | null;
-  app_metadata?: {
+  app_metadata: {
     role: string;
   };
 }
@@ -58,6 +58,6 @@ export interface SignUpType {
 }
 
 // Helper function to get the correct role
-export const getUserRole = (user: User | null): string | null => {
-  return user?.app_metadata?.role || null;
+export const getUserRole = (user: User): string => {
+  return user?.app_metadata?.role;
 };

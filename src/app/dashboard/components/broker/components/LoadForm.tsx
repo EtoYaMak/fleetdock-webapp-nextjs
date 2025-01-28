@@ -121,15 +121,15 @@ export default function LoadForm({
                 setFormData((prev) => ({ ...prev, load_type_id: value }))
               }
             >
-              <SelectTrigger className="bg-[#203152] border-[#4895d0]/30">
+              <SelectTrigger className="bg-background border-border text-foreground">
                 <SelectValue placeholder="Select load type" />
               </SelectTrigger>
-              <SelectContent className="bg-[#111a2d] border-[#4895d0]/30">
+              <SelectContent className="bg-background border-border">
                 {loadTypes?.map((type) => (
                   <SelectItem
                     key={type.id}
                     value={type.id}
-                    className="text-[#f1f0f3]"
+                    className="text-foreground"
                   >
                     {type.name}
                   </SelectItem>
@@ -175,7 +175,7 @@ export default function LoadForm({
                   onChange={(e) =>
                     handleDimensionChange(dim, parseFloat(e.target.value))
                   }
-                  className="bg-[#203152] border border-border placeholder:text-muted-foreground text-white "
+                  className="bg-background border border-border placeholder:text-muted-foreground text-foreground "
                 />
               ))}
             </div>
@@ -194,7 +194,7 @@ export default function LoadForm({
                   weight_kg: parseFloat(e.target.value),
                 }))
               }
-              className="bg-[#203152] border-[#4895d0]/30"
+              className="bg-background border border-border placeholder:text-muted-foreground text-foreground "
             />
           </div>
         </div>
@@ -207,8 +207,8 @@ export default function LoadForm({
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-1 text-muted-foreground">
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-muted-foreground">
                 Pickup Location
               </label>
               <Input
@@ -228,7 +228,7 @@ export default function LoadForm({
                     } satisfies Location,
                   }))
                 }
-                className="bg-[#203152] border-[#4895d0]/30 mb-2"
+                className="bg-background border border-border placeholder:text-muted-foreground text-foreground "
               />
               <div className="grid grid-cols-3 gap-2">
                 <Input
@@ -248,7 +248,7 @@ export default function LoadForm({
                       } satisfies Location,
                     }))
                   }
-                  className="bg-[#203152] border-[#4895d0]/30"
+                  className="bg-background border border-border placeholder:text-muted-foreground text-foreground "
                 />
                 <Input
                   placeholder="State"
@@ -267,7 +267,7 @@ export default function LoadForm({
                       } satisfies Location,
                     }))
                   }
-                  className="bg-[#203152] border-[#4895d0]/30"
+                  className="bg-background border border-border placeholder:text-muted-foreground text-foreground "
                 />
                 <Input
                   placeholder="ZIP"
@@ -286,13 +286,13 @@ export default function LoadForm({
                       } satisfies Location,
                     }))
                   }
-                  className="bg-[#203152] border-[#4895d0]/30"
+                  className="bg-background border border-border placeholder:text-muted-foreground text-foreground "
                 />
               </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium mb-1 text-muted-foreground">
+            <div className="space-y-2">
+              <label className="block text-sm font-medium  text-muted-foreground">
                 Delivery Location
               </label>
               <Input
@@ -312,7 +312,7 @@ export default function LoadForm({
                     } satisfies Location,
                   }))
                 }
-                className="bg-[#203152] border-[#4895d0]/30 mb-2"
+                className="bg-background border border-border placeholder:text-muted-foreground text-foreground "
               />
               <div className="grid grid-cols-3 gap-2">
                 <Input
@@ -332,7 +332,7 @@ export default function LoadForm({
                       } satisfies Location,
                     }))
                   }
-                  className="bg-[#203152] border-[#4895d0]/30"
+                  className="bg-background border border-border placeholder:text-muted-foreground text-foreground "
                 />
                 <Input
                   placeholder="State"
@@ -351,7 +351,7 @@ export default function LoadForm({
                       } satisfies Location,
                     }))
                   }
-                  className="bg-[#203152] border-[#4895d0]/30"
+                  className="bg-background border border-border placeholder:text-muted-foreground text-foreground "
                 />
                 <Input
                   placeholder="ZIP"
@@ -370,7 +370,7 @@ export default function LoadForm({
                       } satisfies Location,
                     }))
                   }
-                  className="bg-[#203152] border-[#4895d0]/30"
+                  className="bg-background border border-border placeholder:text-muted-foreground text-foreground "
                 />
               </div>
             </div>
@@ -386,7 +386,7 @@ export default function LoadForm({
                 onChange={(date: Date | undefined) =>
                   setFormData((prev) => ({ ...prev, pickup_date: date }))
                 }
-                className="bg-[#203152] border-[#4895d0]/30 text-[#f1f0f3]"
+                className="bg-background border border-border placeholder:text-muted-foreground text-foreground "
               />
             </div>
 
@@ -399,7 +399,7 @@ export default function LoadForm({
                 onChange={(date: Date | undefined) =>
                   setFormData((prev) => ({ ...prev, delivery_date: date }))
                 }
-                className="bg-[#203152] border-[#4895d0]/30 text-[#f1f0f3]"
+                className="bg-background border border-border placeholder:text-muted-foreground text-foreground "
               />
             </div>
 
@@ -416,7 +416,7 @@ export default function LoadForm({
                     distance_km: parseFloat(e.target.value),
                   }))
                 }
-                className="bg-[#203152] border-[#4895d0]/30"
+                className="bg-background border border-border placeholder:text-muted-foreground text-foreground "
               />
             </div>
           </div>
@@ -444,14 +444,14 @@ export default function LoadForm({
                 }))
               }
             >
-              <SelectTrigger className="bg-[#203152] border-[#4895d0]/30">
+              <SelectTrigger className="bg-background border border-border placeholder:text-muted-foreground text-foreground ">
                 <SelectValue placeholder="Select pricing method" />
               </SelectTrigger>
-              <SelectContent className="bg-[#111a2d] border-[#4895d0]/30">
-                <SelectItem value="fixed" className="text-[#f1f0f3]">
+              <SelectContent className="bg-background border border-border placeholder:text-muted-foreground text-foreground ">
+                <SelectItem value="fixed" className="text-foreground">
                   Fixed Rate
                 </SelectItem>
-                <SelectItem value="bidding" className="text-[#f1f0f3]">
+                <SelectItem value="bidding" className="text-foreground">
                   Bidding
                 </SelectItem>
               </SelectContent>
@@ -472,7 +472,7 @@ export default function LoadForm({
                       bidding_deadline: date,
                     }))
                   }
-                  className="bg-[#203152] border-[#4895d0]/30 text-[#f1f0f3]"
+                  className="bg-background border border-border placeholder:text-muted-foreground text-foreground "
                 />
               </div>
               <div>
@@ -488,7 +488,7 @@ export default function LoadForm({
                       budget_amount: parseFloat(e.target.value),
                     }))
                   }
-                  className="bg-[#203152] border-[#4895d0]/30"
+                  className="bg-background border border-border placeholder:text-muted-foreground text-foreground "
                 />
               </div>
             </>
@@ -506,7 +506,7 @@ export default function LoadForm({
                     fixed_rate: parseFloat(e.target.value),
                   }))
                 }
-                className="bg-[#203152] border-[#4895d0]/30"
+                className="bg-background border border-border placeholder:text-muted-foreground text-foreground "
               />
             </div>
           )}
@@ -533,15 +533,15 @@ export default function LoadForm({
                 }))
               }
             >
-              <SelectTrigger className="bg-[#203152] border-[#4895d0]/30">
+              <SelectTrigger className="bg-background border border-border placeholder:text-muted-foreground text-foreground ">
                 <SelectValue placeholder="Select equipment required" />
               </SelectTrigger>
-              <SelectContent className="bg-[#111a2d] border-[#4895d0]/30">
+              <SelectContent className="bg-background border border-border placeholder:text-muted-foreground text-foreground ">
                 {vehiclesTypes?.map((type) => (
                   <SelectItem
                     key={type.id}
                     value={type.id}
-                    className="text-[#f1f0f3]"
+                    className="text-foreground"
                   >
                     {type.name}
                   </SelectItem>
@@ -564,15 +564,15 @@ export default function LoadForm({
                 }))
               }
             >
-              <SelectTrigger className="bg-[#203152] border-[#4895d0]/30">
+              <SelectTrigger className="bg-background border border-border placeholder:text-muted-foreground text-foreground ">
                 <SelectValue placeholder="Select truck type required" />
               </SelectTrigger>
-              <SelectContent className="bg-[#111a2d] border-[#4895d0]/30">
+              <SelectContent className="bg-background border border-border placeholder:text-muted-foreground text-foreground ">
                 {vehiclesTypes?.map((type) => (
                   <SelectItem
                     key={type.id}
                     value={type.id}
-                    className="text-[#f1f0f3]"
+                    className="text-foreground"
                   >
                     {type.name}
                   </SelectItem>
@@ -601,7 +601,7 @@ export default function LoadForm({
                   contact_name: e.target.value,
                 }))
               }
-              className="bg-[#203152] border-[#4895d0]/30"
+              className="bg-background border border-border placeholder:text-muted-foreground text-foreground "
             />
           </div>
 
@@ -617,7 +617,7 @@ export default function LoadForm({
                   contact_phone: e.target.value,
                 }))
               }
-              className="bg-[#203152] border-[#4895d0]/30"
+              className="bg-background border border-border placeholder:text-muted-foreground text-foreground "
             />
           </div>
 
@@ -634,7 +634,7 @@ export default function LoadForm({
                   contact_email: e.target.value,
                 }))
               }
-              className="bg-[#203152] border-[#4895d0]/30"
+              className="bg-background border border-border placeholder:text-muted-foreground text-foreground "
             />
           </div>
         </div>
@@ -657,7 +657,7 @@ export default function LoadForm({
                 special_instructions: e.target.value,
               }))
             }
-            className="w-full h-32 bg-[#203152] border-[#4895d0]/30 rounded-md p-2"
+            className="w-full h-32 bg-background border border-border placeholder:text-muted-foreground text-foreground "
           />
         </div>
       </section>

@@ -50,9 +50,8 @@ function RecursiveMenuItem({ item }: { item: MenuItemProps }) {
                         <div className="flex items-center gap-2 w-full">
                             <span className="flex items-center gap-1 w-full justify-between">
                                 {item.title}
-
+                                <ChevronRight className="ml-auto h-4 w-4 group-data-[state=open]/collapsible:rotate-90 transition-transform" />
                             </span>
-                            <ChevronRight className="ml-auto h-4 w-4 group-data-[state=open]/collapsible:rotate-90 transition-transform" />
                         </div>
                     </SidebarMenuButton>
                 </CollapsibleTrigger>
@@ -69,9 +68,13 @@ function RecursiveMenuItem({ item }: { item: MenuItemProps }) {
 
     return (
         <SidebarMenuButton asChild >
-            <a href={item.url} className="flex items-center gap-2 w-full justify-between">
-                <span>{item.title}</span>
-                {item.badge && <SidebarMenuBadge className="bg-accent-foreground/10 text-accent-foreground">{item.badge}</SidebarMenuBadge>}
+            <a href={item.url}>
+                <span className="flex items-center gap-1 w-full justify-between relative">
+                    {item.title}
+
+
+                    {item.badge && <SidebarMenuBadge className="bg-accent-foreground/10 text-accent-foreground absolute right-0">{item.badge}</SidebarMenuBadge>}
+                </span>
             </a>
         </SidebarMenuButton>
     );
@@ -130,23 +133,23 @@ export function AdminSidebar({ open }: { open: boolean }) {
                     ],
                     badge: truckersCount,
                 },
-                {
-                    title: "Brokers",
-                    subItems: [
-                        {
-                            title: "Certifications",
-                            subItems: [
-                                {
-                                    title: "Certifications",
-                                },
-                                {
-                                    title: "Licenses",
-                                },
-
-                            ],
-                        },
-                    ],
-                },
+                /*  {
+                     title: "Brokers",
+                     subItems: [
+                         {
+                             title: "Certifications",
+                             subItems: [
+                                 {
+                                     title: "Certifications",
+                                 },
+                                 {
+                                     title: "Licenses",
+                                 },
+ 
+                             ],
+                         },
+                     ],
+                 }, */
             ],
         },
         {
@@ -178,11 +181,11 @@ export function AdminSidebar({ open }: { open: boolean }) {
                                             <CollapsibleTrigger asChild>
                                                 <SidebarMenuButton className="w-full">
                                                     <div className="flex items-center gap-2 w-full">
-                                                        <item.icon />
+                                                        <item.icon className="shrink-0 h-4 w-4" />
                                                         <span className="flex items-center gap-1 w-full justify-between">
                                                             {item.title}
+                                                            <ChevronUp className="ml-auto h-4 w-4 group-data-[state=closed]/collapsible:rotate-180 transition-transform" />
                                                         </span>
-                                                        <ChevronUp className="ml-auto h-4 w-4 group-data-[state=closed]/collapsible:rotate-180 transition-transform" />
                                                     </div>
                                                 </SidebarMenuButton>
                                             </CollapsibleTrigger>
@@ -198,7 +201,7 @@ export function AdminSidebar({ open }: { open: boolean }) {
                                         <>
                                             <SidebarMenuButton asChild>
                                                 <a href={item.url} className="flex items-center gap-2">
-                                                    <item.icon />
+                                                    <item.icon className="shrink-0 h-4 w-4" />
                                                     <span className="flex items-center gap-1 w-full justify-between">
                                                         {item.title}
                                                     </span>
@@ -226,7 +229,7 @@ export function AdminSidebar({ open }: { open: boolean }) {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent
                                 side="top"
-                                className="w-[--radix-popper-anchor-width]"
+                                className="w-[--radix-popper-anchor-width] "
                             >
                                 <DropdownMenuItem onClick={() => router.push("/admin/settings")}>
                                     <Settings />

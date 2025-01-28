@@ -3,26 +3,20 @@ import { User } from "@/types/auth";
 import MyBids from "./trucker/MyBids";
 import Statistics from "./trucker/Statistics";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  useAcceptedBids,
-  usePendingBids,
-  useRejectedBids,
-} from "@/hooks/useTruckerDash";
 import { useProfile } from "@/hooks/useProfile";
 import { FiTruck, FiClock, FiCheck, FiX } from "react-icons/fi";
 import { membershipTiers } from "@/config/membershipTiers";
+import { Load } from "@/types/load";
+import { Bid } from "@/types/bid";
 
-const TruckerDashboard = ({ user }: { user: User }) => {
-  const { acceptedBids } = useAcceptedBids();
-  const { pendingBids } = usePendingBids();
-  const { rejectedBids } = useRejectedBids();
+
+const TruckerDashboard = ({ user, dashLoads, acceptedBids, pendingBids, rejectedBids }: { user: User, dashLoads: Load[], acceptedBids: Bid[], pendingBids: Bid[], rejectedBids: Bid[] }) => {
   const { profile } = useProfile();
-
   // Get tier limits
   const tierLimits = profile?.membership_tier
     ? membershipTiers.trucker[
-        profile.membership_tier as keyof typeof membershipTiers.trucker
-      ].features
+      profile.membership_tier as keyof typeof membershipTiers.trucker
+    ].features
     : null;
 
   const formatLimit = (used: number, limit: number | string) => {
@@ -97,7 +91,7 @@ const TruckerDashboard = ({ user }: { user: User }) => {
                   {acceptedBids.length +
                     pendingBids.length +
                     rejectedBids.length ===
-                  tierLimits.bids_per_month ? (
+                    tierLimits.bids_per_month ? (
                     <span>
                       ⚠️{" "}
                       {acceptedBids.length +
@@ -112,8 +106,8 @@ const TruckerDashboard = ({ user }: { user: User }) => {
                   ) : (
                     formatLimit(
                       acceptedBids.length +
-                        pendingBids.length +
-                        rejectedBids.length,
+                      pendingBids.length +
+                      rejectedBids.length,
                       tierLimits.bids_per_month
                     )
                   )}

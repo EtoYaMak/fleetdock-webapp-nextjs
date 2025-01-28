@@ -22,11 +22,11 @@ export default function CreateLoad() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 bg-[#203152] min-h-screen">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 bg-background min-h-screen">
       <div className="mb-8">
         <Link
           href="/dashboard"
-          className="flex items-center text-sm text-[#4895d0] hover:text-[#4895d0]/80"
+          className="flex items-center text-sm text-primary hover:text-primary/80 transition-colors duration-300 outline-dashed outline-1 outline-primary rounded-md p-2 w-fit"
         >
           <FiArrowLeft className="mr-2" /> Back to Dashboard
         </Link>
@@ -34,7 +34,7 @@ export default function CreateLoad() {
 
       <div className="rounded-lg  ">
         <div className="">
-          <h1 className="text-2xl font-bold text-[#f1f0f3] mb-6">
+          <h1 className="text-2xl font-bold text-foreground mb-6">
             Create New Load
           </h1>
           <LoadForm onSubmit={handleSubmit} />

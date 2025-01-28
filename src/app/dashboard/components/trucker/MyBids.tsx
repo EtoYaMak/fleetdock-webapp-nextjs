@@ -4,20 +4,24 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
-  useAcceptedBids,
-  usePendingBids,
-  useRejectedBids,
+  useTruckerDash,
+  useBids
 } from "@/hooks/useTruckerDash";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import BidCard from "../bids/BidCard";
 
-const MyBids = () => {
+const MyBids = () => {/* 
   const { acceptedBids, isLoading: loadingAccepted } = useAcceptedBids();
   const { pendingBids, isLoading: loadingPending } = usePendingBids();
-  const { rejectedBids, isLoading: loadingRejected } = useRejectedBids();
-
-  if (loadingAccepted || loadingPending || loadingRejected) {
+  const { rejectedBids, isLoading: loadingRejected } = useRejectedBids(); */
+  const { loads, isLoading: isLoadingLoads, error: loadError, refetch: refetchLoads } = useTruckerDash();
+  const { acceptedBids, pendingBids, rejectedBids, isLoading: isLoadingBids, error: bidError, refetch: refetchBids } = useBids();
+  if (isLoadingLoads || isLoadingBids) {
     return <LoadingSpinner />;
+  }
+
+  if (loadError) {
+    return <div className="text-red-500">Error: {loadError}</div>;
   }
 
   return (

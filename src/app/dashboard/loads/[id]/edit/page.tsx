@@ -66,7 +66,7 @@ export default function EditLoad({
         </Button>
       </div>
 
-      <div className="bg-card shadow rounded-lg border border-border">
+      <div className="">
         <div className="px-4 py-5 sm:p-6">
           <h1 className="text-2xl font-bold text-primary mb-6">Edit Load</h1>
           <LoadForm onSubmit={handleSubmit} initialData={load} isEdit />

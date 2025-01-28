@@ -14,23 +14,24 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
-import { useAuth } from "@/context/AuthContext";
-import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 import { useToast } from "@/hooks/use-toast";
+import { User } from "@/types/auth";
 const BrokerDashboard = ({
+  user,
   loads,
   isLoading,
   error,
   deleteLoad,
+  checkAccess,
 }: {
+  user: User;
   loads: Load[];
   isLoading: boolean;
   error: string;
   deleteLoad: (loadId: string) => Promise<void>;
+  checkAccess: (feature: string) => Promise<boolean>;
 }) => {
-  const { user } = useAuth();
   const router = useRouter();
-  const { checkAccess } = useFeatureAccess();
   const { toast } = useToast();
   //get Current Month in format Jan etc
   const currentMonth = format(new Date(), "MMM");
@@ -162,8 +163,8 @@ const BrokerDashboard = ({
                       load.bid_enabled
                         ? "secondary"
                         : load.load_status === LoadStatus.ACCEPTED
-                        ? "default"
-                        : "outline"
+                          ? "default"
+                          : "outline"
                     }
                     className="bg-primary/20 text-primary font-semibold uppercase w-full flex justify-center items-center text-center"
                   >

@@ -8,6 +8,10 @@ import { useLoads } from "@/hooks/useLoads";
 import { User } from "@/types/auth";
 import { Load } from "@/types/load";
 import { useAuth } from "@/context/AuthContext";
+import { useTruckerDash, useBids } from "@/hooks/useTruckerDash";
+import { Bid } from "@/types/bid";
+import { useFeatureAccess } from "@/hooks/useFeatureAccess";
+
 
 const InvalidRole = memo(function InvalidRole() {
   return (
@@ -29,6 +33,9 @@ const InvalidRole = memo(function InvalidRole() {
 const Dashboard = function Dashboard() {
   const { user } = useAuth();
   const { loads, isLoading, error, deleteLoad } = useLoads();
+  const { loads: dashLoads, isLoading: isLoadingLoads, error: loadError, refetch: refetchLoads } = useTruckerDash();
+  const { checkAccess } = useFeatureAccess();
+  const { acceptedBids, pendingBids, rejectedBids, isLoading: isLoadingBids, error: bidError, refetch: refetchBids } = useBids();
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -42,13 +49,15 @@ const Dashboard = function Dashboard() {
   const roleComponents = {
     broker: (
       <BrokerDashboard
+        user={user as User}
         loads={loads as Load[]}
         isLoading={isLoading as boolean}
         error={error as string}
         deleteLoad={deleteLoad as (loadId: string) => Promise<void>}
+        checkAccess={checkAccess as (feature: string) => Promise<boolean>}
       />
     ),
-    trucker: <TruckerDashboard user={user as User} />,
+    trucker: <TruckerDashboard user={user as User} dashLoads={dashLoads as Load[]} acceptedBids={acceptedBids as Bid[]} pendingBids={pendingBids as Bid[]} rejectedBids={rejectedBids as Bid[]} />,
   };
 
   return (

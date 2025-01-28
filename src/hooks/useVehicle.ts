@@ -15,13 +15,22 @@ export const useVehicle = () => {
     setIsLoading(true);
 
     try {
-      const { data: vehicles, error } = await supabase
-        .from("vehicles")
-        .select(`* , vehicle_type:vehicle_types(*)`)
-        .eq("trucker_id", user.id);
+      if (user.role === "admin") {
+        const { data: vehicles, error } = await supabase
+          .from("vehicles")
+          .select(
+            `* , vehicle_type:vehicle_types(*), trucker:profiles(email, full_name)`
+          );
+        setVehicles(vehicles as VehicleWithType[]);
+      } else {
+        const { data: vehicles, error } = await supabase
+          .from("vehicles")
+          .select(`* , vehicle_type:vehicle_types(*)`)
+          .eq("trucker_id", user.id);
 
-      if (error) throw error;
-      setVehicles(vehicles as VehicleWithType[]);
+        if (error) throw error;
+        setVehicles(vehicles as VehicleWithType[]);
+      }
     } catch (err) {
       console.error(err);
       setError("Failed to fetch vehicles");
@@ -113,6 +122,29 @@ export const useVehicle = () => {
     }
   };
 
+  //Admin Update Vehicle Verification Status
+  const updateVehicleVerificationStatus = async (
+    id: string,
+    status: boolean
+  ) => {
+    if (!user?.id) return;
+    setIsLoading(true);
+    try {
+      if (user.role !== "admin") return;
+
+      const { error } = await supabase
+        .from("vehicles")
+        .update({ verification_status: status })
+        .eq("id", id);
+      if (error) throw error;
+    } catch (err) {
+      console.error(err);
+      setError("Failed to update vehicle verification status");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchVehicles();
   }, [fetchVehicles]);
@@ -125,5 +157,6 @@ export const useVehicle = () => {
     createVehicle,
     updateVehicle,
     deleteVehicle,
+    updateVehicleVerificationStatus,
   };
 };

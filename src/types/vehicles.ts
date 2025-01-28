@@ -30,4 +30,9 @@ export interface VehicleType {
 //Combined Vehicle and VehicleType
 export interface VehicleWithType extends VehicleFormData {
   vehicle_type: VehicleType;
+  trucker?: {
+    id?: string;
+    email: string;
+    full_name: string;
+  };
 }

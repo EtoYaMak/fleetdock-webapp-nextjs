@@ -1,6 +1,4 @@
-//CRUD for general profile
 import { useState, useEffect, useCallback } from "react";
-
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabase";
 import { User } from "@/types/auth";
@@ -13,6 +11,7 @@ export const useProfile = () => {
 
   const getProfile = useCallback(async () => {
     if (!user?.id) return;
+    setLoading(true);
     try {
       const { data, error } = await supabase
         .from("profiles")
@@ -25,6 +24,8 @@ export const useProfile = () => {
     } catch (error) {
       console.error(error);
       setError("Failed to fetch profile");
+    } finally {
+      setLoading(false);
     }
   }, [user?.id]);
 
@@ -32,7 +33,7 @@ export const useProfile = () => {
     if (!user?.id) return;
     setLoading(true);
     try {
-      const { error } = await supabase.from("profiles").insert({
+      const { error } = await supabase.from("profiles").upsert({
         ...data,
         id: user.id,
       });
@@ -51,9 +52,8 @@ export const useProfile = () => {
     try {
       const { error } = await supabase
         .from("profiles")
-        .select("*")
-        .eq("id", user.id)
-        .single();
+        .update(data)
+        .eq("id", user.id);
 
       if (error) throw error;
     } catch (error) {
@@ -63,9 +63,37 @@ export const useProfile = () => {
       setLoading(false);
     }
   };
+
+  const deleteProfile = async () => {
+    if (!user?.id) return;
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .delete()
+        .eq("id", user.id);
+
+      if (error) throw error;
+      setProfile(null);
+    } catch (error) {
+      console.error(error);
+      setError("Failed to delete profile");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     getProfile();
-  }, [getProfile]);
+  }, [getProfile, user]);
 
-  return { profile, getProfile, createProfile, updateProfile, loading, error };
+  return {
+    profile,
+    getProfile,
+    createProfile,
+    updateProfile,
+    deleteProfile,
+    loading,
+    error,
+  };
 };
