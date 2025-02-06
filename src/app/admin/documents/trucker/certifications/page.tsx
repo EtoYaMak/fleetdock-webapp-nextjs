@@ -42,6 +42,7 @@ import { supabase } from "@/lib/supabase";
 import { ChevronDown } from "lucide-react";
 import React from "react";
 import { DocumentViewer } from "@/components/ui/document-viewer";
+import { useDocuments } from "@/context/DocumentContext";
 
 // Define the type for our document row
 type DocumentRow = {
@@ -157,48 +158,17 @@ function UpdateStatusPopover({ truckerId, documentName, currentStatus }: {
     documentName: string;
     currentStatus: string;
 }) {
-    const { toast } = useToast();
-    const { fetchTrucker } = useTrucker();
+    const { updateDocumentStatus } = useDocuments();
     const [updating, setUpdating] = useState(false);
 
-    const updateStatus = async (newStatus: string) => {
+    const handleStatusUpdate = async (newStatus: string) => {
+        setUpdating(true);
         try {
-            setUpdating(true);
-            const { data: truckerData } = await supabase
-                .from("trucker_details")
-                .select("certifications")
-                .eq("id", truckerId)
-                .single();
-
-            if (!truckerData) return;
-
-            const updatedCertifications = {
-                ...truckerData.certifications,
-                [documentName]: {
-                    ...truckerData.certifications[documentName],
-                    verification_status: newStatus
-                }
-            };
-
-            const { error } = await supabase
-                .from("trucker_details")
-                .update({ certifications: updatedCertifications })
-                .eq("id", truckerId);
-
-            if (error) throw error;
-
-            toast({
-                title: "Status updated",
-                description: "Document verification status has been updated successfully",
-            });
-
-            fetchTrucker();
-        } catch (error) {
-            console.error("Error updating status:", error);
-            toast({
-                title: "Error",
-                description: "Failed to update verification status",
-                variant: "destructive",
+            await updateDocumentStatus({
+                truckerId,
+                documentName,
+                documentType: "certifications",
+                newStatus,
             });
         } finally {
             setUpdating(false);
@@ -208,7 +178,7 @@ function UpdateStatusPopover({ truckerId, documentName, currentStatus }: {
     return (
         <Popover>
             <PopoverTrigger asChild>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" disabled={updating}>
                     Update Status
                 </Button>
             </PopoverTrigger>
@@ -217,7 +187,7 @@ function UpdateStatusPopover({ truckerId, documentName, currentStatus }: {
                     <Button
                         variant="ghost"
                         disabled={updating}
-                        onClick={() => updateStatus("verified")}
+                        onClick={() => handleStatusUpdate("verified")}
                         className="justify-start"
                     >
                         Verify
@@ -225,7 +195,7 @@ function UpdateStatusPopover({ truckerId, documentName, currentStatus }: {
                     <Button
                         variant="ghost"
                         disabled={updating}
-                        onClick={() => updateStatus("rejected")}
+                        onClick={() => handleStatusUpdate("rejected")}
                         className="justify-start"
                     >
                         Reject
@@ -233,7 +203,7 @@ function UpdateStatusPopover({ truckerId, documentName, currentStatus }: {
                     <Button
                         variant="ghost"
                         disabled={updating}
-                        onClick={() => updateStatus("pending")}
+                        onClick={() => handleStatusUpdate("pending")}
                         className="justify-start"
                     >
                         Mark Pending
@@ -245,7 +215,7 @@ function UpdateStatusPopover({ truckerId, documentName, currentStatus }: {
 }
 
 export default function CertificationsPage() {
-    const { truckers, isLoading } = useTrucker();
+    const { documents, isLoading } = useDocuments();
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
     const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -253,23 +223,6 @@ export default function CertificationsPage() {
         pageIndex: 0,
         pageSize: 10,
     });
-
-    // Transform the truckers data into a flat array of documents
-    const documents: DocumentRow[] = React.useMemo(
-        () => truckers.flatMap((trucker: TruckerDetails) =>
-            Object.entries(trucker.certifications || {}).map(([key, doc]) => ({
-                id: `${trucker.id}-${key}`,
-                truckerId: trucker.id,
-                truckerName: trucker.profile_id,
-                documentName: key,
-                uploadedAt: doc.uploadedAt,
-                verification_status: doc.verification_status,
-                url: doc.url,
-                name: doc.name,
-            }))
-        ),
-        [truckers]
-    );
 
     const pagination = React.useMemo(
         () => ({
@@ -280,7 +233,7 @@ export default function CertificationsPage() {
     );
 
     const table = useReactTable({
-        data: documents,
+        data: documents.certifications,
         columns,
         getCoreRowModel: getCoreRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
@@ -296,7 +249,7 @@ export default function CertificationsPage() {
             columnVisibility,
             pagination,
         },
-        pageCount: Math.ceil(documents.length / pageSize),
+        pageCount: Math.ceil(documents.certifications.length / pageSize),
         manualPagination: false,
     });
 

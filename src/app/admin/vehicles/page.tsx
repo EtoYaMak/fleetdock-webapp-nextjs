@@ -1,48 +1,27 @@
 "use client";
 
-import { useVehicle } from "@/hooks/useVehicle";
 import { VehicleWithType } from "@/types/vehicles";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table";
 import {
     ColumnDef,
     ColumnFiltersState,
     SortingState,
     VisibilityState,
-    flexRender,
     getCoreRowModel,
     getFilteredRowModel,
     getPaginationRowModel,
     getSortedRowModel,
     useReactTable,
 } from "@tanstack/react-table";
-import { format } from "date-fns";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { ChevronDown, MoreHorizontal } from "lucide-react";
 import React from "react";
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from "@/components/ui/popover";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
+import { useVehicles } from "@/context/VehicleContext";
+import { VehicleSheet } from "./VehicleSheet";
+import VehicleTable from "./components/VehicleTable";
 
 // Define columns for the data table
 const columns: ColumnDef<VehicleWithType>[] = [
@@ -210,21 +189,16 @@ const columns: ColumnDef<VehicleWithType>[] = [
     {
         accessorKey: "verification_status",
         header: "Verification",
-        cell: ({ row }) => {
+        cell: function VerificationCell({ row }) {
             const vehicle = row.original;
-            const { updateVehicleVerificationStatus, fetchVehicles } = useVehicle();
-            const { toast } = useToast();
+            const { updateVehicleVerificationStatus } = useVehicles();
             const [isUpdating, setIsUpdating] = useState(false);
+            const { toast } = useToast();
 
             const handleVerificationChange = async (checked: boolean) => {
                 setIsUpdating(true);
                 try {
                     await updateVehicleVerificationStatus(vehicle.id!, checked);
-                    await fetchVehicles(); // Refresh the data after update
-                    toast({
-                        title: "Status updated",
-                        description: `Vehicle verification status has been ${checked ? 'verified' : 'unverified'}`,
-                    });
                 } catch (error) {
                     toast({
                         title: "Error",
@@ -253,8 +227,7 @@ const columns: ColumnDef<VehicleWithType>[] = [
 ];
 
 export default function VehiclesPage() {
-    const { vehicles, isLoading, updateVehicleVerificationStatus } = useVehicle();
-    console.log(vehicles);
+    const { vehicles, isLoading, deleteVehicle } = useVehicles();
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
     const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -263,12 +236,6 @@ export default function VehiclesPage() {
         pageSize: 10,
     });
 
-    const [selectedVehicleId, setSelectedVehicleId] = useState<string | null>(null);
-
-    const handleUpdateVerificationStatus = async (id: string, status: boolean) => {
-        await updateVehicleVerificationStatus(id, status);
-    };
-
     const pagination = React.useMemo(
         () => ({
             pageIndex,
@@ -276,7 +243,6 @@ export default function VehiclesPage() {
         }),
         [pageIndex, pageSize]
     );
-
     const table = useReactTable({
         data: vehicles,
         columns,
@@ -298,6 +264,25 @@ export default function VehiclesPage() {
         manualPagination: false,
     });
 
+    const [selectedVehicle, setSelectedVehicle] = useState<VehicleWithType | null>(null);
+    const [isSheetOpen, setIsSheetOpen] = useState(false);
+
+    const handleEdit = (vehicle: VehicleWithType) => {
+        setSelectedVehicle(vehicle);
+        setIsSheetOpen(true);
+    };
+
+    const handleCloseSheet = () => {
+        setIsSheetOpen(false);
+        setSelectedVehicle(null);
+    };
+
+    const handleDelete = (vehicle: VehicleWithType) => {
+        if (vehicle.id) {
+            deleteVehicle(vehicle.id);
+        }
+    };
+
     if (isLoading) {
         return <div>Loading...</div>;
     }
@@ -315,145 +300,11 @@ export default function VehiclesPage() {
                 </Button>
             </div>
 
-            <div className="flex flex-wrap items-center py-4 gap-2">
-                <div className="flex flex-1 min-w-[300px] gap-2">
-                    <Input
-                        placeholder="Filter by trucker name..."
-                        value={(table.getColumn("trucker_name")?.getFilterValue() as string) ?? ""}
-                        onChange={(event) =>
-                            table.getColumn("trucker_name")?.setFilterValue(event.target.value)
-                        }
-                        className="max-w-[250px]"
-                    />
-                    <Input
-                        placeholder="Filter by license plate..."
-                        value={(table.getColumn("license_plate")?.getFilterValue() as string) ?? ""}
-                        onChange={(event) =>
-                            table.getColumn("license_plate")?.setFilterValue(event.target.value)
-                        }
-                        className="max-w-[250px]"
-                    />
-
-                </div>
-                <div className="flex gap-2 items-center">
-                    <Select
-                        value={(table.getColumn("is_active")?.getFilterValue() as string) ?? "all"}
-                        onValueChange={(value) => {
-                            table.getColumn("is_active")?.setFilterValue(
-                                value === "all" ? undefined : value === "true"
-                            );
-                        }}
-                    >
-                        <SelectTrigger className="w-[140px]">
-                            <SelectValue placeholder="Status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">All Statuses</SelectItem>
-                            <SelectItem value="true">Active</SelectItem>
-                            <SelectItem value="false">Inactive</SelectItem>
-                        </SelectContent>
-                    </Select>
-
-                    <Select
-                        value={(table.getColumn("verification_status")?.getFilterValue() as string) ?? "all"}
-                        onValueChange={(value) => {
-                            table.getColumn("verification_status")?.setFilterValue(
-                                value === "all" ? undefined : value === "true"
-                            );
-                        }}
-                    >
-                        <SelectTrigger className="w-[180px]">
-                            <SelectValue placeholder="Verification" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">All Verifications</SelectItem>
-                            <SelectItem value="true">Verified</SelectItem>
-                            <SelectItem value="false">Pending</SelectItem>
-                        </SelectContent>
-                    </Select>
-
-                    <Popover>
-                        <PopoverTrigger asChild>
-                            <Button variant="outline" className="ml-auto" size="default">
-                                Columns
-                                <ChevronDown className="ml-2 h-4 w-4" />
-                            </Button>
-                        </PopoverTrigger>
-                        <PopoverContent align="end" className="w-[200px]">
-                            <div className="space-y-2">
-                                {table
-                                    .getAllColumns()
-                                    .filter((column) => column.getCanHide())
-                                    .map((column) => {
-                                        return (
-                                            <div key={column.id} className="flex items-center space-x-2">
-                                                <Switch
-                                                    checked={column.getIsVisible()}
-                                                    onCheckedChange={(value) => column.toggleVisibility(!!value)}
-                                                    id={column.id}
-                                                />
-                                                <Label htmlFor={column.id} className="capitalize">
-                                                    {column.id}
-                                                </Label>
-                                            </div>
-                                        );
-                                    })}
-                            </div>
-                        </PopoverContent>
-                    </Popover>
-                </div>
-            </div>
-
-            <div className="rounded-md border overflow-hidden">
-                <div className="overflow-x-auto">
-                    <Table>
-                        <TableHeader>
-                            {table.getHeaderGroups().map((headerGroup) => (
-                                <TableRow key={headerGroup.id}>
-                                    {headerGroup.headers.map((header) => (
-                                        <TableHead key={header.id}>
-                                            {header.isPlaceholder
-                                                ? null
-                                                : flexRender(
-                                                    header.column.columnDef.header,
-                                                    header.getContext()
-                                                )}
-                                        </TableHead>
-                                    ))}
-                                </TableRow>
-                            ))}
-                        </TableHeader>
-                        <TableBody>
-                            {table.getRowModel().rows?.length ? (
-                                table.getRowModel().rows.map((row) => (
-                                    <TableRow
-                                        key={row.id}
-                                        data-state={row.getIsSelected() && "selected"}
-                                    >
-                                        {row.getVisibleCells().map((cell) => (
-                                            <TableCell key={cell.id}>
-                                                {flexRender(
-                                                    cell.column.columnDef.cell,
-                                                    cell.getContext()
-                                                )}
-                                            </TableCell>
-                                        ))}
-                                    </TableRow>
-                                ))
-                            ) : (
-                                <TableRow>
-                                    <TableCell
-                                        colSpan={columns.length}
-                                        className="h-24 text-center"
-                                    >
-                                        No results.
-                                    </TableCell>
-                                </TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
-                </div>
-            </div>
+            <VehicleTable
+                vehicles={vehicles}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+            />
 
             <div className="flex items-center justify-end space-x-2 py-4">
                 <div className="flex-1 text-sm text-muted-foreground">
@@ -478,6 +329,14 @@ export default function VehiclesPage() {
                     </Button>
                 </div>
             </div>
+
+            {selectedVehicle && (
+                <VehicleSheet
+                    vehicle={selectedVehicle}
+                    isOpen={isSheetOpen}
+                    onClose={handleCloseSheet}
+                />
+            )}
         </div>
     );
 } 

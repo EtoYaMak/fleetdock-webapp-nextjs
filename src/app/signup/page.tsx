@@ -1,3 +1,4 @@
+// src/app/signup/page.tsx
 "use client";
 import SignUpForm from "@/components/auth/SignUpForm";
 import Loading from "./loading";

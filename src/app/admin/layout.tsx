@@ -6,20 +6,18 @@ import { useEffect, useState } from "react";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { AdminSidebar } from "./AdminSidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
-import { useLoads } from "@/hooks/useLoads";
-import { useAdmin } from "@/context/AdminContext";
-
-
+import { AdminProvider } from "@/context/AdminContext";
+import { DocumentProvider } from "@/context/DocumentContext";
+import { VehicleProvider } from "@/context/VehicleContext";
 
 export default function AdminLayout({
     children,
 }: {
     children: React.ReactNode;
 }) {
-    const { user, loading } = useAuth();
+    const { user, loading, signOut } = useAuth();
     const router = useRouter();
     const [open, setOpen] = useState(true);
-
     useEffect(() => {
         if (!loading && (!user || user.role !== "admin")) {
             router.push("/");
@@ -37,13 +35,19 @@ export default function AdminLayout({
     if (!user || user.role !== "admin") return null;
 
     return (
-        <div className="flex min-h-screen">
-            <SidebarProvider open={open} onOpenChange={setOpen}>
-                <AdminSidebar open={open} />
-                <main className="flex-1">
-                    {children}
-                </main>
+        <AdminProvider>
+            <SidebarProvider>
+                <DocumentProvider>
+                    <VehicleProvider>
+                        <div className="flex h-screen w-full">
+                            <AdminSidebar open={open} user={user} signOut={signOut} />
+                            <main className="flex-1 overflow-y-auto bg-background">
+                                {children}
+                            </main>
+                        </div>
+                    </VehicleProvider>
+                </DocumentProvider>
             </SidebarProvider>
-        </div>
+        </AdminProvider>
     );
 }

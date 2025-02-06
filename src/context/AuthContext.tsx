@@ -1,3 +1,4 @@
+// src/context/AuthContext.tsx
 "use client";
 import { supabase } from "@/lib/supabase";
 import { createContext, useContext, useEffect, useState } from "react";
@@ -160,61 +161,51 @@ const UserProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  // Sign up function
   const signUp = async (data: SignUpType) => {
     try {
-      // Check if email exists
-      const { data: existingUser } = await supabase
+      // Email check remains the same
+      const { data: existingUsers, error: emailCheckError } = await supabase
         .from("profiles")
         .select("email")
-        .eq("email", data.email)
-        .single();
+        .eq("email", data.email);
 
-      if (existingUser) {
+      if (existingUsers && existingUsers.length > 0) {
         return {
           success: false,
           error: "This email is already registered",
         };
       }
 
-      // Proceed with signup
-      await supabase.auth.signUp({
+      const initialStatus = data.selectedTier === 'starter' ? 'active' : 'pending';
+
+
+      const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email: data.email,
         password: data.password,
         options: {
           data: {
             username: data.username,
             full_name: data.full_name,
-            role: data.role,
             phone: data.phone,
-            email: data.email,
-            membership_tier: data.membership_tier,
-            membership_status: data.membership_status,
-            stripe_customer_id: data.stripe_customer_id,
-            subscription_id: data.subscription_id,
-            subscription_end_date: data.subscription_end_date,
-          },
-        },
+            membership_tier: data.selectedTier,
+            membership_status: initialStatus,
+            stripe_customer_id: null,
+            subscription_id: null,
+            subscription_end_date: data.subscription_end_date ? data.subscription_end_date.toString() : null,
+            role: data.role
+          }
+        }
       });
 
-      toast({
-        title: "Sign Up Successful",
-        description: "Please check your email to verify your account.",
-        variant: "success",
-      });
+      if (signUpError) {
+        throw new Error(signUpError.message);
+      }
 
       return { success: true };
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Failed to sign up";
-      toast({
-        title: "Sign Up Failed",
-        description: errorMessage,
-        variant: "destructive",
-      });
       return {
         success: false,
-        error: errorMessage,
+        error: error instanceof Error ? error.message : "Faidled to sign up",
       };
     }
   };

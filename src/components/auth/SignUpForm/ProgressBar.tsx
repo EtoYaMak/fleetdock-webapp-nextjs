@@ -1,3 +1,4 @@
+// src/components/auth/SignUpForm/ProgressBar.tsx
 import { memo } from "react";
 import { motion } from "framer-motion";
 

@@ -8,14 +8,15 @@ import { useAuth } from "@/context/AuthContext";
 import RoleSelection from "./SignUpForm/RoleSelection";
 import FormStages from "./SignUpForm/FormStages";
 import ProgressBar from "./SignUpForm/ProgressBar";
-import { FormData, SignUpStep, FormStage } from "./SignUpForm/types";
+import { SignUpStep, FormStage } from "./SignUpForm/types";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { SignUpType } from "@/types/auth";
 
 const SignUpForm = function SignUpForm() {
   const [currentStep, setCurrentStep] = useState<SignUpStep>("role-selection");
   const [currentStageIndex, setCurrentStageIndex] = useState(0);
-  const [formData, setFormData] = useState<FormData>({
+  const [formData, setFormData] = useState<SignUpType>({
     email: "",
     password: "",
     username: "",
@@ -26,10 +27,11 @@ const SignUpForm = function SignUpForm() {
     membership_status: "",
     stripe_customer_id: "",
     subscription_id: "",
-    subscription_end_date: "",
+    subscription_end_date: null,
     selectedTier: "starter" as "starter" | "professional" | "enterprise",
   });
   const [stageErrors, setStageErrors] = useState<string[]>(["", ""]);
+
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
   const router = useRouter();
@@ -42,12 +44,13 @@ const SignUpForm = function SignUpForm() {
         title: "Basic Information",
         subtitle: "Let's get you started with the essentials",
         icon: <FiUser className="w-6 h-6" />,
-        validate: (data: FormData) => {
+        validate: (data: SignUpType) => {
           if (
             !data.email ||
             !data.password ||
             !data.username ||
             !data.full_name
+
           ) {
             return "All fields are required";
           }
@@ -68,7 +71,7 @@ const SignUpForm = function SignUpForm() {
         title: "Contact Details",
         subtitle: "How can we reach you?",
         icon: <FiMail className="w-6 h-6" />,
-        validate: (data: FormData) => {
+        validate: (data: SignUpType) => {
           if (!data.phone) {
             return "Phone number is required";
           }

@@ -1,3 +1,4 @@
+// src/types/auth.ts
 export interface User {
   id: string;
   email: string;
@@ -51,9 +52,9 @@ export interface SignUpType {
   phone: string;
   membership_tier: string;
   membership_status: string;
-  stripe_customer_id: string;
-  subscription_id: string;
-  subscription_end_date: string;
+  stripe_customer_id?: string | null;
+  subscription_id?: string | null;
+  subscription_end_date?: string | null;
   selectedTier: "starter" | "professional" | "enterprise";
 }
 

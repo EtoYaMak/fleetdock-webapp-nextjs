@@ -28,11 +28,11 @@ import {
     SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { useAuth } from "@/context/AuthContext";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useRouter } from "next/navigation";
 import { useAdmin } from "@/context/AdminContext";
 import { TruckerDetails } from "@/types/trucker";
+import { User } from "@/types/auth";
 
 interface MenuItemProps {
     title: string;
@@ -80,8 +80,7 @@ function RecursiveMenuItem({ item }: { item: MenuItemProps }) {
     );
 }
 
-export function AdminSidebar({ open }: { open: boolean }) {
-    const { signOut } = useAuth();
+export function AdminSidebar({ open, user, signOut }: { open: boolean, user: User, signOut: () => void }) {
     const router = useRouter();
     const { loads, users, truckers } = useAdmin();
     const loadsCount = loads.length;
@@ -162,7 +161,7 @@ export function AdminSidebar({ open }: { open: boolean }) {
 
     ];
     return (
-        <Sidebar collapsible="icon" side="left" variant="floating">
+        <Sidebar collapsible="icon" side="left" variant="floating" className="top-14 h-[calc(100vh-14vh)]">
             <SidebarHeader>
                 <SidebarTrigger
                     className={`${open ? "w-full text-left" : "mx-auto"}`}
@@ -171,7 +170,7 @@ export function AdminSidebar({ open }: { open: boolean }) {
             <SidebarContent>
                 <SidebarGroup>
                     <SidebarGroupContent
-                        className={`${open ? "p-2" : "py-2"} transition-all duration-300`}
+                        className={`${open ? "p-0" : "py-2"} transition-all duration-300`}
                     >
                         <SidebarMenu className="gap-4">
                             {items.map((item) => (
@@ -223,7 +222,7 @@ export function AdminSidebar({ open }: { open: boolean }) {
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <SidebarMenuButton>
-                                    <User2 /> Username
+                                    <User2 /> {user?.full_name}
                                     <ChevronUp className="ml-auto" />
                                 </SidebarMenuButton>
                             </DropdownMenuTrigger>
@@ -235,7 +234,7 @@ export function AdminSidebar({ open }: { open: boolean }) {
                                     <Settings />
                                     <span>Settings</span>
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onClick={signOut}>
+                                <DropdownMenuItem onClick={() => signOut()}>
                                     <LogOut />
                                     <span>Logout</span>
                                 </DropdownMenuItem>

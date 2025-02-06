@@ -1,4 +1,5 @@
-import { memo, useState } from "react";
+// src/components/auth/SignUpForm/FormStages.tsx
+import { memo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FormData, StageErrors } from "./types";
 

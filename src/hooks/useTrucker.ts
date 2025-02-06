@@ -80,6 +80,26 @@ export const useTrucker = () => {
     }
   }, [user?.id, fetchTrucker]);
 
+  // Set up real-time subscription
+  useEffect(() => {
+    const channels = supabase
+      .channel("custom-all-channel")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "trucker_details" },
+        (payload) => {
+          console.log("Change received!", payload);
+          fetchTrucker();
+        }
+      )
+      .subscribe();
+
+    // Cleanup subscription on component unmount
+    return () => {
+      supabase.removeChannel(channels);
+    };
+  }, [fetchTrucker]);
+
   return {
     fetchTrucker,
     trucker,
