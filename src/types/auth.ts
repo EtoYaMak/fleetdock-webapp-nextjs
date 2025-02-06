@@ -62,3 +62,11 @@ export interface SignUpType {
 export const getUserRole = (user: User): string => {
   return user?.app_metadata?.role;
 };
+
+// Helper function to calculate the subscription end date 1 Month all tiers
+export const calculateSubscriptionEndDate = (): string => {
+  const currentDate = new Date();
+  const endDate = new Date(currentDate);
+  endDate.setMonth(endDate.getMonth() + 1);
+  return endDate.toISOString();
+};

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useMemo } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { FiUser, FiMail } from "react-icons/fi";
 import { useAuth } from "@/context/AuthContext";
@@ -12,25 +12,32 @@ import { SignUpStep, FormStage } from "./SignUpForm/types";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { SignUpType } from "@/types/auth";
-
+import { calculateSubscriptionEndDate } from "@/types/auth";
 const SignUpForm = function SignUpForm() {
-  const [currentStep, setCurrentStep] = useState<SignUpStep>("role-selection");
+  const [currentStep, setCurrentStep] = useState<SignUpStep>("details");
   const [currentStageIndex, setCurrentStageIndex] = useState(0);
+
+  // Replace useParams with useSearchParams
+  const searchParams = useSearchParams();
+  const role = searchParams.get('role');
+  const tier = searchParams.get('tier');
+
   const [formData, setFormData] = useState<SignUpType>({
     email: "",
     password: "",
     username: "",
     full_name: "",
-    role: "",
+    role: role || "", // Use the query param with fallback
     phone: "",
-    membership_tier: "",
+    membership_tier: tier || "", // Use the query param with fallback
     membership_status: "",
     stripe_customer_id: "",
     subscription_id: "",
-    subscription_end_date: null,
-    selectedTier: "starter" as "starter" | "professional" | "enterprise",
+    subscription_end_date: calculateSubscriptionEndDate() as string | null,
+    selectedTier: (tier as "starter" | "professional" | "enterprise") || "starter",
   });
   const [stageErrors, setStageErrors] = useState<string[]>(["", ""]);
+  const [loading, setLoading] = useState(false);
 
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
@@ -105,30 +112,50 @@ const SignUpForm = function SignUpForm() {
     setError(null);
 
     try {
-      const result = await signUp(formData);
-      if (result?.success) {
-        toast({
-          title: "Sign Up Successful",
-          description: "You are now signed up. Please sign in.",
-          variant: "success",
-        });
-        router.push("/signin");
-      } else if (result?.error) {
-        toast({
-          title: "Sign Up Failed",
-          description: result.error,
-          variant: "destructive",
-        });
-        setError(result.error);
+      setLoading(true);
+
+      // Store the form data in session storage for later
+      sessionStorage.setItem("signupFormData", JSON.stringify(formData));
+
+      // Create Stripe checkout session
+      const response = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: formData.email,
+          role: formData.role,
+          tier: formData.selectedTier,
+          password: formData.password,
+          username: formData.username,
+          full_name: formData.full_name,
+          phone: formData.phone
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to create checkout session");
       }
+
+      if (!data.sessionUrl) {
+        throw new Error("No checkout URL returned");
+      }
+
+      // Redirect to Stripe checkout
+      window.location.href = data.sessionUrl;
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
       toast({
         title: "Sign Up Failed",
-        description: "An unexpected error occurred. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
     }
-  }, [validateCurrentStage, formData, router, signUp, toast]);
+  }, [validateCurrentStage, formData, toast]);
 
   const handleNext = useCallback(() => {
     if (!validateCurrentStage()) return;

@@ -10,6 +10,7 @@ import {
   SignInType,
   SignUpType,
   getUserRole,
+  calculateSubscriptionEndDate,
 } from "@/types/auth";
 
 export const UserContext = createContext<UseContextType>({} as UseContextType);
@@ -161,24 +162,66 @@ const UserProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  /*  const signUp = async (data: SignUpType) => {
+     try {
+       // Email check remains the same
+       const { data: existingUsers, error: emailCheckError } = await supabase
+         .from("profiles")
+         .select("email")
+         .eq("email", data.email);
+ 
+       if (existingUsers && existingUsers.length > 0) {
+         return {
+           success: false,
+           error: "This email is already registered",
+         };
+       }
+ 
+       const initialStatus = data.selectedTier === 'starter' ? 'active' : 'pending';
+ 
+ 
+       const { data: authData, error: signUpError } = await supabase.auth.signUp({
+         email: data.email,
+         password: data.password,
+         options: {
+           data: {
+             username: data.username,
+             full_name: data.full_name,
+             phone: data.phone,
+             membership_tier: data.selectedTier,
+             membership_status: initialStatus,
+             stripe_customer_id: null,
+             subscription_id: null,
+             subscription_end_date: data.subscription_end_date ? data.subscription_end_date.toString() : null,
+             role: data.role
+           }
+         }
+       });
+ 
+       if (signUpError) {
+         throw new Error(signUpError.message);
+       }
+ 
+       return { success: true };
+     } catch (error) {
+       return {
+         success: false,
+         error: error instanceof Error ? error.message : "Faidled to sign up",
+       };
+     }
+   }; */
   const signUp = async (data: SignUpType) => {
     try {
-      // Email check remains the same
-      const { data: existingUsers, error: emailCheckError } = await supabase
+      const { data: existingUsers } = await supabase
         .from("profiles")
         .select("email")
         .eq("email", data.email);
 
       if (existingUsers && existingUsers.length > 0) {
-        return {
-          success: false,
-          error: "This email is already registered",
-        };
+        return { success: false, error: "This email is already registered" };
       }
 
-      const initialStatus = data.selectedTier === 'starter' ? 'active' : 'pending';
-
-
+      // Now register user in Supabase Auth
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email: data.email,
         password: data.password,
@@ -188,13 +231,13 @@ const UserProvider = ({ children }: { children: React.ReactNode }) => {
             full_name: data.full_name,
             phone: data.phone,
             membership_tier: data.selectedTier,
-            membership_status: initialStatus,
-            stripe_customer_id: null,
-            subscription_id: null,
-            subscription_end_date: data.subscription_end_date ? data.subscription_end_date.toString() : null,
-            role: data.role
-          }
-        }
+            membership_status: "active",
+            stripe_customer_id: data.stripe_customer_id,
+            subscription_id: data.subscription_id,
+            subscription_end_date: calculateSubscriptionEndDate(),
+            role: data.role,
+          },
+        },
       });
 
       if (signUpError) {
@@ -205,7 +248,7 @@ const UserProvider = ({ children }: { children: React.ReactNode }) => {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Faidled to sign up",
+        error: error instanceof Error ? error.message : "Failed to sign up",
       };
     }
   };
