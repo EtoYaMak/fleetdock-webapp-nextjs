@@ -14,7 +14,7 @@ const DocumentsPage = () => {
   }
   if (auth.user?.role === "trucker") {
     return (
-      <div className="w-full">
+      <div className="w-full h-full">
         <Card className="shadow-none rounded-none border-none">
           <CardHeader>
             <CardTitle>Manage Your Documents</CardTitle>

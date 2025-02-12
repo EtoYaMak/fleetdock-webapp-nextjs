@@ -6,6 +6,7 @@ import {
   UserRoundPenIcon,
   LayoutGrid,
   Hammer,
+  BriefcaseBusiness,
 } from "lucide-react";
 
 import {
@@ -21,54 +22,138 @@ import {
 } from "@/components/ui/sidebar";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { User } from "@/types/auth";
 
-// Menu items with status flags
-const items = [
-  {
-    title: "Overview ",
-    url: "/me",
-    icon: LayoutGrid,
-    status: "completed",
-  },
-  {
-    title: "Account",
-    url: "/me/account",
-    icon: UserRoundPenIcon,
-    status: "completed",
-  },
-  {
-    title: "Documents",
-    url: "/me/documents",
-    icon: FileText,
-    status: "completed",
-  },
-  {
-    title: "Vehicles",
-    url: "/me/vehicles",
-    icon: CarFront,
-    status: "completed",
-  },
-  {
-    title: "Settings",
-    url: "/me/settings",
-    icon: Settings,
-    status: "todo",
-  },
-  {
-    title: "Tools",
-    url: "/me/settings",
-    icon: Hammer,
-    status: "todo",
-  },
-];
-
-export function ProfileSidebar({ open }: { open: boolean }) {
+// Example sidebar component that creates items based on role (broker or trucker)
+export function ProfileSidebar({ open, user }: { open: boolean; user?: User | null }) {
   const { signOut } = useAuth();
   const { toast } = useToast();
 
+  // If no user data or user role hasn't loaded yet,
+  // render a skeleton preview so the final sidebar layout isn't "flashing" later.
+  if (!user || !user.role) {
+    return (
+      <Sidebar collapsible="icon" side="left" variant="floating">
+        <SidebarHeader>
+          <SidebarTrigger className={`${open ? "w-full text-left" : "mx-auto"}`} />
+        </SidebarHeader>
+        <SidebarContent>
+          <SidebarGroup>
+            <SidebarGroupContent className={`${open ? "p-2" : "py-2"} transition-all duration-300`}>
+              <SidebarMenu>
+                {/* Rendering a couple of skeleton items */}
+                <SidebarMenuItem className={`${open ? "p-2" : "py-2"} transition-all duration-300`}>
+                  <div className="flex items-center  animate-pulse">
+                    <div className="w-4 h-4 bg-gray-300 rounded opacity-50" />
+                  </div>
+                </SidebarMenuItem>
+                <SidebarMenuItem className={`${open ? "p-2" : "py-2"} transition-all duration-300`}>
+                  <div className="flex items-center  animate-pulse">
+                    <div className="w-4 h-4 bg-gray-300 rounded opacity-50" />
+                  </div>
+                </SidebarMenuItem>
+                <SidebarMenuItem className={`${open ? "p-2" : "py-2"} transition-all duration-300`}>
+                  <div className="flex items-center  animate-pulse">
+                    <div className="w-4 h-4 bg-gray-300 rounded opacity-50" />
+                  </div>
+                </SidebarMenuItem>
+                <SidebarMenuItem className={`${open ? "p-2" : "py-2"} transition-all duration-300`}>
+                  <div className="flex items-center  animate-pulse">
+                    <div className="w-4 h-4 bg-gray-300 rounded opacity-50" />
+                  </div>
+                </SidebarMenuItem>
+                <SidebarMenuItem className={`${open ? "p-2" : "py-2"} transition-all duration-300`}>
+                  <div className="flex items-center  animate-pulse">
+                    <div className="w-4 h-4 bg-gray-300 rounded opacity-50" />
+                  </div>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </SidebarContent>
+      </Sidebar>
+    );
+  }
+
+  // Build the sidebar items dynamically based on the user's role.
+  const items =
+    user.role === "broker"
+      ? [
+        {
+          title: "Overview",
+          url: "/me",
+          icon: LayoutGrid,
+          status: "completed",
+        },
+        {
+          title: "Account",
+          url: "/me/account",
+          icon: UserRoundPenIcon,
+          status: "completed",
+        },
+        {
+          title: "Company",
+          url: "/me/company",
+          icon: BriefcaseBusiness, // You can swap this icon with a more appropriate one for "Company"
+          status: "completed",
+        },
+        {
+          title: "Settings",
+          url: "/me/settings",
+          icon: Settings,
+          status: "todo",
+        },
+        {
+          title: "Tools",
+          url: "/me/tools",
+          icon: Hammer,
+          status: "todo",
+        },
+      ]
+      : [
+        // Default to trucker sidebar
+        {
+          title: "Overview",
+          url: "/me",
+          icon: LayoutGrid,
+          status: "completed",
+        },
+        {
+          title: "Account",
+          url: "/me/account",
+          icon: UserRoundPenIcon,
+          status: "completed",
+        },
+        {
+          title: "Documents",
+          url: "/me/documents",
+          icon: FileText,
+          status: "completed",
+        },
+        {
+          title: "Vehicles",
+          url: "/me/vehicles",
+          icon: CarFront,
+          status: "completed",
+        },
+        {
+          title: "Settings",
+          url: "/me/settings",
+          icon: Settings,
+          status: "todo",
+        },
+        {
+          title: "Tools",
+          url: "/me/tools",
+          icon: Hammer,
+          status: "todo",
+        },
+      ];
+
+  // Handle menu item clicks if feature is not yet implemented.
   const handleNavigation = (
     e: React.MouseEvent<HTMLAnchorElement>,
-    item: (typeof items)[0]
+    item: typeof items[number]
   ) => {
     if (item.status === "wip" || item.status === "todo") {
       e.preventDefault();
@@ -86,32 +171,23 @@ export function ProfileSidebar({ open }: { open: boolean }) {
   return (
     <Sidebar collapsible="icon" side="left" variant="floating">
       <SidebarHeader>
-        <SidebarTrigger
-          className={`${open ? "w-full text-left" : "mx-auto"}`}
-        />
+        <SidebarTrigger className={`${open ? "w-full text-left" : "mx-auto"}`} />
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupContent
-            className={`${open ? "p-2" : "py-2"} transition-all duration-300`}
-          >
+          <SidebarGroupContent className={`${open ? "p-2" : "py-2"} transition-all duration-300`}>
             <SidebarMenu>
               {items.map((item) => (
                 <SidebarMenuItem
                   key={item.title}
-                  className={`${
-                    open ? "p-2" : "py-2"
-                  } transition-all duration-300`}
+                  className={`${open ? "p-2" : "py-2"} transition-all duration-300`}
                 >
                   <SidebarMenuButton asChild>
                     <a
                       href={item.url}
                       onClick={(e) => handleNavigation(e, item)}
-                      className={`${
-                        item.status === "wip" || item.status === "todo"
-                          ? " opacity-50"
-                          : ""
-                      } flex items-center gap-2`}
+                      className={`flex items-center gap-2 ${item.status === "wip" || item.status === "todo" ? "opacity-50" : ""
+                        }`}
                     >
                       <item.icon />
                       <span className="flex items-center gap-1 w-full justify-between">
@@ -121,11 +197,7 @@ export function ProfileSidebar({ open }: { open: boolean }) {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
-              <SidebarMenuItem
-                className={`${
-                  open ? "p-2" : "py-2"
-                } transition-all duration-300`}
-              >
+              <SidebarMenuItem className={`${open ? "p-2" : "py-2"} transition-all duration-300`}>
                 <SidebarMenuButton onClick={signOut}>
                   <LogOut />
                   <span>Logout</span>

@@ -15,6 +15,7 @@ export type DashboardContextType = {
 };
 
 import { createContext, useContext } from "react";
+import { User } from "@/types/auth";
 
 const DashboardContext = createContext<DashboardContextType | null>(null);
 
@@ -30,7 +31,7 @@ export const useProfileSidebar = () => {
 
 export default function Layout({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
-
+  const { user } = useAuth();
   // Initialize all your hooks
   const auth = useAuth();
   const broker = useBroker();
@@ -38,6 +39,7 @@ export default function Layout({ children }: { children: ReactNode }) {
 
   // Create the shared context value
   const dashboardValue = {
+    user,
     auth,
     broker,
     trucker,
@@ -45,10 +47,9 @@ export default function Layout({ children }: { children: ReactNode }) {
 
   return (
     <DashboardContext.Provider value={dashboardValue}>
-      <div className="flex h-screen overflow-hidden">
+      <div className="flex min-h-screen">
         <SidebarProvider open={open} onOpenChange={setOpen}>
-          <ProfileSidebar open={open} />
-
+          <ProfileSidebar open={open} user={user as User} />
           <main className="flex-1">{children}</main>
         </SidebarProvider>
       </div>

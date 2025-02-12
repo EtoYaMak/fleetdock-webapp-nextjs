@@ -1,11 +1,12 @@
 // src/components/auth/SignUpForm/FormStages.tsx
 import { memo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FormData, StageErrors } from "./types";
+import { StageErrors } from "./types";
+import { SignUpType } from "@/types/auth";
 
 interface FormStagesProps {
   currentStageIndex: number;
-  formData: FormData;
+  formData: SignUpType;
   stageErrors: StageErrors;
   handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
@@ -48,7 +49,7 @@ const BasicInfoStage = memo(function BasicInfoStage({
   error,
   onChange,
 }: {
-  formData: FormData;
+  formData: SignUpType;
   error?: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }) {
@@ -92,7 +93,7 @@ const ContactDetailsStage = memo(function ContactDetailsStage({
   error,
   onChange,
 }: {
-  formData: FormData;
+  formData: SignUpType;
   error?: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }) {

@@ -43,7 +43,7 @@ const Navbar = function Navbar() {
 
   //tier pill colors
   const tierColors = {
-    starter: "text-white",
+    starter: "text-foreground",
     professional: "bg-primary/90 rounded-full px-2 text-white  shadow-md",
     enterprise: "bg-primary rounded-full px-2 text-white shadow-md",
   };
