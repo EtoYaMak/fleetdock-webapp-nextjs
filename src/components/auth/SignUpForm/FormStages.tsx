@@ -3,12 +3,16 @@ import { memo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { StageErrors } from "./types";
 import { SignUpType } from "@/types/auth";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import { Check, X } from "lucide-react";
 
 interface FormStagesProps {
   currentStageIndex: number;
   formData: SignUpType;
   stageErrors: StageErrors;
   handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  emailLoading: boolean;
+  emailExists: boolean;
 }
 
 const FormStages = memo(function FormStages({
@@ -16,6 +20,8 @@ const FormStages = memo(function FormStages({
   formData,
   stageErrors,
   handleInputChange,
+  emailLoading,
+  emailExists
 }: FormStagesProps) {
   return (
     <AnimatePresence mode="wait">
@@ -31,6 +37,8 @@ const FormStages = memo(function FormStages({
             formData={formData}
             error={stageErrors[0]}
             onChange={handleInputChange}
+            emailLoading={emailLoading}
+            emailExists={emailExists}
           />
         ) : (
           <ContactDetailsStage
@@ -48,10 +56,15 @@ const BasicInfoStage = memo(function BasicInfoStage({
   formData,
   error,
   onChange,
+  emailLoading,
+  emailExists
 }: {
   formData: SignUpType;
   error?: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  emailLoading: boolean;
+  emailExists: boolean;
+
 }) {
   return (
     <div className="space-y-4">
@@ -69,13 +82,28 @@ const BasicInfoStage = memo(function BasicInfoStage({
         value={formData.username}
         onChange={onChange}
       />
-      <FormInput
-        type="email"
-        name="email"
-        placeholder="Email"
-        value={formData.email}
-        onChange={onChange}
-      />
+      <div className="relative ">
+        <FormInput
+          type="email"
+          name="email"
+          placeholder="Email"
+          value={formData.email}
+          onChange={onChange}
+        />
+        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+          {emailLoading ? (
+            <LoadingSpinner />
+          ) : formData.email && (
+            <>
+              {emailExists ? (
+                <X className="w-4 h-4 text-destructive" />
+              ) : (
+                <Check className="w-4 h-4 text-green-500" />
+              )}
+            </>
+          )}
+        </div>
+      </div>
       <FormInput
         type="password"
         name="password"

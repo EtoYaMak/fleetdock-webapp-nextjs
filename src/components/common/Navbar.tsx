@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button";
 import NavLoadingSkeleton from "@/components/common/navloadingskeleton";
 import { NotificationList } from "@/components/notifications/notificationList";
 import { NewMessageNotfier } from "@/components/chat/NewMessageNotfier";
+import { useRouter } from "next/navigation";
+
 const NavLink = function NavLink({
   href,
   children,
@@ -37,9 +39,9 @@ const NavIcon = function NavIcon({
 };
 
 const Navbar = function Navbar() {
-  const { user, loading } = useAuth();
-  const { signOut } = useAuth();
+  const { user, loading, signOut } = useAuth();
   const [mounted, setMounted] = useState(false);
+  const router = useRouter();
 
   //tier pill colors
   const tierColors = {
@@ -51,6 +53,19 @@ const Navbar = function Navbar() {
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Modify the signOut handler
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      // Clear any session storage
+      sessionStorage.clear();
+      // Force a router refresh after signout
+      router.refresh();
+    } catch (error) {
+      console.error("Sign out error:", error);
+    }
+  };
 
   // Memoize navigation items based on user state
   const navigationItems = useMemo(() => {
@@ -89,7 +104,12 @@ const Navbar = function Navbar() {
             <NotificationList userId={user.id} />
             <NewMessageNotfier />
 
-            <Button onClick={signOut} variant="default" size="icon">
+            <Button
+              onClick={handleSignOut}
+              variant="default"
+              size="icon"
+              disabled={loading}
+            >
               <LogOutIcon className="h-5 w-5 transition-all duration-300" />
             </Button>
           </div>
@@ -108,7 +128,19 @@ const Navbar = function Navbar() {
         </NavLink>
       </div>
     );
-  }, [user, signOut, mounted]);
+  }, [user, loading, mounted, handleSignOut]);
+
+  // Add an effect to handle auth state changes
+  useEffect(() => {
+    const handleAuthStateChange = () => {
+      router.refresh();
+    };
+
+    window.addEventListener('auth-state-change', handleAuthStateChange);
+    return () => {
+      window.removeEventListener('auth-state-change', handleAuthStateChange);
+    };
+  }, [router]);
 
   return (
     <nav className="bg-transparent">

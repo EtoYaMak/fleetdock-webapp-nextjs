@@ -77,7 +77,7 @@ export async function POST(request: Request) {
     const baseUrl = getBaseUrl();
     console.log("Using base URL:", baseUrl);
 
-    console.log("Creating checkout session..."); // Debug log
+    console.log("Creating checkout session...");
     // Create Stripe Checkout session
     const session = await stripe.checkout.sessions.create({
       customer: customer.id,
@@ -94,8 +94,15 @@ export async function POST(request: Request) {
         tier,
         customer_id: customer.id,
       },
-      success_url: `${baseUrl}/signup-success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${baseUrl}/signup?error=payment_cancelled`,
+      success_url: `${baseUrl}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${baseUrl}/payment/canceled`,
+      automatic_tax: { enabled: false },
+      customer_update: {
+        address: "auto",
+        name: "auto",
+      },
+      billing_address_collection: "required",
+      payment_method_collection: "if_required",
     });
 
     console.log("Checkout session created:", session.id); // Debug log

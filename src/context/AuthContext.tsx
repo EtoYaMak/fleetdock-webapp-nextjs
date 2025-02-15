@@ -220,7 +220,34 @@ const UserProvider = ({ children }: { children: React.ReactNode }) => {
       if (existingUsers && existingUsers.length > 0) {
         return { success: false, error: "This email is already registered" };
       }
+      // Generate unique ID based on full_name, role, membership_tier, and phone.b
+      const generateUniqueId = () => {
+        const { full_name, role, selectedTier, phone } = data;
 
+        // Ensure required fields are present
+        if (!full_name || !role || !selectedTier) {
+          throw new Error("Missing required fields for unique ID generation");
+        }
+
+        // Extract initials from full_name
+        const nameParts = full_name.trim().split(/\s+/);
+        const initials = nameParts.length >= 2
+          ? (nameParts[0][0] + nameParts[nameParts.length - 1][0]).toLowerCase()
+          : full_name.slice(0, 2).toLowerCase();
+
+        // For role: take the first two characters and convert to uppercase
+        const rolePart = role.slice(0, 2).toUpperCase();
+
+        // For membership tier: take the first two characters in lowercase
+        const tierPart = selectedTier.slice(0, 2).toLowerCase();
+
+        // For phone: take the last three characters or use random numbers if phone is not provided
+        const phonePart = phone
+          ? phone.slice(-3)
+          : Math.floor(Math.random() * 900 + 100).toString(); // generates random 3-digit number
+
+        return `${initials}${rolePart}${tierPart}${phonePart}`;
+      };
       // Now register user in Supabase Auth
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email: data.email,
@@ -236,6 +263,7 @@ const UserProvider = ({ children }: { children: React.ReactNode }) => {
             subscription_id: data.subscription_id,
             subscription_end_date: calculateSubscriptionEndDate(),
             role: data.role,
+            unique_id: generateUniqueId(),
           },
         },
       });

@@ -4,7 +4,6 @@ import { useState, useCallback, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { FiUser, FiMail } from "react-icons/fi";
-import { useAuth } from "@/context/AuthContext";
 import RoleSelection from "./SignUpForm/RoleSelection";
 import FormStages from "./SignUpForm/FormStages";
 import ProgressBar from "./SignUpForm/ProgressBar";
@@ -13,6 +12,9 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { SignUpType } from "@/types/auth";
 import { calculateSubscriptionEndDate } from "@/types/auth";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import { useCheckEmail } from '@/hooks/useCheckEmail';
+
 const SignUpForm = function SignUpForm() {
   const [currentStep, setCurrentStep] = useState<SignUpStep>("details");
   const [currentStageIndex, setCurrentStageIndex] = useState(0);
@@ -38,11 +40,11 @@ const SignUpForm = function SignUpForm() {
   });
   const [stageErrors, setStageErrors] = useState<string[]>(["", ""]);
   const [loading, setLoading] = useState(false);
+  const { emailExists, loading: emailLoading, verifyEmail } = useCheckEmail();
+  const [emailChecked, setEmailChecked] = useState(false);
 
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
-  const router = useRouter();
-  const { signUp } = useAuth();
 
   // Memoize form stages configuration
   const stages: FormStage[] = useMemo(
@@ -99,13 +101,24 @@ const SignUpForm = function SignUpForm() {
       });
       return false;
     }
+
+    // Check if email exists when validating the first stage
+    if (currentStageIndex === 0 && emailExists) {
+      setStageErrors((prev) => {
+        const newErrors = [...prev];
+        newErrors[currentStageIndex] = "This email is already registered";
+        return newErrors;
+      });
+      return false;
+    }
+
     setStageErrors((prev) => {
       const newErrors = [...prev];
       newErrors[currentStageIndex] = "";
       return newErrors;
     });
     return true;
-  }, [currentStageIndex, formData, stages]);
+  }, [currentStageIndex, formData, stages, emailExists]);
 
   const handleSignup = useCallback(async () => {
     if (!validateCurrentStage()) return;
@@ -115,21 +128,27 @@ const SignUpForm = function SignUpForm() {
       setLoading(true);
 
       // Store the form data in session storage for later
-      sessionStorage.setItem("signupFormData", JSON.stringify(formData));
+      const formDataToStore = {
+        ...formData,
+        // Ensure these fields are included
+        email: formData.email,
+        password: formData.password,
+        username: formData.username,
+        full_name: formData.full_name,
+        role: formData.role,
+        phone: formData.phone,
+        tier: formData.selectedTier,
+      };
+
+      // Add logging to verify data is being stored
+      console.log("Storing signup data:", formDataToStore);
+      sessionStorage.setItem("signupFormData", JSON.stringify(formDataToStore));
 
       // Create Stripe checkout session
       const response = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: formData.email,
-          role: formData.role,
-          tier: formData.selectedTier,
-          password: formData.password,
-          username: formData.username,
-          full_name: formData.full_name,
-          phone: formData.phone
-        }),
+        body: JSON.stringify(formDataToStore),
       });
 
       const data = await response.json();
@@ -160,12 +179,22 @@ const SignUpForm = function SignUpForm() {
   const handleNext = useCallback(() => {
     if (!validateCurrentStage()) return;
 
+    // Prevent proceeding if email is still being checked
+    if (currentStageIndex === 0 && !emailChecked) {
+      setStageErrors((prev) => {
+        const newErrors = [...prev];
+        newErrors[currentStageIndex] = "Please wait while we verify your email";
+        return newErrors;
+      });
+      return;
+    }
+
     if (currentStageIndex < stages.length - 1) {
       setCurrentStageIndex(currentStageIndex + 1);
     } else {
       handleSignup();
     }
-  }, [currentStageIndex, stages.length, validateCurrentStage, handleSignup]);
+  }, [currentStageIndex, stages.length, validateCurrentStage, handleSignup, emailChecked]);
 
   const handleBack = useCallback(() => {
     if (currentStageIndex > 0) {
@@ -181,7 +210,7 @@ const SignUpForm = function SignUpForm() {
   }, []);
 
   const handleInputChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
       const { name, value } = e.target;
       setFormData((prev) => ({ ...prev, [name]: value }));
       setStageErrors((prev) => {
@@ -189,10 +218,21 @@ const SignUpForm = function SignUpForm() {
         newErrors[currentStageIndex] = "";
         return newErrors;
       });
-    },
-    [currentStageIndex]
-  );
 
+      // Check email when it changes
+      if (name === 'email') {
+        setEmailChecked(false);
+        if (value && value.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+          verifyEmail(value);
+          setEmailChecked(true);
+        }
+      }
+    },
+    [currentStageIndex, verifyEmail]
+  );
+  if (loading) {
+    return <LoadingSpinner />
+  }
   if (currentStep === "role-selection") {
     return <RoleSelection onRoleSelect={handleRoleSelection} />;
   }
@@ -222,6 +262,9 @@ const SignUpForm = function SignUpForm() {
           formData={formData}
           stageErrors={stageErrors}
           handleInputChange={handleInputChange}
+          emailLoading={emailLoading}
+          emailExists={emailExists as boolean}
+
         />
 
         {error && (
