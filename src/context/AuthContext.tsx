@@ -212,14 +212,6 @@ const UserProvider = ({ children }: { children: React.ReactNode }) => {
    }; */
   const signUp = async (data: SignUpType) => {
     try {
-      const { data: existingUsers } = await supabase
-        .from("profiles")
-        .select("email")
-        .eq("email", data.email);
-
-      if (existingUsers && existingUsers.length > 0) {
-        return { success: false, error: "This email is already registered" };
-      }
       // Generate unique ID based on full_name, role, membership_tier, and phone.b
       const generateUniqueId = () => {
         const { full_name, role, selectedTier, phone } = data;

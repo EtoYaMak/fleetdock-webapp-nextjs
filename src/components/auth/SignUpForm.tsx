@@ -141,7 +141,6 @@ const SignUpForm = function SignUpForm() {
       };
 
       // Add logging to verify data is being stored
-      console.log("Storing signup data:", formDataToStore);
       sessionStorage.setItem("signupFormData", JSON.stringify(formDataToStore));
 
       // Create Stripe checkout session
