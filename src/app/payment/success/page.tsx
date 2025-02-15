@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { SignUpType } from "@/types/auth";
@@ -17,7 +17,7 @@ export default function PaymentSuccessPage() {
     const { signUp } = useAuth();
     const hasAttempted = useRef(false);
 
-    const completeSignup = async () => {
+    const completeSignup = useCallback(async () => {
         try {
             // Check if already completed
             if (sessionStorage.getItem("signupComplete")) {
@@ -67,14 +67,14 @@ export default function PaymentSuccessPage() {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [router, searchParams, signUp]);
 
     useEffect(() => {
         if (!hasAttempted.current) {
             hasAttempted.current = true;
             completeSignup();
         }
-    }, []); // Empty dependency array since we use the ref to control execution
+    }, [completeSignup]);
 
     if (error) {
         return (

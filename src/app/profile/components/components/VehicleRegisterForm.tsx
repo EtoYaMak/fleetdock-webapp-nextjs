@@ -25,7 +25,7 @@ export default function VehicleRegisterForm({
   isLoading: boolean;
 }) {
   const { user } = useAuth();
-  const { vehiclesTypes, isLoading: typesLoading } = useVehiclesTypes();
+  const { vehiclesTypes } = useVehiclesTypes();
   const [formData, setFormData] = useState<VehicleFormData>(initialData);
 
   useEffect(() => {
@@ -245,8 +245,8 @@ export default function VehicleRegisterForm({
         {isLoading
           ? "Processing..."
           : initialData.id
-          ? "Update Vehicle"
-          : "Register Vehicle"}
+            ? "Update Vehicle"
+            : "Register Vehicle"}
       </Button>
     </form>
   );

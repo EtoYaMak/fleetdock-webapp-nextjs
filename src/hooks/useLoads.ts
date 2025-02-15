@@ -46,22 +46,25 @@ export const useLoads = () => {
   }, []);
 
   // Create a new load
-  const createLoad = useCallback(async (newLoad: Load) => {
-    setLoading(true);
-    try {
-      const { data, error } = await supabase.from("loads").insert([newLoad]);
-      toast({
-        title: "Load posted successfully",
-        variant: "default",
-      });
-      if (error) throw error;
-      setLoads((prevLoads) => [...prevLoads, ...(data || [])]);
-    } catch (error: any) {
-      setError(error.message);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const createLoad = useCallback(
+    async (newLoad: Load) => {
+      setLoading(true);
+      try {
+        const { data, error } = await supabase.from("loads").insert([newLoad]);
+        toast({
+          title: "Load posted successfully",
+          variant: "default",
+        });
+        if (error) throw error;
+        setLoads((prevLoads) => [...prevLoads, ...(data || [])]);
+      } catch (error: any) {
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [toast]
+  );
 
   // Update an existing load
   const updateLoad = useCallback(async (updatedLoad: Load) => {
@@ -100,22 +103,19 @@ export const useLoads = () => {
   }, []);
 
   // When updating a load's status
-  const updateLoadStatus = async (
-    loadId: string,
-    status: string,
-    truckerId: string
-  ) => {
-    // Your existing load update logic
-    const { error } = await supabase
-      .from("loads")
-      .update({ status: status })
-      .eq("id", loadId);
+  const updateLoadStatus = useCallback(
+    async (loadId: string, status: string, truckerId: string) => {
+      const { error } = await supabase
+        .from("loads")
+        .update({ status: status })
+        .eq("id", loadId);
 
-    if (!error) {
-      // Create notification after successful status update
-      await notifyLoadStatusChange(truckerId, loadId, status);
-    }
-  };
+      if (!error) {
+        await notifyLoadStatusChange(truckerId, loadId, status);
+      }
+    },
+    []
+  );
 
   useEffect(() => {
     fetchLoads();

@@ -107,7 +107,7 @@ export const MessageNotifications = ({ userId }: { userId: string }) => {
             );
 
         return { unread, read };
-    }, [notifications]);
+    }, [messageNotifications]);
 
     const unreadCount = sortedNotifications.unread.length;
     const markAsRead = async (notificationId: string) => {

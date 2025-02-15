@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useMemo } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { FiUser, FiMail } from "react-icons/fi";
 import RoleSelection from "./SignUpForm/RoleSelection";

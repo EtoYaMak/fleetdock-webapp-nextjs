@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Bid, NewBid } from "@/types/bid";
+import { Bid } from "@/types/bid";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 import { useFeatureAccess } from "@/hooks/useFeatureAccess";

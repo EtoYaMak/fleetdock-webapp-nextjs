@@ -35,8 +35,6 @@ import {
 } from "@/components/ui/popover";
 import { format } from "date-fns";
 import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/lib/supabase";
 import { ChevronDown } from "lucide-react";
 import React from "react";
 import { DocumentViewer } from "@/components/ui/document-viewer";
@@ -53,6 +51,34 @@ type DocumentRow = {
     url: string;
     name: string; // Original file name
 };
+
+// Create a new component for the cell content
+function DocumentActionCell({ doc }: { doc: DocumentRow }) {
+    const [isViewerOpen, setIsViewerOpen] = useState(false);
+
+    return (
+        <div className="flex items-center gap-2">
+            <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsViewerOpen(true)}
+            >
+                View
+            </Button>
+            <UpdateStatusPopover
+                truckerId={doc.truckerId}
+                documentName={doc.documentName}
+                currentStatus={doc.verification_status}
+            />
+            <DocumentViewer
+                url={doc.url}
+                fileName={doc.name}
+                isOpen={isViewerOpen}
+                onClose={() => setIsViewerOpen(false)}
+            />
+        </div>
+    );
+}
 
 // Define columns for the data table
 const columns: ColumnDef<DocumentRow>[] = [
@@ -120,33 +146,7 @@ const columns: ColumnDef<DocumentRow>[] = [
     },
     {
         id: "actions",
-        cell: ({ row }) => {
-            const doc = row.original;
-            const [isViewerOpen, setIsViewerOpen] = useState(false);
-
-            return (
-                <div className="flex items-center gap-2">
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setIsViewerOpen(true)}
-                    >
-                        View
-                    </Button>
-                    <UpdateStatusPopover
-                        truckerId={doc.truckerId}
-                        documentName={doc.documentName}
-                        currentStatus={doc.verification_status}
-                    />
-                    <DocumentViewer
-                        url={doc.url}
-                        fileName={doc.name}
-                        isOpen={isViewerOpen}
-                        onClose={() => setIsViewerOpen(false)}
-                    />
-                </div>
-            );
-        },
+        cell: ({ row }) => <DocumentActionCell doc={row.original} />
     },
 ];
 

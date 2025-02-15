@@ -44,7 +44,6 @@ export async function POST(request: Request) {
     }
 
     // Create a customer in Stripe
-    console.log("Creating Stripe customer..."); // Debug log
     const customer = await stripe.customers.create({
       email,
       metadata: {
@@ -56,7 +55,6 @@ export async function POST(request: Request) {
         password, // Note: This is temporary and will be hashed during actual signup
       },
     });
-    console.log("Stripe customer created:", customer.id); // Debug log
 
     // Define product prices from STRIPE_PRODUCTS config
     const priceIdMap: Record<string, string> = {
@@ -67,7 +65,6 @@ export async function POST(request: Request) {
 
     // Validate tier
     if (!priceIdMap[tier]) {
-      console.log("Invalid tier selected:", tier); // Debug log
       return NextResponse.json(
         { error: "Invalid subscription tier selected" },
         { status: 400 }
@@ -75,9 +72,7 @@ export async function POST(request: Request) {
     }
 
     const baseUrl = getBaseUrl();
-    console.log("Using base URL:", baseUrl);
 
-    console.log("Creating checkout session...");
     // Create Stripe Checkout session
     const session = await stripe.checkout.sessions.create({
       customer: customer.id,

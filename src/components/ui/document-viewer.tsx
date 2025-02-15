@@ -10,6 +10,7 @@ import { useState, useEffect } from "react";
 import { Loader2, ExternalLink } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
 
 interface DocumentViewerProps {
     url: string;
@@ -86,10 +87,12 @@ export function DocumentViewer({ url, fileName, isOpen, onClose }: DocumentViewe
                             onLoad={handleLoad}
                         />
                     ) : fullUrl && fileType === "image" ? (
-                        <img
+                        <Image
                             src={fullUrl}
                             alt={fileName}
                             className="w-full h-full object-contain"
+                            fill
+                            unoptimized
                             onLoad={handleLoad}
                         />
                     ) : !fullUrl && !isLoading ? (

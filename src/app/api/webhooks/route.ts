@@ -2,7 +2,6 @@ import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { supabase } from "@/lib/supabase";
-import { calculateSubscriptionEndDate } from "@/types/auth";
 
 if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error("Missing STRIPE_SECRET_KEY environment variable");
@@ -46,15 +45,12 @@ export async function POST(request: Request) {
       );
     }
 
-    console.log("Received Stripe webhook event:", event.type);
-
     try {
       switch (event.type) {
         case "customer.subscription.updated":
         case "customer.subscription.deleted": {
           const subscription = event.data.object as Stripe.Subscription;
           const customerId = subscription.customer as string;
-          console.log(`Subscription ${event.type}:`, subscription.id);
 
           // Update subscription status in database
           const { error: dbError } = await supabase

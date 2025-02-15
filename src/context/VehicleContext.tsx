@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import { VehicleWithType } from "@/types/vehicles";
 import { useToast } from "@/hooks/use-toast";
@@ -22,7 +22,7 @@ export function VehicleProvider({ children }: { children: React.ReactNode }) {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const fetchVehicles = async () => {
+    const fetchVehicles = useCallback(async () => {
         if (!user?.id || user.role !== "admin") return;
         setIsLoading(true);
         setError(null);
@@ -45,7 +45,7 @@ export function VehicleProvider({ children }: { children: React.ReactNode }) {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [user?.id, user?.role, toast]);
 
     const updateVehicleVerificationStatus = async (id: string, status: boolean) => {
         if (!user?.id || user.role !== "admin") return;
@@ -211,7 +211,7 @@ export function VehicleProvider({ children }: { children: React.ReactNode }) {
     // Initial fetch
     useEffect(() => {
         fetchVehicles();
-    }, [user?.id]);
+    }, [fetchVehicles]);
 
     return (
         <VehicleContext.Provider

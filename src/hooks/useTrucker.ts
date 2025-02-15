@@ -35,7 +35,7 @@ export const useTrucker = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [user?.id]);
+  }, [user?.id, user?.role]);
 
   const createTrucker = async (data: TruckerFormData) => {
     if (!user?.id) return;

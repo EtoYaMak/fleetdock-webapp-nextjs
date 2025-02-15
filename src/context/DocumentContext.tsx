@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import { TruckerDetails, DocumentMetadata } from "@/types/trucker";
 import { useToast } from "@/hooks/use-toast";
@@ -51,7 +51,7 @@ export function DocumentProvider({ children }: { children: React.ReactNode }) {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const fetchDocuments = async () => {
+    const fetchDocuments = useCallback(async () => {
         if (!user?.id || user.role !== "admin") return;
         setIsLoading(true);
         setError(null);
@@ -93,7 +93,7 @@ export function DocumentProvider({ children }: { children: React.ReactNode }) {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [user?.id, user?.role, toast]);
 
     const updateDocumentStatus = async ({
         truckerId,
@@ -181,12 +181,12 @@ export function DocumentProvider({ children }: { children: React.ReactNode }) {
         return () => {
             supabase.removeChannel(channel);
         };
-    }, [user?.id, user?.role]);
+    }, [user?.id, user?.role, fetchDocuments]);
 
     // Initial fetch
     useEffect(() => {
         fetchDocuments();
-    }, [user?.id]);
+    }, [fetchDocuments]);
 
     return (
         <DocumentContext.Provider

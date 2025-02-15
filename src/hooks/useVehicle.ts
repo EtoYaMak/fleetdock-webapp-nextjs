@@ -37,7 +37,7 @@ export const useVehicle = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [user?.id]);
+  }, [user?.id, user?.role]);
 
   //CRUD for Vehicle
   const createVehicle = async (data: VehicleFormData) => {

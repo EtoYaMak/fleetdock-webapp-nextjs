@@ -1,10 +1,10 @@
 "use client"
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { Message } from "@/types/chat";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Send, ChevronDown, Paperclip, Loader2, X, Download, ExternalLink, FileText, MoreVertical } from "lucide-react";
+import { Send, Paperclip, Loader2, X, Download, ExternalLink, FileText, MoreVertical } from "lucide-react";
 import { useChat } from "@/context/ChatContext";
 import { format } from "date-fns";
 import { useAuth } from "@/context/AuthContext";
@@ -22,6 +22,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import Image from "next/image";
 
 interface ChatWindowProps {
   chatRoomId: string;
@@ -44,7 +45,7 @@ export function ChatWindow({ chatRoomId, messages }: ChatWindowProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
 
-  const scrollToBottom = (force = false) => {
+  const scrollToBottom = useCallback((force = false) => {
     if (!scrollRef.current) return;
 
     const { scrollHeight, scrollTop, clientHeight } = scrollRef.current;
@@ -53,7 +54,7 @@ export function ChatWindow({ chatRoomId, messages }: ChatWindowProps) {
     if (force || (shouldAutoScroll && isNearBottom)) {
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }
-  };
+  }, [shouldAutoScroll]);
 
   useEffect(() => {
     const scrollElement = scrollRef.current;
@@ -73,11 +74,11 @@ export function ChatWindow({ chatRoomId, messages }: ChatWindowProps) {
     if (messages.length > 0) {
       scrollToBottom();
     }
-  }, [messages]);
+  }, [messages, scrollToBottom]);
 
   useEffect(() => {
     scrollToBottom(true);
-  }, []);
+  }, [scrollToBottom]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -200,7 +201,7 @@ export function ChatWindow({ chatRoomId, messages }: ChatWindowProps) {
         }
       }
     });
-  }, [messages, getFileUrl]);
+  }, [messages, getFileUrl, thumbnailUrls]);
 
   const startReply = (message: Message) => {
     setReplyingTo(message);
@@ -312,10 +313,13 @@ export function ChatWindow({ chatRoomId, messages }: ChatWindowProps) {
             {selectedFile && fileUrl && (
               isImageFile(selectedFile.file_name || '') ? (
                 <div className="relative aspect-auto max-h-[70vh] overflow-auto rounded-lg">
-                  <img
+                  <Image
                     src={fileUrl}
                     alt={selectedFile.file_name || 'Preview'}
                     className="w-full h-full object-contain"
+                    width={800}
+                    height={600}
+                    unoptimized
                   />
                 </div>
               ) : (
@@ -409,10 +413,13 @@ export function ChatWindow({ chatRoomId, messages }: ChatWindowProps) {
                             {isImageFile(message.file_name || "") ? (
                               <div className="relative w-32 h-32 bg-black/20 rounded-md overflow-hidden">
                                 {thumbnailUrls[message.id]?.url ? (
-                                  <img
+                                  <Image
                                     src={thumbnailUrls[message.id].url}
                                     alt={message.file_name || 'Preview'}
                                     className="w-full h-full object-cover"
+                                    width={128}
+                                    height={128}
+                                    unoptimized
                                   />
                                 ) : (
                                   <div className="w-full h-full flex items-center justify-center">

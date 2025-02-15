@@ -1,4 +1,3 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Component as BarChartWithLegends } from "@/components/ui/barChartwithLegends";
 
 const Statistics = ({

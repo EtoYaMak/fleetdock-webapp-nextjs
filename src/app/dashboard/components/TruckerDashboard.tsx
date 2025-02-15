@@ -1,4 +1,3 @@
-import React, { memo } from "react";
 import { User } from "@/types/auth";
 import MyBids from "./trucker/MyBids";
 import Statistics from "./trucker/Statistics";
@@ -10,7 +9,7 @@ import { Load } from "@/types/load";
 import { Bid } from "@/types/bid";
 
 
-const TruckerDashboard = ({ user, dashLoads, acceptedBids, pendingBids, rejectedBids }: { user: User, dashLoads: Load[], acceptedBids: Bid[], pendingBids: Bid[], rejectedBids: Bid[] }) => {
+const TruckerDashboard = ({ acceptedBids, pendingBids, rejectedBids }: { user: User, dashLoads: Load[], acceptedBids: Bid[], pendingBids: Bid[], rejectedBids: Bid[] }) => {
   const { profile } = useProfile();
   // Get tier limits
   const tierLimits = profile?.membership_tier

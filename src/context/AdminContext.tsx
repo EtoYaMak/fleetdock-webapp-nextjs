@@ -1,5 +1,5 @@
 "use client";
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { useAuth } from "./AuthContext";
 import { User } from "@/types/auth";
 import { supabase } from "@/lib/supabase";
@@ -33,8 +33,7 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
     const [loading, setLoading] = useState(false);
     const isAdmin = user?.role === "admin";
 
-    const fetchUsers = async () => {
-
+    const fetchUsers = useCallback(async () => {
         if (!isAdmin) {
             return;
         }
@@ -44,7 +43,6 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
             const { data, error } = await supabase
                 .from("profiles")
                 .select("*");
-
 
             if (error) {
                 console.error("Supabase error fetching users:", error);
@@ -62,7 +60,7 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
         } finally {
             setLoading(false);
         }
-    };
+    }, [isAdmin]);
 
     const createUser = async (userData: Partial<User>) => {
         if (!isAdmin) return;
@@ -130,10 +128,10 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
     };
 
     useEffect(() => {
-        if (isAdmin) {  // Only fetch if admin
+        if (isAdmin) {
             fetchUsers();
         }
-    }, [isAdmin]); // Add isAdmin as dependency
+    }, [isAdmin, fetchUsers]);
 
     return (
         <AdminContext.Provider

@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { User, LogOutIcon } from "lucide-react";
 import { FiUser, FiPackage } from "react-icons/fi";
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useCallback } from "react";
 import { TbLayoutDashboard } from "react-icons/tb";
 import { useAuth } from "@/context/AuthContext";
 import { ModeToggle } from "@/components/common/themeToggle";
@@ -54,8 +54,8 @@ const Navbar = function Navbar() {
     setMounted(true);
   }, []);
 
-  // Modify the signOut handler
-  const handleSignOut = async () => {
+  // Wrap handleSignOut with useCallback
+  const handleSignOut = useCallback(async () => {
     try {
       await signOut();
       // Clear any session storage
@@ -65,7 +65,7 @@ const Navbar = function Navbar() {
     } catch (error) {
       console.error("Sign out error:", error);
     }
-  };
+  }, [signOut, router]); // Add dependencies used inside handleSignOut
 
   // Memoize navigation items based on user state
   const navigationItems = useMemo(() => {
