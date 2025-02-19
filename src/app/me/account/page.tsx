@@ -37,7 +37,7 @@ export default function Account() {
             <AvatarFallback>{auth.user.full_name?.charAt(0)}</AvatarFallback>
           </Avatar>
           <div className="flex flex-col">
-            <CardTitle className="text-2xl">{auth.user.full_name}</CardTitle>
+            <CardTitle className="text-2xl">{auth.user.full_name} <span className="text-sm text-muted-foreground uppercase">#{auth.user.unique_id}</span></CardTitle>
             <div className="flex items-center gap-2 mt-1">
               <Badge variant="outline" className="capitalize">
                 {auth.user.role}

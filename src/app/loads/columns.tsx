@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Load, Location } from "@/types/load";
 import { FiEye, FiEdit2, FiTrash2 } from "react-icons/fi";
 import { User } from "@/types/auth";
+import { reportWebVitals } from "next/dist/build/templates/pages";
 
 // Format location object to string
 const formatLocation = (location: Location): string => {
@@ -27,7 +28,7 @@ export const getColumns = (user: User, router: any, isAdmin: boolean = false) =>
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ),
-      cell: ({ row }) => row.original.id.slice(0, 4),
+      cell: ({ row }) => row.original.id.slice(0, 4).toUpperCase(),
     },
     {
       accessorKey: "created_at",
@@ -43,14 +44,7 @@ export const getColumns = (user: User, router: any, isAdmin: boolean = false) =>
       ),
       cell: ({ row }) => {
         const date = row.original.created_at;
-        if (!date) return "N/A";
-        try {
-          return formatDistanceToNow(new Date(date), { addSuffix: false })
-            .replace("about ", "")
-            .replace("less than ", "");
-        } catch (e) {
-          return "Invalid date";
-        }
+        return date ? format(new Date(date as Date), "MMM dd, yyyy") : "N/A";
       },
     },
     {
@@ -129,11 +123,13 @@ export const getColumns = (user: User, router: any, isAdmin: boolean = false) =>
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           <Weight className="h-4 w-4" />
-          (kg)
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ),
-      cell: ({ row }) => row.getValue("weight_kg"),
+      cell: ({ row }) =>
+        row.getValue("weight_kg") +
+        " " +
+        (row.original.weight_unit ? row.original.weight_unit : "kg"),
     },
     {
       accessorKey: "budget_amount",
@@ -143,13 +139,16 @@ export const getColumns = (user: User, router: any, isAdmin: boolean = false) =>
           className="flex w-fit  hover:bg-black/20"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Budget
+          $
           <ArrowUpDown className="ml-0 h-4 w-4" />
         </Button>
       ),
       cell: ({ row }) => (
-        <div>
-          {row.original.budget_amount} {row.original.budget_currency}
+        <div>$
+          {row.original.budget_amount
+            ? row.original.budget_amount
+            : row.original.fixed_rate}{" "}
+
         </div>
       ),
     },

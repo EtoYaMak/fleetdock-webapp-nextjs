@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Load, LoadStatus, Location, Dimensions } from "@/types/load";
+import { Load, LoadStatus, Location, Dimensions, PickUpContact, DeliveryContact } from "@/types/load";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -39,12 +39,14 @@ export default function LoadForm({
     load_type_id: initialData?.load_type_id || "",
     temperature_controlled: initialData?.temperature_controlled || false,
     weight_kg: initialData?.weight_kg || 0,
+    weight_unit: initialData?.weight_unit || "kg",
     dimensions:
       initialData?.dimensions ||
       ({
         length: 0,
         width: 0,
         height: 0,
+        unit: "m",
       } satisfies Dimensions),
     pickup_location:
       initialData?.pickup_location ||
@@ -54,6 +56,13 @@ export default function LoadForm({
         state: "",
         zip: "",
       } satisfies Location),
+    pickup_contact:
+      initialData?.pickup_contact ||
+      ({
+        name: "",
+        phone: "",
+        email: "",
+      } satisfies PickUpContact),
     delivery_location:
       initialData?.delivery_location ||
       ({
@@ -62,9 +71,17 @@ export default function LoadForm({
         state: "",
         zip: "",
       } satisfies Location),
+    delivery_contact:
+      initialData?.delivery_contact ||
+      ({
+        name: "",
+        phone: "",
+        email: "",
+      } satisfies DeliveryContact),
     pickup_date: initialData?.pickup_date || new Date(),
     delivery_date: initialData?.delivery_date || new Date(),
     distance_km: initialData?.distance_km || 0,
+    distance_unit: initialData?.distance_unit || "km",
     special_instructions: initialData?.special_instructions || "",
     load_status: initialData?.load_status || LoadStatus.POSTED,
     budget_amount: initialData?.budget_amount || 0,
@@ -92,12 +109,15 @@ export default function LoadForm({
     }
   };
 
-  const handleDimensionChange = (dim: keyof Dimensions, value: number) => {
+  const handleDimensionUpdate = (
+    key: keyof Dimensions,
+    value: number | string
+  ) => {
     setFormData((prev) => ({
       ...prev,
       dimensions: {
-        ...(prev.dimensions || { length: 0, width: 0, height: 0 }),
-        [dim]: value,
+        ...(prev.dimensions || { length: 0, width: 0, height: 0, unit: "m" }),
+        [key]: value,
       },
     }));
   };
@@ -145,9 +165,9 @@ export default function LoadForm({
                     temperature_controlled: !prev.temperature_controlled,
                   }));
                 }}
-                className="rounded border-border bg-background"
+                className="rounded border-primary bg-background"
               />
-              <label className="text-sm font-medium text-muted-foreground">
+              <label className="text-sm font-medium text-primary">
                 Temperature Controlled
               </label>
             </div>
@@ -160,42 +180,100 @@ export default function LoadForm({
         <h2 className="text-lg font-semibold mb-4 text-primary">
           Cargo Details
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="flex flex-col gap-4">
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-muted-foreground">
-              Dimensions (meters)
+            <label className="block text-sm text-muted-foreground font-semibold">
+              Dimensions ({formData.dimensions?.unit})
             </label>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="flex gap-2">
               {(["length", "width", "height"] as const).map((dim) => (
-                <Input
-                  key={dim}
-                  type="number"
-                  placeholder={dim}
-                  value={formData.dimensions?.[dim] || 0}
-                  onChange={(e) =>
-                    handleDimensionChange(dim, parseFloat(e.target.value))
-                  }
-                  className="bg-background border border-border placeholder:text-muted-foreground text-foreground "
-                />
+                <div key={dim} className="flex-1">
+                  <label className="block text-sm font-medium text-muted-foreground mb-1 capitalize">
+                    {dim}
+                  </label>
+                  <Input
+                    type="text"
+                    placeholder={dim}
+                    value={formData.dimensions?.[dim] === 0 ? "" : formData.dimensions?.[dim]}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (value === "" || !isNaN(Number(value))) {
+                        handleDimensionUpdate(dim, value === "" ? 0 : parseFloat(value));
+                      }
+                    }}
+                    className="bg-background border border-border placeholder:text-muted-foreground text-foreground"
+                  />
+                </div>
               ))}
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-muted-foreground mb-1">
+                  Unit
+                </label>
+                <Select
+                  value={formData.dimensions?.unit}
+                  onValueChange={(value) => handleDimensionUpdate("unit", value)}
+                >
+                  <SelectTrigger className="bg-background border-border text-foreground">
+                    <SelectValue placeholder="Select unit" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-background border-border">
+                    <SelectItem value="m">m</SelectItem>
+                    <SelectItem value="ft">ft</SelectItem>
+                    <SelectItem value="in">in</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium mb-1 text-muted-foreground">
-              Weight (kg)
+          <div className="space-y-2">
+            <label className="block text-sm font-semibold text-muted-foreground">
+              Weight ({formData.weight_unit})
             </label>
-            <Input
-              type="number"
-              value={formData.weight_kg}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  weight_kg: parseFloat(e.target.value),
-                }))
-              }
-              className="bg-background border border-border placeholder:text-muted-foreground text-foreground "
-            />
+            <div className="flex items-center gap-2">
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-muted-foreground mb-1">
+                  Amount
+                </label>
+                <Input
+                  type="text"
+                  placeholder="Amount"
+                  value={formData.weight_kg === 0 ? '' : formData.weight_kg}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (value === "" || !isNaN(Number(value))) {
+                      setFormData((prev) => ({
+                        ...prev,
+                        weight_kg: value === "" ? 0 : Number(value),
+                      }));
+                    }
+                  }}
+                  className="bg-background border border-border placeholder:text-muted-foreground text-foreground"
+                />
+              </div>
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-muted-foreground mb-1">
+                  Unit
+                </label>
+                <Select
+                  value={formData.weight_unit}
+                  onValueChange={(value) =>
+                    setFormData((prev) => ({ ...prev, weight_unit: value }))
+                  }
+                >
+                  <SelectTrigger className="bg-background border-border text-foreground">
+                    <SelectValue placeholder="Select unit" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-background border-border">
+                    <SelectItem value="kg">kg</SelectItem>
+                    <SelectItem value="lbs">lbs</SelectItem>
+                    <SelectItem value="metric-tons">metric tons (1000 kg)</SelectItem>
+                    <SelectItem value="short-tons">short tons (2000 lbs)</SelectItem>
+                    <SelectItem value="long-tons">long tons (2240 lbs)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -405,19 +483,44 @@ export default function LoadForm({
 
             <div>
               <label className="block text-sm font-medium mb-1 text-muted-foreground">
-                Distance (km)
+                Distance ({formData.distance_unit})
               </label>
-              <Input
-                type="number"
-                value={formData.distance_km}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    distance_km: parseFloat(e.target.value),
-                  }))
-                }
-                className="bg-background border border-border placeholder:text-muted-foreground text-foreground "
-              />
+              <div className="flex items-center gap-2 w-full">
+                <span className="w-2/3">
+                  <Input
+                    type="text"
+                    value={formData.distance_km === null || formData.distance_km === 0 ? "" : formData.distance_km}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (value === "" || !isNaN(Number(value))) {
+                        setFormData((prev) => ({
+                          ...prev,
+                          distance_km: value === "" ? 0 : Number(value),
+                        }));
+                      }
+                    }}
+                    className="bg-background border border-border placeholder:text-muted-foreground text-foreground"
+                  />
+                </span>
+                <span className="w-1/3">
+                  <Select
+                    value={formData.distance_unit}
+                    onValueChange={(value) =>
+                      setFormData((prev) => ({ ...prev, distance_unit: value }))
+                    }
+                  >
+                    <SelectTrigger className="bg-background border border-border placeholder:text-muted-foreground text-foreground ">
+                      <SelectValue placeholder="Select unit" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-background border border-border">
+                      <SelectItem value="km">km</SelectItem>
+                      <SelectItem value="mi">miles</SelectItem>
+                      <SelectItem value="m">meters</SelectItem>
+                      <SelectItem value="yd">yards</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -428,8 +531,8 @@ export default function LoadForm({
         <h2 className="text-lg font-semibold mb-4 text-primary">
           Pricing Details
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
+        <div className="flex flex-wrap gap-6">
+          <div className="w-fit">
             <label className="block text-sm font-medium mb-1 text-muted-foreground">
               Pricing Method
             </label>
@@ -480,15 +583,18 @@ export default function LoadForm({
                   Budget Amount
                 </label>
                 <Input
-                  type="number"
-                  value={formData.budget_amount}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      budget_amount: parseFloat(e.target.value),
-                    }))
-                  }
-                  className="bg-background border border-border placeholder:text-muted-foreground text-foreground "
+                  type="text"
+                  value={formData.budget_amount === 0 ? '' : formData.budget_amount}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (value === "" || !isNaN(Number(value))) {
+                      setFormData((prev) => ({
+                        ...prev,
+                        budget_amount: value === "" ? 0 : Number(value),
+                      }));
+                    }
+                  }}
+                  className="bg-background border border-border placeholder:text-muted-foreground text-foreground"
                 />
               </div>
             </>
@@ -498,15 +604,18 @@ export default function LoadForm({
                 Fixed Rate
               </label>
               <Input
-                type="number"
-                value={formData.fixed_rate || 0}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    fixed_rate: parseFloat(e.target.value),
-                  }))
-                }
-                className="bg-background border border-border placeholder:text-muted-foreground text-foreground "
+                type="text"
+                value={formData.fixed_rate === null || formData.fixed_rate === 0 ? "" : formData.fixed_rate}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value === "" || !isNaN(Number(value))) {
+                    setFormData((prev) => ({
+                      ...prev,
+                      fixed_rate: value === "" ? 0 : Number(value),
+                    }));
+                  }
+                }}
+                className="bg-background border border-border placeholder:text-muted-foreground text-foreground"
               />
             </div>
           )}
@@ -585,57 +694,159 @@ export default function LoadForm({
 
       {/* Contact Information Section */}
       <section className="bg-card border border-border px-4 py-5 sm:p-6 rounded-lg">
-        <h2 className="text-lg font-semibold mb-4 text-primary">
-          Contact Information
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium mb-1 text-muted-foreground">
-              Contact Name
-            </label>
-            <Input
-              value={formData.contact_name || ""}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  contact_name: e.target.value,
-                }))
-              }
-              className="bg-background border border-border placeholder:text-muted-foreground text-foreground "
-            />
-          </div>
+        <div className="flex flex-col gap-4">
+          <h2 className="text-lg font-semibold mb-4 text-primary">
+            Main Contact Information
+          </h2>
+          <label htmlFor="contact-information" className="block text-sm font-medium mb-1 text-muted-foreground">
+            Contact Information
+          </label>
+          <div className="flex flex-wrap gap-4 w-full">
+            <div className="w-1/4">
 
-          <div>
-            <label className="block text-sm font-medium mb-1 text-muted-foreground">
-              Contact Phone
-            </label>
-            <Input
-              value={formData.contact_phone || ""}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  contact_phone: e.target.value,
-                }))
-              }
-              className="bg-background border border-border placeholder:text-muted-foreground text-foreground "
-            />
-          </div>
+              <Input
+                value={formData.contact_name || ""}
+                placeholder="Name"
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    contact_name: e.target.value,
+                  }))
+                }
+                className="bg-background border border-border placeholder:text-muted-foreground text-foreground "
+              />
+            </div>
 
-          <div>
-            <label className="block text-sm font-medium mb-1 text-muted-foreground">
-              Contact Email
-            </label>
-            <Input
-              type="email"
-              value={formData.contact_email || ""}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  contact_email: e.target.value,
-                }))
-              }
-              className="bg-background border border-border placeholder:text-muted-foreground text-foreground "
-            />
+            <div className="w-1/4">
+
+              <Input
+                placeholder="Phone"
+                value={formData.contact_phone || ""}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    contact_phone: e.target.value,
+                  }))
+                }
+                className="bg-background border border-border placeholder:text-muted-foreground text-foreground "
+              />
+            </div>
+
+            <div className="w-1/4">
+
+              <Input
+                type="email"
+                placeholder="Email"
+                value={formData.contact_email || ""}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    contact_email: e.target.value,
+                  }))
+                }
+                className="bg-background border border-border placeholder:text-muted-foreground text-foreground "
+              />
+            </div>
+          </div>
+          {/* Pickup and Delivery Contact Information */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <label className="block text-sm font-medium mb-1 text-muted-foreground">
+                Pickup Contact
+              </label>
+              <Input
+                placeholder="Name"
+                value={formData.pickup_contact?.name || ""}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    pickup_contact: {
+                      ...(prev.pickup_contact || { name: "", phone: "", email: "" }),
+                      name: e.target.value,
+                    },
+                  }))
+                }
+                className="bg-background border border-border placeholder:text-muted-foreground text-foreground"
+              />
+              <Input
+                placeholder="Phone"
+                value={formData.pickup_contact?.phone || ""}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    pickup_contact: {
+                      ...(prev.pickup_contact || { name: "", phone: "", email: "" }),
+                      phone: e.target.value,
+                    },
+                  }))
+                }
+                className="bg-background border border-border placeholder:text-muted-foreground text-foreground"
+              />
+              <Input
+                type="email"
+                placeholder="Email"
+                value={formData.pickup_contact?.email || ""}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    pickup_contact: {
+                      ...(prev.pickup_contact || { name: "", phone: "", email: "" }),
+                      email: e.target.value,
+                    },
+                  }))
+                }
+                className="bg-background border border-border placeholder:text-muted-foreground text-foreground"
+              />
+            </div>
+
+            <div className="space-y-4">
+              <label className="block text-sm font-medium mb-1 text-muted-foreground">
+                Delivery Contact
+              </label>
+              <Input
+                placeholder="Name"
+                value={formData.delivery_contact?.name || ""}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    delivery_contact: {
+                      ...(prev.delivery_contact || { name: "", phone: "", email: "" }),
+                      name: e.target.value,
+                    },
+                  }))
+                }
+                className="bg-background border border-border placeholder:text-muted-foreground text-foreground"
+              />
+              <Input
+                placeholder="Phone"
+                value={formData.delivery_contact?.phone || ""}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    delivery_contact: {
+                      ...(prev.delivery_contact || { name: "", phone: "", email: "" }),
+                      phone: e.target.value,
+                    },
+                  }))
+                }
+                className="bg-background border border-border placeholder:text-muted-foreground text-foreground"
+              />
+              <Input
+                type="email"
+                placeholder="Email"
+                value={formData.delivery_contact?.email || ""}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    delivery_contact: {
+                      ...(prev.delivery_contact || { name: "", phone: "", email: "" }),
+                      email: e.target.value,
+                    },
+                  }))
+                }
+                className="bg-background border border-border placeholder:text-muted-foreground text-foreground"
+              />
+            </div>
           </div>
         </div>
       </section>

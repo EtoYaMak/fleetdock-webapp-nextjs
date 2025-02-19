@@ -6,6 +6,22 @@ import { Button } from "@/components/ui/button";
 
 export const columns: ColumnDef<any>[] = [
     {
+        accessorKey: "unique_id",
+        header: ({ column }) => (
+            <Button
+                variant="ghost"
+                className="flex w-fit hover:bg-black/20 uppercase"
+                onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            >
+                ID
+                <ArrowUpDown className="ml-2 h-4 w-4" />
+            </Button>
+        ),
+        cell: ({ row }) => (
+            <span className="uppercase">{row.getValue("unique_id")}</span>
+        ),
+    },
+    {
         accessorKey: "full_name",
         header: ({ column }) => (
             <Button

@@ -20,6 +20,7 @@ export interface User {
   app_metadata: {
     role: string;
   };
+  unique_id?: string;
 }
 
 export interface UseContextType {

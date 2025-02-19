@@ -5,7 +5,7 @@ import { useLoads } from "@/hooks/useLoads";
 import { Load } from "@/types/load";
 import { useRouter } from "next/navigation";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
-import { FiArrowLeft, FiEdit2, FiTruck, FiInfo } from "react-icons/fi";
+import { FiArrowLeft, FiEdit2, FiTruck, FiInfo, FiCheck, FiX } from "react-icons/fi";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 import { useBids } from "@/hooks/useBids";
@@ -107,18 +107,18 @@ export default function ViewLoad({
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-sidebar-ring">
-                  Dimensions
+                  Dimensions ({load.dimensions?.unit || "N/A"})
                 </label>
                 <p className="text-muted-foreground">
-                  {load.dimensions?.length}m × {load.dimensions?.width}m ×{" "}
-                  {load.dimensions?.height}m
+                  {load.dimensions?.length} × {load.dimensions?.width} ×{" "}
+                  {load.dimensions?.height}
                 </p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-sidebar-ring">
                   Weight
                 </label>
-                <p className="text-muted-foreground">{load.weight_kg} kg</p>
+                <p className="text-muted-foreground">{load.weight_kg} {load.weight_unit || "N/A"}</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-sidebar-ring">
@@ -157,10 +157,13 @@ export default function ViewLoad({
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-sidebar-ring">
-                  Budget
+                  {load.bid_enabled ? "Budget" : "Fixed Rate"}
                 </label>
                 <p className="text-muted-foreground">
-                  {load.budget_amount} {load.budget_currency}
+                  {load.bid_enabled
+                    ? `${load.budget_amount} ${load.budget_currency}`
+                    : `${load.fixed_rate} ${load.budget_currency}`
+                  }
                 </p>
               </div>
               <div>
@@ -260,28 +263,51 @@ export default function ViewLoad({
         </section>
         <div className="flex w-1/3 gap-8">
           {/* Contact Information */}
-          <section className="bg-card border border-border px-4 py-5 sm:p-6 rounded-lg mb-6 w-full">
-            <h2 className="text-lg font-semibold mb-4 text-primary">
-              Contact Information
-            </h2>
-            <div className="flex flex-col gap-4">
-              <div>
-                <label className="block text-sm font-medium text-sidebar-ring">
-                  Contact Name
-                </label>
-                <p className="text-muted-foreground">{load.contact_name}</p>
+          <section className="bg-card border border-border px-4 py-5 sm:p-6 rounded-lg mb-6 w-full space-y-4">
+            <div>
+              <h2 className="text-lg font-semibold mb-4 text-primary">
+                Contact Information
+              </h2>
+              <div className="flex flex-col gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-sidebar-ring">
+                    Contact Name
+                  </label>
+                  <p className="text-muted-foreground">{load.contact_name}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-sidebar-ring">
+                    Phone
+                  </label>
+                  <p className="text-muted-foreground">{load.contact_phone}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-sidebar-ring">
+                    Email
+                  </label>
+                  <p className="text-muted-foreground">{load.contact_email}</p>
+                </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-sidebar-ring">
-                  Phone
-                </label>
-                <p className="text-muted-foreground">{load.contact_phone}</p>
+            </div>
+            {/* Contact Status Pills */}
+            <div className="flex gap-2 mt-4">
+              <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm ${load.pickup_contact ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'
+                }`}>
+                {load.pickup_contact ? (
+                  <FiCheck className="w-4 h-4" />
+                ) : (
+                  <FiX className="w-4 h-4" />
+                )}
+                <span>Pickup Contact</span>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-sidebar-ring">
-                  Email
-                </label>
-                <p className="text-muted-foreground">{load.contact_email}</p>
+              <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm ${load.delivery_contact ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'
+                }`}>
+                {load.delivery_contact ? (
+                  <FiCheck className="w-4 h-4" />
+                ) : (
+                  <FiX className="w-4 h-4" />
+                )}
+                <span>Delivery Contact</span>
               </div>
             </div>
           </section>

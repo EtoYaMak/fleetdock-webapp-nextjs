@@ -7,12 +7,16 @@ export interface Load {
   load_type_name?: string; // Text
   temperature_controlled?: boolean; // Boolean
   weight_kg: number; // Numeric
+  weight_unit: string; // Text
   dimensions?: Dimensions; // JSONB
   pickup_location: Location; // Update type from object to Location
+  pickup_contact?: PickUpContact; // Update type from object to PickUpContact
   delivery_location: Location; // Update type from object to Location
+  delivery_contact?: DeliveryContact; // Update type from object to DeliveryContact
   pickup_date: Date; // Timestamp
   delivery_date: Date; // Timestamp
   distance_km?: number; // Numeric
+  distance_unit?: string; // Text
   special_instructions?: string; // Text
   load_status?: LoadStatus; // Text
   budget_amount?: number; // Numeric
@@ -31,10 +35,23 @@ export interface Load {
   updated_at?: Date; // Timestamp
 }
 
+export interface PickUpContact {
+  name: string;
+  phone: string;
+  email: string;
+}
+
+export interface DeliveryContact {
+  name: string;
+  phone: string;
+  email: string;
+}
+
 export interface Dimensions {
   length: number;
   width: number;
   height: number;
+  unit: string;
 }
 
 export interface Location {
@@ -49,6 +66,7 @@ export enum LoadStatus {
   ACCEPTED = "accepted",
   REJECTED = "rejected",
   COMPLETED = "completed",
+  CANCELLED = "cancelled",
 }
 
 export interface LoadType {
